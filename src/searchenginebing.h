@@ -33,18 +33,17 @@ class SearchEngineBing : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit SearchEngineBing(const QString &searchTerm, QObject *parent = 0);
-    ~SearchEngineBing();
+    explicit SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
 
 private:
+    QNetworkAccessManager *m_networkAccessManager;
     const QString m_searchTerm;
     int m_numExpectedHits, m_currentPage;
-    QNetworkAccessManager *m_nam;
 
 private slots:
-    void receivedReply(QNetworkReply *);
+    void finished();
 };
 
 #endif // SEARCHENGINEBING_H

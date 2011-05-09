@@ -25,32 +25,38 @@
 #include <QCryptographicHash>
 #include <QFile>
 #include <QDebug>
+#include <QFileInfo>
+#include <QDir>
 
 #include "downloader.h"
 
-DownloadJob::DownloadJob(const QUrl &url, const QString &filePattern, Downloader *parent)
-    : QObject(parent), m_filePattern(filePattern), m_parent(parent)
+Downloader::Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
+    : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern)
 {
-    qDebug() << "downloading " << url.toString();
-    m_nam = new QNetworkAccessManager(this);
-    connect(m_nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(receivedReply(QNetworkReply *)));
-    m_nam->get(QNetworkRequest(url));
+    // nothing
 }
 
-void DownloadJob::receivedReply(QNetworkReply *reply)
+void Downloader::download(QUrl url)
 {
+    QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+}
+
+void Downloader::finished()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     QByteArray data(reply->readAll());
     QString filename = m_filePattern;
 
     QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
-    QRegExp md5sumRegExp("%\\{h(:\\d+)?\\}");
+    QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
     int p = -1;
     while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
         if (md5sumRegExp.cap(1).isEmpty())
             filename = filename.replace(md5sumRegExp.cap(0), md5sum);
         else {
             bool ok = false;
-            int left = md5sumRegExp.cap(1).toInt(&ok);
+            int left = md5sumRegExp.cap(2).toInt(&ok);
             if (ok && left > 0 && left <= md5sum.length())
                 filename = filename.replace(md5sumRegExp.cap(0), md5sum.left(left));
         }
@@ -59,33 +65,14 @@ void DownloadJob::receivedReply(QNetworkReply *reply)
     QString urlString = reply->url().toString().replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
     filename = filename.replace("%{s}", urlString);
 
+    QFileInfo fi(filename);
+    fi.absoluteDir().mkpath(fi.absolutePath());
+
     QFile output(filename);
     if (output.open(QIODevice::WriteOnly)) {
         output.write(data);
         output.close();
 
-        m_parent->doneDownloading(reply->url(), filename, md5sum);
+        emit downloaded(reply->url(), filename);
     }
-
-    m_nam->deleteLater();
-    deleteLater();
-}
-
-
-Downloader::Downloader(const QString &filePattern, QTextStream &csvLogFile, QObject *parent)
-    : QObject(parent), m_filePattern(filePattern), m_csvLogFile(csvLogFile)
-{
-    // nothing
-}
-
-void Downloader::download(QUrl url)
-{
-    new DownloadJob(url, m_filePattern, this);
-}
-
-void Downloader::doneDownloading(const QUrl &url, const QString &filename, const QString &md5sum)
-{
-    m_csvLogFile << '"' << md5sum << '"' << ';' << '"' << url.toString() << '"' << ';' << '"' << filename << '"' << endl;
-    m_csvLogFile.flush();
-    emit downloaded(url, filename);
 }

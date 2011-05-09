@@ -22,6 +22,7 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QTextStream>
+#include <QNetworkAccessManager>
 
 #include "searchenginebing.h"
 #include "downloader.h"
@@ -30,11 +31,9 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QFile logfile("/tmp/log.csv");
-    logfile.open(QIODevice::WriteOnly);
-    QTextStream ts(&logfile);
-    SearchEngineBing bing("filetype:pdf site:fi");
-    Downloader downloader("/tmp/test/%{h}_%{s}", ts);
+    QNetworkAccessManager netAccMan;
+    SearchEngineBing bing(&netAccMan, QLatin1String("filetype:pdf"));
+    Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
     bing.startSearch(5);
     QObject::connect(&bing, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
 

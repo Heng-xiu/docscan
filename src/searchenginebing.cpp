@@ -28,15 +28,10 @@
 
 #include "searchenginebing.h"
 
-SearchEngineBing::SearchEngineBing(const QString &searchTerm, QObject *parent)
-    : SearchEngineAbstract(parent), m_searchTerm(searchTerm), m_numExpectedHits(0)
+SearchEngineBing::SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
+    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0)
 {
-    m_nam = new QNetworkAccessManager(this);
-}
-
-SearchEngineBing::~SearchEngineBing()
-{
-    delete m_nam;
+    // nothing
 }
 
 void SearchEngineBing::startSearch(int num)
@@ -46,12 +41,15 @@ void SearchEngineBing::startSearch(int num)
     m_numExpectedHits = num;
     m_currentPage = 0;
 
-    connect(m_nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(receivedReply(QNetworkReply *)));
-    m_nam->get(QNetworkRequest(url));
+    QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
 
-void SearchEngineBing::receivedReply(QNetworkReply *reply)
+void SearchEngineBing::finished()
 {
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    disconnect(reply, SIGNAL(finished()), this, SLOT(finished()));
+
     const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
     QTextStream tsAll(reply);
     QString htmlText = tsAll.readAll();
@@ -69,7 +67,8 @@ void SearchEngineBing::receivedReply(QNetworkReply *reply)
         QUrl url(reply->url());
         if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
             url.setPath(nextPageRegExp.cap(1));
-            m_nam->get(QNetworkRequest(url));
+            reply = m_networkAccessManager->get(QNetworkRequest(url));
+            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         } else
             emit result(ResultUnspecifiedError);
     } else

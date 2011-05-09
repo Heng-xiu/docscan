@@ -25,33 +25,14 @@
 #include <QObject>
 #include <QUrl>
 
-class QNetworkReply;
 class QNetworkAccessManager;
 class QTextStream;
-
-class Downloader;
-
-class DownloadJob : public QObject
-{
-    Q_OBJECT
-
-public:
-    DownloadJob(const QUrl &url, const QString &filePattern, Downloader *parent);
-
-private:
-    QNetworkAccessManager *m_nam;
-    const QString m_filePattern;
-    Downloader *m_parent;
-
-private slots:
-    void receivedReply(QNetworkReply *reply);
-};
 
 class Downloader : public QObject
 {
     Q_OBJECT
 public:
-    explicit Downloader(const QString &filePattern, QTextStream &csvLogFile, QObject *parent = 0);
+    explicit Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
 
     friend class DownloadJob;
 
@@ -62,10 +43,11 @@ signals:
     void downloaded(QUrl, QString);
 
 private:
+    QNetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
-    QTextStream &m_csvLogFile;
 
-    void doneDownloading(const QUrl &url, const QString &filename, const QString &md5sum);
+private slots:
+    void finished();
 };
 
 #endif // DOWNLOADER_H
