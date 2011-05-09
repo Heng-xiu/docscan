@@ -26,6 +26,7 @@
 
 #include "searchenginebing.h"
 #include "downloader.h"
+#include "fileanalyzerpdf.h"
 
 int main(int argc, char *argv[])
 {
@@ -34,8 +35,11 @@ int main(int argc, char *argv[])
     QNetworkAccessManager netAccMan;
     SearchEngineBing bing(&netAccMan, QLatin1String("filetype:pdf"));
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
+    FileAnalyzerPDF fileAnalyzerPDF;
+
     bing.startSearch(5);
     QObject::connect(&bing, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
+    QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzerPDF, SLOT(analyzeFile(QString)));
 
     return a.exec();
 }

@@ -19,36 +19,19 @@
 
  */
 
-#ifndef DOWNLOADER_H
-#define DOWNLOADER_H
+#ifndef FILEANALYZERODF_H
+#define FILEANALYZERODF_H
 
-#include <QObject>
-#include <QUrl>
+#include "fileanalyzerabstract.h"
 
-class QNetworkAccessManager;
-class QTextStream;
-
-class Downloader : public QObject
+class FileAnalyzerODF : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+    explicit FileAnalyzerODF(QObject *parent = 0);
 
-    friend class DownloadJob;
+    void analyzeFile(const QString &filename);
 
-public slots:
-    void download(QUrl);
-
-signals:
-    void downloaded(QUrl, QString);
-    void downloaded(QString);
-
-private:
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_filePattern;
-
-private slots:
-    void finished();
 };
 
-#endif // DOWNLOADER_H
+#endif // FILEANALYZERODF_H

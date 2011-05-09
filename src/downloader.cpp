@@ -74,5 +74,6 @@ void Downloader::finished()
         output.close();
 
         emit downloaded(reply->url(), filename);
+        emit downloaded(filename);
     }
 }

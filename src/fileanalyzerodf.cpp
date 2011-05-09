@@ -19,36 +19,27 @@
 
  */
 
-#ifndef DOWNLOADER_H
-#define DOWNLOADER_H
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
 
-#include <QObject>
-#include <QUrl>
+#include <QDomDocument>
 
-class QNetworkAccessManager;
-class QTextStream;
+#include "fileanalyzerodf.h"
 
-class Downloader : public QObject
+FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
+    : FileAnalyzerAbstract(parent)
 {
-    Q_OBJECT
-public:
-    explicit Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+}
 
-    friend class DownloadJob;
+void FileAnalyzerODF::analyzeFile(const QString &filename)
+{
+    QuaZip zipFile(filename);
 
-public slots:
-    void download(QUrl);
-
-signals:
-    void downloaded(QUrl, QString);
-    void downloaded(QString);
-
-private:
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_filePattern;
-
-private slots:
-    void finished();
-};
-
-#endif // DOWNLOADER_H
+    if (zipFile.open(QuaZip::mdUnzip)) {
+        if (zipFile.setCurrentFile("meta.xml", QuaZip::csInsensitive)) {
+            QuaZipFile metaXML(&zipFile, parent());
+            QDomDocument metaDocument;
+            metaDocument.setContent(&metaXML);
+        }
+    }
+}
