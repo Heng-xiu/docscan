@@ -40,7 +40,7 @@ public:
 private:
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_searchTerm;
-    int m_numExpectedHits, m_currentPage;
+    int m_numExpectedHits, m_currentPage, m_numFoundHits;
 
 private slots:
     void finished();

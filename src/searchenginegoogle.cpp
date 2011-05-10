@@ -26,17 +26,17 @@
 #include <QTextStream>
 #include <QDebug>
 
-#include "searchenginebing.h"
+#include "searchenginegoogle.h"
 
-SearchEngineBing::SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
+SearchEngineGoogle::SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0)
 {
     // nothing
 }
 
-void SearchEngineBing::startSearch(int num)
+void SearchEngineGoogle::startSearch(int num)
 {
-    QUrl url(QLatin1String("http://www.bing.com/search?setmkt=en-US&setlang=match"));
+    QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
     url.addQueryItem("q", m_searchTerm);
     m_numExpectedHits = num;
     m_currentPage = 0;
@@ -46,12 +46,12 @@ void SearchEngineBing::startSearch(int num)
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
 
-void SearchEngineBing::finished()
+void SearchEngineGoogle::finished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     disconnect(reply, SIGNAL(finished()), this, SLOT(finished()));
 
-    const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
+    const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
     QTextStream tsAll(reply);
     QString htmlText = tsAll.readAll();
 
@@ -67,14 +67,11 @@ void SearchEngineBing::finished()
 
     ++m_currentPage;
     if (m_currentPage * 10 < m_numExpectedHits) {
-        QRegExp nextPageRegExp("<li><a href=\"(/search\\?q=[^\"]+)\"[^>]*>Next</a></li>");
-        QUrl url(reply->url());
-        if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
-            url.setPath(nextPageRegExp.cap(1));
-            reply = m_networkAccessManager->get(QNetworkRequest(url));
-            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-        } else
-            emit result(ResultUnspecifiedError);
+        QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
+        url.addQueryItem("q", m_searchTerm);
+        url.addQueryItem("start", QString::number(m_currentPage * 10));
+        reply = m_networkAccessManager->get(QNetworkRequest(url));
+        connect(reply, SIGNAL(finished()), this, SLOT(finished()));
     } else
         emit result(ResultNoError);
 }

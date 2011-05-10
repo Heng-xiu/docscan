@@ -5,17 +5,17 @@ QT += network webkit xml
 QT -= gui
 TARGET = DocScan
 CONFIG += console
-CONFIG -= app_bundle
+CONFIG -= app_bundle thread
 TEMPLATE = app
 SOURCES += src/main.cpp \
     src/searchengineabstract.cpp \
     src/searchenginebing.cpp src/downloader.cpp \
     src/fileanalyzerabstract.cpp \
-    src/fileanalyzerpdf.cpp \
+    src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
     src/fileanalyzerodf.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
-    src/fileanalyzerabstract.h \
+    src/fileanalyzerabstract.h src/searchenginegoogle.h \
     src/fileanalyzerpdf.h \
     src/fileanalyzerodf.h
 

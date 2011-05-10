@@ -19,23 +19,31 @@
 
  */
 
-#ifndef FILEANALYZERODF_H
-#define FILEANALYZERODF_H
+#ifndef SEARCHENGINEGOOGLE_H
+#define SEARCHENGINEGOOGLE_H
 
-#include "fileanalyzerabstract.h"
+#include <QObject>
 
-class QDomDocument;
+#include "searchengineabstract.h"
 
-class FileAnalyzerODF : public FileAnalyzerAbstract
+class QNetworkAccessManager;
+class QNetworkReply;
+
+class SearchEngineGoogle : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerODF(QObject *parent = 0);
+    explicit SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
 
-    void analyzeFile(const QString &filename);
+    virtual void startSearch(int numExpectedHits);
 
 private:
-    void analyzeMetaXML(QDomDocument &metaXML);
+    QNetworkAccessManager *m_networkAccessManager;
+    const QString m_searchTerm;
+    int m_numExpectedHits, m_currentPage, m_numFoundHits;
+
+private slots:
+    void finished();
 };
 
-#endif // FILEANALYZERODF_H
+#endif // SEARCHENGINEGOOGLE_H

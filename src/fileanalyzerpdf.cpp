@@ -33,6 +33,7 @@ FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
+    qDebug() << "analyzing file" << filename;
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {

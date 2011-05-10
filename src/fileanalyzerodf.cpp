@@ -23,6 +23,7 @@
 #include <quazip/quazipfile.h>
 
 #include <QDomDocument>
+#include <QDebug>
 
 #include "fileanalyzerodf.h"
 
@@ -33,6 +34,7 @@ FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
 
 void FileAnalyzerODF::analyzeFile(const QString &filename)
 {
+    qDebug() << "analyzing file" << filename;
     QuaZip zipFile(filename);
 
     if (zipFile.open(QuaZip::mdUnzip)) {
@@ -40,6 +42,16 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             QuaZipFile metaXML(&zipFile, parent());
             QDomDocument metaDocument;
             metaDocument.setContent(&metaXML);
+            analyzeMetaXML(metaDocument);
         }
     }
+}
+
+void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML)
+{
+    QDomElement rootNode = metaXML.documentElement();
+    qDebug() << "root node=" << rootNode.attributes().namedItem("office:version").nodeValue();
+    QDomNode officeMetaNode = metaXML.elementsByTagName("office:meta").item(0);
+    QDomElement dcCreatorNode = officeMetaNode.firstChildElement("dc:creator");
+    qDebug() << "dcCreatorNode=" << dcCreatorNode.nodeValue();
 }
