@@ -25,14 +25,18 @@
 #include <QObject>
 #include <QUrl>
 
+#include "watchable.h"
+
 class QNetworkAccessManager;
 class QTextStream;
 
-class Downloader : public QObject
+class Downloader : public QObject, public Watchable
 {
     Q_OBJECT
 public:
     explicit Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+
+    virtual bool isAlive();
 
     friend class DownloadJob;
 
@@ -46,6 +50,7 @@ signals:
 private:
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
+    int m_runningDownloads;
 
 private slots:
     void finished();

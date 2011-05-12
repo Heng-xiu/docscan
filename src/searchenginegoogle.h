@@ -36,11 +36,13 @@ public:
     explicit SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
+    virtual bool isAlive();
 
 private:
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_searchTerm;
     int m_numExpectedHits, m_currentPage, m_numFoundHits;
+    int m_runningSearches;
 
 private slots:
     void finished();

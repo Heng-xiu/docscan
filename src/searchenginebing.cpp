@@ -36,6 +36,8 @@ SearchEngineBing::SearchEngineBing(QNetworkAccessManager *networkAccessManager, 
 
 void SearchEngineBing::startSearch(int num)
 {
+    ++m_runningSearches;
+
     QUrl url(QLatin1String("http://www.bing.com/search?setmkt=en-US&setlang=match"));
     url.addQueryItem("q", m_searchTerm);
     m_numExpectedHits = num;
@@ -44,6 +46,11 @@ void SearchEngineBing::startSearch(int num)
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+}
+
+bool SearchEngineBing::isAlive()
+{
+    return m_runningSearches > 0;
 }
 
 void SearchEngineBing::finished()
@@ -77,4 +84,6 @@ void SearchEngineBing::finished()
             emit result(ResultUnspecifiedError);
     } else
         emit result(ResultNoError);
+
+    --m_runningSearches;
 }

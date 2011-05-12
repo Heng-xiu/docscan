@@ -56,3 +56,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     }
 
 }
+
+bool FileAnalyzerPDF::isAlive()
+{
+    return false;
+}

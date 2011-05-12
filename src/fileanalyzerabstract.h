@@ -24,7 +24,9 @@
 
 #include <QObject>
 
-class FileAnalyzerAbstract : public QObject
+#include "watchable.h"
+
+class FileAnalyzerAbstract : public QObject, public Watchable
 {
     Q_OBJECT
 public:

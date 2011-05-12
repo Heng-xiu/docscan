@@ -25,6 +25,7 @@
 #include "fileanalyzerabstract.h"
 
 class QDomDocument;
+class QDomElement;
 
 class FileAnalyzerODF : public FileAnalyzerAbstract
 {
@@ -32,10 +33,14 @@ class FileAnalyzerODF : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerODF(QObject *parent = 0);
 
-    void analyzeFile(const QString &filename);
+    virtual bool isAlive();
+
+public slots:
+    virtual void analyzeFile(const QString &filename);
 
 private:
     void analyzeMetaXML(QDomDocument &metaXML);
+    QString getValue(const QStringList &path, const QDomElement &root);
 };
 
 #endif // FILEANALYZERODF_H

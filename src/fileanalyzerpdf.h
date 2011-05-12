@@ -32,8 +32,10 @@ class FileAnalyzerPDF : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerPDF(QObject *parent = 0);
 
+    virtual bool isAlive();
+
 public slots:
-    virtual  void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename);
 };
 
 #endif // FILEANALYZERPDF_H

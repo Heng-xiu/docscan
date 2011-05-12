@@ -19,33 +19,31 @@
 
  */
 
-#ifndef SEARCHENGINEBING_H
-#define SEARCHENGINEBING_H
+#ifndef WATCHDOG_H
+#define WATCHDOG_H
 
 #include <QObject>
+#include <QTimer>
 
-#include "searchengineabstract.h"
+class Watchable;
 
-class QNetworkAccessManager;
-class QNetworkReply;
-
-class SearchEngineBing : public SearchEngineAbstract
+class WatchDog : public QObject
 {
     Q_OBJECT
 public:
-    explicit SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
+    explicit WatchDog(QObject *parent = 0);
 
-    virtual void startSearch(int numExpectedHits);
-    virtual bool isAlive();
+    void addWatchable(Watchable *watchable);
+
+signals:
+    void allDead();
 
 private:
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_searchTerm;
-    int m_numExpectedHits, m_currentPage, m_numFoundHits;
-    int m_runningSearches;
+    QList<Watchable *> m_watchables;
+    QTimer m_timer;
 
 private slots:
-    void finished();
+    void watch();
 };
 
-#endif // SEARCHENGINEBING_H
+#endif // WATCHDOG_H

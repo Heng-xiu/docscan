@@ -27,6 +27,7 @@
 #include "searchenginegoogle.h"
 #include "downloader.h"
 #include "fileanalyzerodf.h"
+#include "watchdog.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,10 +37,16 @@ int main(int argc, char *argv[])
     SearchEngineGoogle google(&netAccMan, QLatin1String("filetype:odt"));
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
     FileAnalyzerODF fileAnalyzerODF;
+    WatchDog watchDog;
 
-    google.startSearch(5);
+    watchDog.addWatchable(&google);
+    watchDog.addWatchable(&fileAnalyzerODF);
+    watchDog.addWatchable(&downloader);
+
+    google.startSearch(2);
     QObject::connect(&google, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
     QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzerODF, SLOT(analyzeFile(QString)));
+    QObject::connect(&watchDog, SIGNAL(allDead()), &a, SLOT(quit()));
 
     return a.exec();
 }

@@ -24,6 +24,7 @@
 
 #include <QDomDocument>
 #include <QDebug>
+#include <QStringList>
 
 #include "fileanalyzerodf.h"
 
@@ -47,11 +48,30 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
     }
 }
 
+bool FileAnalyzerODF::isAlive()
+{
+    return false;
+}
+
 void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML)
 {
     QDomElement rootNode = metaXML.documentElement();
     qDebug() << "root node=" << rootNode.attributes().namedItem("office:version").nodeValue();
-    QDomNode officeMetaNode = metaXML.elementsByTagName("office:meta").item(0);
+
+    QDomNode officeMetaNode = rootNode.firstChildElement("office:meta");
+    qDebug() << "officeMetaNode=" << officeMetaNode.nodeValue() << officeMetaNode.localName() << officeMetaNode.nodeName();
     QDomElement dcCreatorNode = officeMetaNode.firstChildElement("dc:creator");
-    qDebug() << "dcCreatorNode=" << dcCreatorNode.nodeValue();
+    qDebug() << "dcCreatorNode=" << dcCreatorNode.childNodes().item(0).toText().data() << dcCreatorNode.nodeName();
+    qDebug() << "dcCreatorNode=" << getValue(QStringList() << "office:meta" << "dc:creator", rootNode);
+}
+
+QString FileAnalyzerODF::getValue(const QStringList &path, const QDomElement &root)
+{
+    QDomNode cur = root;
+    QString text;
+    foreach(QString pathElement, path) {
+        text = cur.toText().data();
+        cur = cur.firstChildElement(pathElement);
+    }
+    return text;
 }

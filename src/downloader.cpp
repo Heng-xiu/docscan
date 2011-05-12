@@ -32,13 +32,19 @@
 #include "downloader.h"
 
 Downloader::Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
-    : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern)
+    : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_runningDownloads(0)
 {
     // nothing
 }
 
+bool Downloader::isAlive()
+{
+    return m_runningDownloads > 0;
+}
+
 void Downloader::download(QUrl url)
 {
+    ++m_runningDownloads;
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
@@ -77,4 +83,6 @@ void Downloader::finished()
         emit downloaded(reply->url(), filename);
         emit downloaded(filename);
     }
+
+    --m_runningDownloads;
 }

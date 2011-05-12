@@ -29,13 +29,15 @@
 #include "searchenginegoogle.h"
 
 SearchEngineGoogle::SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
-    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0)
+    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0), m_runningSearches(0)
 {
     // nothing
 }
 
 void SearchEngineGoogle::startSearch(int num)
 {
+    ++m_runningSearches;
+
     QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
     url.addQueryItem("q", m_searchTerm);
     m_numExpectedHits = num;
@@ -44,6 +46,11 @@ void SearchEngineGoogle::startSearch(int num)
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+}
+
+bool SearchEngineGoogle::isAlive()
+{
+    return m_runningSearches > 0;
 }
 
 void SearchEngineGoogle::finished()
@@ -74,4 +81,7 @@ void SearchEngineGoogle::finished()
         connect(reply, SIGNAL(finished()), this, SLOT(finished()));
     } else
         emit result(ResultNoError);
+
+    --m_runningSearches;
 }
+

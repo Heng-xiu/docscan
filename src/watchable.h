@@ -19,33 +19,13 @@
 
  */
 
-#ifndef SEARCHENGINEBING_H
-#define SEARCHENGINEBING_H
+#ifndef WATCHABLE_H
+#define WATCHABLE_H
 
-#include <QObject>
-
-#include "searchengineabstract.h"
-
-class QNetworkAccessManager;
-class QNetworkReply;
-
-class SearchEngineBing : public SearchEngineAbstract
+class Watchable
 {
-    Q_OBJECT
 public:
-    explicit SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
-
-    virtual void startSearch(int numExpectedHits);
-    virtual bool isAlive();
-
-private:
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_searchTerm;
-    int m_numExpectedHits, m_currentPage, m_numFoundHits;
-    int m_runningSearches;
-
-private slots:
-    void finished();
+    virtual bool isAlive() = 0;
 };
 
-#endif // SEARCHENGINEBING_H
+#endif // WATCHABLE_H

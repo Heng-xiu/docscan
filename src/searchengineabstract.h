@@ -25,7 +25,9 @@
 #include <QObject>
 #include <QUrl>
 
-class SearchEngineAbstract : public QObject
+#include "watchable.h"
+
+class SearchEngineAbstract : public QObject, public Watchable
 {
     Q_OBJECT
 public:
