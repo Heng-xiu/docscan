@@ -20,15 +20,18 @@
  */
 
 #include <QTimer>
+#include <QDebug>
 
 #include "watchdog.h"
 #include "watchable.h"
 
-WatchDog::WatchDog(QObject *parent) :
-    QObject(parent)
+static const int countDownInit = 3;
+
+WatchDog::WatchDog(QObject *parent)
+    : QObject(parent), m_countDown(countDownInit)
 {
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(watch()));
-    m_timer.setInterval(2000);
+    m_timer.setInterval(1000);
     m_timer.start();
 }
 
@@ -45,6 +48,13 @@ void WatchDog::watch()
         if (anyAlive) break;
     }
 
-    if (!anyAlive) emit allDead();
-    m_timer.stop();
+    if (anyAlive)
+        m_countDown = countDownInit;
+    else
+        --m_countDown;
+
+    if (m_countDown <= 0) {
+        emit allDead();
+        m_timer.stop();
+    }
 }

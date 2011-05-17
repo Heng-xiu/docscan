@@ -24,8 +24,8 @@
 
 #include "fileanalyzerabstract.h"
 
-class QDomDocument;
 class QDomElement;
+class QDomDocument;
 
 class FileAnalyzerODF : public FileAnalyzerAbstract
 {
@@ -39,7 +39,7 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
-    void analyzeMetaXML(QDomDocument &metaXML);
+    void analyzeMetaXML(QDomDocument &metaXML, QString &logText);
     QString getValue(const QStringList &path, const QDomElement &root);
 };
 

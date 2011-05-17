@@ -19,32 +19,22 @@
 
  */
 
-#ifndef WATCHDOG_H
-#define WATCHDOG_H
+#include <QTextStream>
 
-#include <QObject>
-#include <QTimer>
+#include "logcollector.h"
 
-class Watchable;
-
-class WatchDog : public QObject
+LogCollector::LogCollector(QIODevice &output, QObject *parent)
+    : QObject(parent), m_ts(&output)
 {
-    Q_OBJECT
-public:
-    explicit WatchDog(QObject *parent = 0);
+}
 
-    void addWatchable(Watchable *watchable);
+bool LogCollector::isAlive()
+{
+    return false;
+}
 
-signals:
-    void allDead();
-
-private:
-    QTimer m_timer;
-    QList<Watchable *> m_watchables;
-    int m_countDown;
-
-private slots:
-    void watch();
-};
-
-#endif // WATCHDOG_H
+void LogCollector::receiveLog(QString message)
+{
+    m_ts << message;
+    m_ts.flush();
+}

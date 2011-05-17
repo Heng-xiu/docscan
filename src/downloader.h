@@ -46,6 +46,7 @@ public slots:
 signals:
     void downloaded(QUrl, QString);
     void downloaded(QString);
+    void downloadReport(QString);
 
 private:
     QNetworkAccessManager *m_networkAccessManager;

@@ -32,6 +32,9 @@ class FileAnalyzerAbstract : public QObject, public Watchable
 public:
     explicit FileAnalyzerAbstract(QObject *parent = 0);
 
+signals:
+    void analysisReport(QString);
+
 public slots:
     virtual void analyzeFile(const QString &filename) = 0;
 };

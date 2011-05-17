@@ -30,6 +30,7 @@
 #include <QDir>
 
 #include "downloader.h"
+#include "watchdog.h"
 
 Downloader::Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_runningDownloads(0)
@@ -45,6 +46,7 @@ bool Downloader::isAlive()
 void Downloader::download(QUrl url)
 {
     ++m_runningDownloads;
+
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
@@ -82,6 +84,9 @@ void Downloader::finished()
 
         emit downloaded(reply->url(), filename);
         emit downloaded(filename);
+
+        QString logText = QString("<download url=\"%1\" filename=\"%2\" />\n").arg(reply->url().toString()).arg(filename);
+        emit downloadReport(logText);
     }
 
     --m_runningDownloads;

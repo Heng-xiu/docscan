@@ -27,26 +27,35 @@
 #include "searchenginegoogle.h"
 #include "downloader.h"
 #include "fileanalyzerodf.h"
+#include "fileanalyzerpdf.h"
 #include "watchdog.h"
+#include "logcollector.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    SearchEngineGoogle google(&netAccMan, QLatin1String("filetype:odt"));
+    SearchEngineGoogle searchEngine(&netAccMan, QLatin1String("filetype:ods"));
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerODF fileAnalyzerODF;
+    FileAnalyzerODF fileAnalyzer;
+
     WatchDog watchDog;
+    QFile output("/tmp/log.txt");
+    output.open(QFile::WriteOnly);
+    LogCollector logCollector(output);
 
-    watchDog.addWatchable(&google);
-    watchDog.addWatchable(&fileAnalyzerODF);
+    watchDog.addWatchable(&fileAnalyzer);
     watchDog.addWatchable(&downloader);
+    watchDog.addWatchable(&searchEngine);
+    watchDog.addWatchable(&logCollector);
 
-    google.startSearch(2);
-    QObject::connect(&google, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
-    QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzerODF, SLOT(analyzeFile(QString)));
+    searchEngine.startSearch(2);
+    QObject::connect(&searchEngine, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
+    QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
     QObject::connect(&watchDog, SIGNAL(allDead()), &a, SLOT(quit()));
+    QObject::connect(&downloader, SIGNAL(downloadReport(QString)), &logCollector, SLOT(receiveLog(QString)));
+    QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
 
     return a.exec();
 }

@@ -27,10 +27,16 @@
 #include <QStringList>
 
 #include "fileanalyzerodf.h"
+#include "watchdog.h"
 
 FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
     : FileAnalyzerAbstract(parent)
 {
+}
+
+bool FileAnalyzerODF::isAlive()
+{
+    return false;
 }
 
 void FileAnalyzerODF::analyzeFile(const QString &filename)
@@ -39,30 +45,46 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
     QuaZip zipFile(filename);
 
     if (zipFile.open(QuaZip::mdUnzip)) {
+        QString mimetype = "application/octet-stream";
+
+        if (zipFile.setCurrentFile("mimetype", QuaZip::csInsensitive)) {
+            QuaZipFile mimetypeFile(&zipFile, parent());
+            if (mimetypeFile.open(QIODevice::ReadOnly)) {
+                QTextStream ts(&mimetypeFile);
+                mimetype = ts.readLine();
+            }
+        }
+
+        QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(filename);
+
         if (zipFile.setCurrentFile("meta.xml", QuaZip::csInsensitive)) {
             QuaZipFile metaXML(&zipFile, parent());
             QDomDocument metaDocument;
             metaDocument.setContent(&metaXML);
-            analyzeMetaXML(metaDocument);
+            analyzeMetaXML(metaDocument, logText);
         }
+
+        logText += "<fileanalysis/>\n";
+
+        emit analysisReport(logText);
     }
 }
 
-bool FileAnalyzerODF::isAlive()
-{
-    return false;
-}
-
-void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML)
+void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML, QString &logText)
 {
     QDomElement rootNode = metaXML.documentElement();
-    qDebug() << "root node=" << rootNode.attributes().namedItem("office:version").nodeValue();
 
+    QRegExp versionRegExp("(\\d+)\\.(\\d+)");
+    if (versionRegExp.indexIn(rootNode.attributes().namedItem("office:version").nodeValue()))
+        logText += QString("<version major=\"%1\" minor=\"%2\" />\n").arg(versionRegExp.cap(1)).arg(versionRegExp.cap(2));
+
+    /*
     QDomNode officeMetaNode = rootNode.firstChildElement("office:meta");
     qDebug() << "officeMetaNode=" << officeMetaNode.nodeValue() << officeMetaNode.localName() << officeMetaNode.nodeName();
     QDomElement dcCreatorNode = officeMetaNode.firstChildElement("dc:creator");
     qDebug() << "dcCreatorNode=" << dcCreatorNode.childNodes().item(0).toText().data() << dcCreatorNode.nodeName();
     qDebug() << "dcCreatorNode=" << getValue(QStringList() << "office:meta" << "dc:creator", rootNode);
+    */
 }
 
 QString FileAnalyzerODF::getValue(const QStringList &path, const QDomElement &root)
