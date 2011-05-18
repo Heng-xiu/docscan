@@ -22,12 +22,61 @@
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
 
-#include <QDomDocument>
+#include <QIODevice>
 #include <QDebug>
 #include <QStringList>
+#include <QXmlDefaultHandler>
+#include <QXmlSimpleReader>
+#include <QStack>
 
 #include "fileanalyzerodf.h"
 #include "watchdog.h"
+
+class ODFMetaFileHandler: public  QXmlDefaultHandler
+{
+private:
+    QString &m_logText;
+    QStack<QString> m_nodeName;
+public:
+    ODFMetaFileHandler(QString &logText)
+        : QXmlDefaultHandler(), m_logText(logText) {
+        // nothing
+    }
+
+    virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
+        m_nodeName.push(localName);
+        return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
+    }
+
+    virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
+        m_nodeName.pop();
+        return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
+    }
+
+    virtual bool characters(const QString &text) {
+        QString nodeName = m_nodeName.top().toLower();
+
+        QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
+        if (nodeName == "title" || nodeName == "subject")
+            m_logText += QString("<%1>%2</%1>\n").arg(nodeName).arg(text);
+        else if (nodeName == "generator")
+            m_logText += QString("<generator>%1</generator>\n").arg(text);
+        else if (nodeName == "creator" || nodeName == "initial-creator")
+            m_logText += QString("<meta name=\"%1\">%2</meta>\n").arg(nodeName.replace("creator", "author")).arg(text);
+        else if (nodeName == "keyword")
+            m_logText += QString("<meta name=\"%1s\">%2</meta>\n").arg(nodeName).arg(text);
+        else if (nodeName == "creation-date" && date.isValid())
+            m_logText += QString("<date base=\"creation\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
+        else if (nodeName == "date" && date.isValid())
+            m_logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
+        else if (nodeName == "print-date" && date.isValid())
+            m_logText += QString("<date base=\"print\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
+        else
+            qDebug() << "text" << text << m_nodeName.top();
+
+        return QXmlDefaultHandler::characters(text);
+    }
+};
 
 FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
     : FileAnalyzerAbstract(parent)
@@ -58,9 +107,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
 
         if (zipFile.setCurrentFile("meta.xml", QuaZip::csInsensitive)) {
             QuaZipFile metaXML(&zipFile, parent());
-            QDomDocument metaDocument;
-            metaDocument.setContent(&metaXML);
-            analyzeMetaXML(metaDocument, logText);
+            analyzeMetaXML(metaXML, logText);
         }
 
         logText += "<fileanalysis/>\n";
@@ -70,14 +117,21 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\">\n").arg(filename));
 }
 
-void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML, QString &logText)
+void FileAnalyzerODF::analyzeMetaXML(QIODevice &device, QString &logText)
 {
+    ODFMetaFileHandler handler(logText);
+    QXmlInputSource source(&device);
+    QXmlSimpleReader reader;
+    reader.setContentHandler(&handler);
+    reader.parse(&source);
+
+    /*
     QDomElement rootNode = metaXML.documentElement();
 
     QRegExp versionRegExp("(\\d+)\\.(\\d+)");
     if (versionRegExp.indexIn(rootNode.attributes().namedItem("office:version").nodeValue()))
         logText += QString("<version major=\"%1\" minor=\"%2\" />\n").arg(versionRegExp.cap(1)).arg(versionRegExp.cap(2));
-
+    */
     /*
     QDomNode officeMetaNode = rootNode.firstChildElement("office:meta");
     qDebug() << "officeMetaNode=" << officeMetaNode.nodeValue() << officeMetaNode.localName() << officeMetaNode.nodeName();
@@ -85,15 +139,4 @@ void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML, QString &logText)
     qDebug() << "dcCreatorNode=" << dcCreatorNode.childNodes().item(0).toText().data() << dcCreatorNode.nodeName();
     qDebug() << "dcCreatorNode=" << getValue(QStringList() << "office:meta" << "dc:creator", rootNode);
     */
-}
-
-QString FileAnalyzerODF::getValue(const QStringList &path, const QDomElement &root)
-{
-    QDomNode cur = root;
-    QString text;
-    foreach(QString pathElement, path) {
-        text = cur.toText().data();
-        cur = cur.firstChildElement(pathElement);
-    }
-    return text;
 }

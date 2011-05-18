@@ -56,10 +56,24 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (creationDate.isValid())
             logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
 
-        QStringList metaNames = QStringList() << "Title" << "Subject" << "Author" << "Creator" << "Producer" << "Keywords";
+        QStringList metaNames = QStringList() << "Author" << "Keywords";
         foreach(const QString &metaName, metaNames) {
-            if (!doc->info(metaName).isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(doc->info(metaName));
+            QString text = doc->info(metaName);
+            if (!text.isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(text);
         }
+
+        metaNames = QStringList() << "Title" << "Subject";
+        foreach(const QString &metaName, metaNames) {
+            QString text = doc->info(metaName);
+            if (!text.isEmpty()) logText += QString("<%1>%2</%1>\n").arg(metaName.toLower()).arg(text);
+        }
+
+        QString text = doc->info("Creator");
+        if (!text.isEmpty())
+            logText += QString("<generator type=\"editor\">%1</generator>\n").arg(text);
+        text = doc->info("Producer");
+        if (!text.isEmpty())
+            logText += QString("<generator type=\"postprocessing\">%1</generator>\n").arg(text);
 
         logText.append("</fileanalysis>\n");
 
