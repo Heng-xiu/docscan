@@ -53,39 +53,51 @@ void Downloader::download(QUrl url)
 
 void Downloader::finished()
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
-    QByteArray data(reply->readAll());
-    QString filename = m_filePattern;
+    bool succeeded = false;
 
-    QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
-    QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
-    int p = -1;
-    while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
-        if (md5sumRegExp.cap(1).isEmpty())
-            filename = filename.replace(md5sumRegExp.cap(0), md5sum);
-        else {
-            bool ok = false;
-            int left = md5sumRegExp.cap(2).toInt(&ok);
-            if (ok && left > 0 && left <= md5sum.length())
-                filename = filename.replace(md5sumRegExp.cap(0), md5sum.left(left));
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    if (reply->error() == QNetworkReply::NoError) {
+        QByteArray data(reply->readAll());
+        QString filename = m_filePattern;
+
+        QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
+        QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
+        int p = -1;
+        while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
+            if (md5sumRegExp.cap(1).isEmpty())
+                filename = filename.replace(md5sumRegExp.cap(0), md5sum);
+            else {
+                bool ok = false;
+                int left = md5sumRegExp.cap(2).toInt(&ok);
+                if (ok && left > 0 && left <= md5sum.length())
+                    filename = filename.replace(md5sumRegExp.cap(0), md5sum.left(left));
+            }
+        }
+
+        QString urlString = reply->url().toString().replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
+        filename = filename.replace("%{s}", urlString);
+
+        QFileInfo fi(filename);
+        if (!fi.absoluteDir().mkpath(fi.absolutePath())) {
+            qCritical() << "Cannot create directory" << fi.absolutePath();
+        } else {
+            QFile output(filename);
+            if (output.open(QIODevice::WriteOnly)) {
+                output.write(data);
+                output.close();
+
+                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"/>\n").arg(reply->url().toString().replace("\"", "'")).arg(filename.replace("\"", "'"));
+                emit downloadReport(logText);
+                succeeded = true;
+
+                emit downloaded(reply->url(), filename);
+                emit downloaded(filename);
+            }
         }
     }
 
-    QString urlString = reply->url().toString().replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
-    filename = filename.replace("%{s}", urlString);
-
-    QFileInfo fi(filename);
-    fi.absoluteDir().mkpath(fi.absolutePath());
-
-    QFile output(filename);
-    if (output.open(QIODevice::WriteOnly)) {
-        output.write(data);
-        output.close();
-
-        emit downloaded(reply->url(), filename);
-        emit downloaded(filename);
-
-        QString logText = QString("<download url=\"%1\" filename=\"%2\" />\n").arg(reply->url().toString()).arg(filename);
+    if (!succeeded) {
+        QString logText = QString("<download url=\"%1\" status=\"error\"/>\n").arg(reply->url().toString().replace("\"", "'"));
         emit downloadReport(logText);
     }
 

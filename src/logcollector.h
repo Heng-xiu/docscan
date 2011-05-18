@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <QTextStream>
+#include <QRegExp>
 
 #include "watchable.h"
 
@@ -40,6 +41,7 @@ public slots:
 
 private:
     QTextStream m_ts;
+    QRegExp m_tagStart;
 };
 
 #endif // LOGCOLLECTOR_H

@@ -41,7 +41,6 @@ bool FileAnalyzerODF::isAlive()
 
 void FileAnalyzerODF::analyzeFile(const QString &filename)
 {
-    qDebug() << "analyzing file" << filename;
     QuaZip zipFile(filename);
 
     if (zipFile.open(QuaZip::mdUnzip)) {
@@ -67,7 +66,8 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         logText += "<fileanalysis/>\n";
 
         emit analysisReport(logText);
-    }
+    } else
+        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\">\n").arg(filename));
 }
 
 void FileAnalyzerODF::analyzeMetaXML(QDomDocument &metaXML, QString &logText)

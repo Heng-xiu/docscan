@@ -39,7 +39,6 @@ bool FileAnalyzerPDF::isAlive()
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
-    qDebug() << "analyzing file" << filename;
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {
@@ -50,22 +49,23 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         logText += QString("<version major=\"%1\" minor=\"%2\" />\n").arg(QString::number(majorVersion)).arg(QString::number(minorVersion));
 
         QDateTime creationDate = doc->date("CreationDate").toUTC();
-        logText += QString("<date base=\"creation\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
+        if (creationDate.isValid())
+            logText += QString("<date base=\"creation\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
 
         creationDate = doc->date("ModDate").toUTC();
-        logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
+        if (creationDate.isValid())
+            logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
 
-        logText += QString("<meta name=\"title\">%1</meta>\n").arg(doc->info("Title"));
-        logText += QString("<meta name=\"subject\">%1</meta>\n").arg(doc->info("Subject"));
-        logText += QString("<meta type=\"person\" name=\"author\">%1</meta>\n").arg(doc->info("Author"));
-        logText += QString("<meta type=\"person\" name=\"creator\">%1</meta>\n").arg(doc->info("Creator"));
-        logText += QString("<meta type=\"person\" name=\"producer\">%1</meta>\n").arg(doc->info("Producer"));
-        logText += QString("<meta name=\"keywords\">%1</meta>\n").arg(doc->info("Keywords"));
+        QStringList metaNames = QStringList() << "Title" << "Subject" << "Author" << "Creator" << "Producer" << "Keywords";
+        foreach(const QString &metaName, metaNames) {
+            if (!doc->info(metaName).isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(doc->info(metaName));
+        }
 
         logText.append("</fileanalysis>\n");
 
         emit analysisReport(logText);
 
         delete doc;
-    }
+    } else
+        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\">\n").arg(filename));
 }

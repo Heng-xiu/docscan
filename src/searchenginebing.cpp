@@ -44,6 +44,8 @@ void SearchEngineBing::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
+    emit report(QString("<searchengine type=\"bing\" search=\"%1\"/>\n").arg(url.toString().replace("\"", "'")));
+
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
@@ -56,34 +58,38 @@ bool SearchEngineBing::isAlive()
 void SearchEngineBing::finished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
-    disconnect(reply, SIGNAL(finished()), this, SLOT(finished()));
 
-    const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
-    QTextStream tsAll(reply);
-    QString htmlText = tsAll.readAll();
+    if (reply->error() == QNetworkReply::NoError) {
+        const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
+        QTextStream tsAll(reply);
+        QString htmlText = tsAll.readAll();
 
-    int p = -1;
-    while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
-        QUrl url(searchHitRegExp.cap(1));
-        if (url.isValid()) {
-            emit foundUrl(url);
-            ++m_numFoundHits;
-            if (m_numFoundHits >= m_numExpectedHits) break;
+        int p = -1;
+        while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
+            QUrl url(searchHitRegExp.cap(1));
+            if (url.isValid()) {
+                emit foundUrl(url);
+                ++m_numFoundHits;
+                if (m_numFoundHits >= m_numExpectedHits) break;
+            }
         }
-    }
 
-    ++m_currentPage;
-    if (m_currentPage * 10 < m_numExpectedHits) {
-        QRegExp nextPageRegExp("<li><a href=\"(/search\\?q=[^\"]+)\"[^>]*>Next</a></li>");
-        QUrl url(reply->url());
-        if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
-            url.setPath(nextPageRegExp.cap(1));
-            reply = m_networkAccessManager->get(QNetworkRequest(url));
-            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+        ++m_currentPage;
+        if (m_currentPage * 10 < m_numExpectedHits) {
+            QRegExp nextPageRegExp("<li><a href=\"(/search\\?q=[^\"]+)\"[^>]*>Next</a></li>");
+            QUrl url(reply->url());
+            if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
+                url.setPath(nextPageRegExp.cap(1));
+                reply = m_networkAccessManager->get(QNetworkRequest(url));
+                connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+            } else
+                emit result(ResultUnspecifiedError);
         } else
-            emit result(ResultUnspecifiedError);
-    } else
-        emit result(ResultNoError);
+            emit result(ResultNoError);
+    } else {
+        QString logText = QString("<searchengine type=\"bing\" url=\"%1\" status=\"error\"/>\n").arg(reply->url().toString().replace("\"", "'"));
+        emit report(logText);
+    }
 
     --m_runningSearches;
 }

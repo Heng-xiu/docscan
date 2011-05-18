@@ -44,6 +44,8 @@ void SearchEngineGoogle::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
+    emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(url.toString().replace("\"", "'")));
+
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
@@ -56,31 +58,35 @@ bool SearchEngineGoogle::isAlive()
 void SearchEngineGoogle::finished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
-    disconnect(reply, SIGNAL(finished()), this, SLOT(finished()));
 
-    const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
-    QTextStream tsAll(reply);
-    QString htmlText = tsAll.readAll();
+    if (reply->error() == QNetworkReply::NoError) {
+        const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
+        QTextStream tsAll(reply);
+        QString htmlText = tsAll.readAll();
 
-    int p = -1;
-    while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
-        QUrl url(searchHitRegExp.cap(1));
-        if (url.isValid()) {
-            emit foundUrl(url);
-            ++m_numFoundHits;
-            if (m_numFoundHits >= m_numExpectedHits) break;
+        int p = -1;
+        while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
+            QUrl url(searchHitRegExp.cap(1));
+            if (url.isValid()) {
+                emit foundUrl(url);
+                ++m_numFoundHits;
+                if (m_numFoundHits >= m_numExpectedHits) break;
+            }
         }
-    }
 
-    ++m_currentPage;
-    if (m_currentPage * 10 < m_numExpectedHits) {
-        QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
-        url.addQueryItem("q", m_searchTerm);
-        url.addQueryItem("start", QString::number(m_currentPage * 10));
-        reply = m_networkAccessManager->get(QNetworkRequest(url));
-        connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-    } else
-        emit result(ResultNoError);
+        ++m_currentPage;
+        if (m_currentPage * 10 < m_numExpectedHits) {
+            QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
+            url.addQueryItem("q", m_searchTerm);
+            url.addQueryItem("start", QString::number(m_currentPage * 10));
+            reply = m_networkAccessManager->get(QNetworkRequest(url));
+            connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+        } else
+            emit result(ResultNoError);
+    } else {
+        QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\"/>\n").arg(reply->url().toString().replace("\"", "'"));
+        emit report(logText);
+    }
 
     --m_runningSearches;
 }
