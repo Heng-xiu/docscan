@@ -102,4 +102,5 @@ void Downloader::finished()
     }
 
     --m_runningDownloads;
+    reply->deleteLater();
 }
