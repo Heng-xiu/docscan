@@ -39,6 +39,8 @@ public slots:
 
 private:
     void analyzeMetaXML(QIODevice &device, QString &logText);
+    void analyzeStylesXML(QIODevice &device, QString &logText);
+    QString text(QIODevice &contentFile, QString &logText);
 };
 
 #endif // FILEANALYZERODF_H

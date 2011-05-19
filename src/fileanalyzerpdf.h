@@ -26,6 +26,11 @@
 
 #include "fileanalyzerabstract.h"
 
+namespace Poppler
+{
+class Document;
+}
+
 class FileAnalyzerPDF : public FileAnalyzerAbstract
 {
     Q_OBJECT
@@ -36,6 +41,9 @@ public:
 
 public slots:
     virtual void analyzeFile(const QString &filename);
+
+private:
+    QString plainText(Poppler::Document *doc);
 };
 
 #endif // FILEANALYZERPDF_H

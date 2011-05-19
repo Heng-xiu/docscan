@@ -47,15 +47,15 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         int majorVersion = 0, minorVersion = 0;
         doc->getPdfVersion(&majorVersion, &minorVersion);
-        logText += QString("<version major=\"%1\" minor=\"%2\" />\n").arg(QString::number(majorVersion)).arg(QString::number(minorVersion));
+        logText += QString("<fileformat-version major=\"%1\" minor=\"%2\">%1.%2</fileformat-version>\n").arg(QString::number(majorVersion)).arg(QString::number(minorVersion));
 
-        QDateTime creationDate = doc->date("CreationDate").toUTC();
-        if (creationDate.isValid())
-            logText += QString("<date base=\"creation\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
+        QDate date = doc->date("CreationDate").toUTC().date();
+        if (date.isValid())
+            logText += DocScan::formatDate(date, "creation");
 
-        creationDate = doc->date("ModDate").toUTC();
-        if (creationDate.isValid())
-            logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(creationDate.date().year()).arg(creationDate.date().month()).arg(creationDate.date().day()).arg(creationDate.toString(Qt::ISODate));
+        date = doc->date("ModDate").toUTC().date();
+        if (date.isValid())
+            logText += DocScan::formatDate(date, "modification");
 
         QStringList metaNames = QStringList() << "Author" << "Keywords";
         foreach(const QString &metaName, metaNames) {
@@ -70,11 +70,38 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         }
 
         QString text = doc->info("Creator");
-        if (!text.isEmpty())
+        QString title = doc->info("Title");
+        if (title.startsWith("Microsoft Word - "))
+            logText += QString("<generator type=\"editor\">Microsoft Word</generator>\n");
+        else if (!text.isEmpty())
             logText += QString("<generator type=\"editor\">%1</generator>\n").arg(DocScan::xmlify(text));
         text = doc->info("Producer");
-        if (!text.isEmpty())
-            logText += QString("<generator type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text));
+        if (!text.isEmpty()) {
+            QString arguments;
+            if (text.indexOf("Quartz PDFContext") >= 0 || text.indexOf("Mac OS X") >= 0 || text.indexOf("Macintosh") >= 0)
+                arguments += " opsys=\"unix|macos\"";
+            else if (text.indexOf("Windows") >= 0 || text.indexOf("PDF Complete") >= 0 || text.indexOf("Nitro PDF") >= 0 || text.indexOf("PrimoPDF") >= 0)
+                arguments += " opsys=\"windows\"";
+
+            logText += QString("<generator%2 type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(arguments);
+        }
+
+        logText += "<meta name=\"language\" origin=\"aspell\">" + guessLanguage(plainText(doc)) + "</meta>\n";
+
+        QString documentProperties;
+        if (doc->numPages() > 0) {
+            Poppler::Page *page = doc->page(0);
+            QSize size = page->pageSize();
+            if (size.width() > 0 && size.height() > 0) {
+                documentProperties += QString("<pagesize width=\"%1\" height=\"%2\" unit=\"1/72inch\" />\n").arg(size.width()).arg(size.height());
+                int mmw = size.width() * 0.3527778;
+                int mmh = size.height() * 0.3527778;
+                documentProperties += evaluatePaperSize(mmw, mmh);
+            }
+
+            logText += "<statistics type=\"pagecount\" origin=\"document\">" + QString::number(doc->numPages()) + "</statistics>\n";
+        }
+        logText += "<document>\n" + documentProperties + "</document>\n";
 
         logText.append("</fileanalysis>\n");
 
@@ -83,4 +110,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         delete doc;
     } else
         emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(filename));
+}
+
+QString FileAnalyzerPDF::plainText(Poppler::Document *doc)
+{
+    QString result;
+
+    for (int i = 0; i < doc->numPages() && result.length() < 16384; ++i)
+        result += doc->page(i)->text(QRect());
+
+    return result;
 }
