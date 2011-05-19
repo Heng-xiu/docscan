@@ -36,7 +36,8 @@ public:
     void addWatchable(Watchable *watchable);
 
 signals:
-    void allDead();
+    void aboutToQuit();
+    void quit();
 
 private:
     QTimer m_timer;

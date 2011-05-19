@@ -81,5 +81,5 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         delete doc;
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\">\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(filename));
 }

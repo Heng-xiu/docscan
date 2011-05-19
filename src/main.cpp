@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    SearchEngineGoogle searchEngine(&netAccMan, QLatin1String("filetype:pdf ontology"));
+    SearchEngineGoogle searchEngine(&netAccMan, QLatin1String("filetype:odt ontology"));
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerPDF fileAnalyzer;
+    FileAnalyzerODF fileAnalyzer;
 
     WatchDog watchDog;
     QFile output("/tmp/log.txt");
@@ -52,12 +52,13 @@ int main(int argc, char *argv[])
 
     QObject::connect(&searchEngine, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
     QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
-    QObject::connect(&watchDog, SIGNAL(allDead()), &a, SLOT(quit()));
+    QObject::connect(&watchDog, SIGNAL(aboutToQuit()), &logCollector, SLOT(writeOut()));
+    QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
     QObject::connect(&downloader, SIGNAL(downloadReport(QString)), &logCollector, SLOT(receiveLog(QString)));
     QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
     QObject::connect(&searchEngine, SIGNAL(report(QString)), &logCollector, SLOT(receiveLog(QString)));
 
-    searchEngine.startSearch(2);
+    searchEngine.startSearch(5);
 
     return a.exec();
 }

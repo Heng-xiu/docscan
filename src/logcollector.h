@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QTextStream>
 #include <QRegExp>
+#include <QStringList>
 
 #include "watchable.h"
 
@@ -38,9 +39,11 @@ public:
 
 public slots:
     void receiveLog(QString);
+    void writeOut();
 
 private:
-    QTextStream m_ts;
+    QStringList m_logData;
+    QIODevice &m_output;
     QRegExp m_tagStart;
 };
 

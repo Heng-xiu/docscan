@@ -19,13 +19,15 @@
 
  */
 
+#include <typeinfo>
+
 #include <QTextStream>
 #include <QDateTime>
 
 #include "logcollector.h"
 
 LogCollector::LogCollector(QIODevice &output, QObject *parent)
-    : QObject(parent), m_ts(&output), m_tagStart("<(\\w+)\\b")
+    : QObject(parent), m_output(output), m_tagStart("<(\\w+)\\b")
 {
 }
 
@@ -36,12 +38,22 @@ bool LogCollector::isAlive()
 
 void LogCollector::receiveLog(QString message)
 {
-    int i = m_tagStart.indexIn(message);
-    if (i >= 0) {
-        int j = i + m_tagStart.cap(0).length();
-        QString time = QDateTime::currentDateTime().toUTC().toString(Qt::ISODate);
-        message = message.left(j) + " time=\"" + time + "\"" + message.mid(j);
+    QString key = QString(typeid(*(sender())).name()).toLower().replace(QRegExp("[0-9]+"), "");
+
+    QString time = QDateTime::currentDateTime().toUTC().toString(Qt::ISODate);
+    m_logData << "<logitem source=\"" + key + "\" time=\"" + time + "\">\n" + message + "</logitem>\n";
+}
+
+void LogCollector::writeOut()
+{
+    QTextStream ts(&m_output);
+
+    ts << "<log>" << endl;
+    foreach(QString logText, m_logData) {
+        ts << logText;
     }
-    m_ts << message;
-    m_ts.flush();
+    ts << "</log>" << endl;
+
+
+    ts.flush();
 }

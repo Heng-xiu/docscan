@@ -110,11 +110,11 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             analyzeMetaXML(metaXML, logText);
         }
 
-        logText += "<fileanalysis/>\n";
+        logText += "</fileanalysis>\n";
 
         emit analysisReport(logText);
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\">\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(filename));
 }
 
 void FileAnalyzerODF::analyzeMetaXML(QIODevice &device, QString &logText)
