@@ -88,6 +88,7 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text)
 QStringList FileAnalyzerAbstract::getAspellLanguages()
 {
     if (aspellLanguages.isEmpty()) {
+        /*
         QRegExp language("^[ ]+([a-z]{2})( |$)");
         QProcess aspell(this);
         QStringList args = QStringList() << "--help";
@@ -104,6 +105,8 @@ QStringList FileAnalyzerAbstract::getAspellLanguages()
             if (!aspell.waitForFinished(10000))
                 aspell.kill();
         }
+        */
+        aspellLanguages << "de" << "en" << "sv" << "fi" << "fr";
     }
     return aspellLanguages;
 }

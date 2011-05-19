@@ -28,6 +28,7 @@
 #include "downloader.h"
 #include "fileanalyzerodf.h"
 #include "fileanalyzerpdf.h"
+#include "fileanalyzeropenxml.h"
 #include "watchdog.h"
 #include "logcollector.h"
 
@@ -36,9 +37,9 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    SearchEngineGoogle searchEngine(&netAccMan, QLatin1String("filetype:odt ontology"));
+    SearchEngineGoogle searchEngine(&netAccMan, QLatin1String("filetype:docx openoffice | libreoffice"));
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerODF fileAnalyzer;
+    FileAnalyzerOpenXML fileAnalyzer;
 
     WatchDog watchDog;
     QFile output("/tmp/log.txt");
@@ -58,7 +59,7 @@ int main(int argc, char *argv[])
     QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
     QObject::connect(&searchEngine, SIGNAL(report(QString)), &logCollector, SLOT(receiveLog(QString)));
 
-    searchEngine.startSearch(5);
+    searchEngine.startSearch(9);
 
     return a.exec();
 }

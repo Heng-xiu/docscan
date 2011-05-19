@@ -34,7 +34,7 @@
 #include "general.h"
 
 
-class ODFContentFileHandler: public  QXmlDefaultHandler
+class ODFContentFileHandler: public QXmlDefaultHandler
 {
 private:
     QString &m_text;
@@ -66,12 +66,12 @@ public:
     }
 
     virtual bool characters(const QString &text) {
-        if (m_insideText && m_text.length() < 16384) m_text += " " + text;
+        if (m_insideText && m_text.length() < 16384) m_text += text;
         return QXmlDefaultHandler::characters(text);
     }
 };
 
-class ODFStylesFileHandler: public  QXmlDefaultHandler
+class ODFStylesFileHandler: public QXmlDefaultHandler
 {
 private:
     QString &m_logText;
@@ -139,7 +139,7 @@ public:
 
 };
 
-class ODFMetaFileHandler: public  QXmlDefaultHandler
+class ODFMetaFileHandler: public QXmlDefaultHandler
 {
 private:
     QString &m_logText;
@@ -191,7 +191,7 @@ private:
         }
 
         QRegExp versionRegExp("/(\\d+(\\.\\d+(\\.\\d+)?)?)");
-        if (versionRegExp.indexIn(generatorString))
+        if (versionRegExp.indexIn(generatorString) >= 0)
             arguments += QString(" version=\"%1\"").arg(versionRegExp.cap(1));
 
         return QString("<generator%2>%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments);
@@ -268,6 +268,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             if (mimetypeFile.open(QIODevice::ReadOnly)) {
                 QTextStream ts(&mimetypeFile);
                 mimetype = ts.readLine();
+                mimetypeFile.close();
             }
         }
 
@@ -303,6 +304,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         logText += "</fileanalysis>\n";
 
         emit analysisReport(logText);
+        zipFile.close();
     } else
         emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
 }
