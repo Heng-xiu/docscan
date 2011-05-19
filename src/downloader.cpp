@@ -50,6 +50,11 @@ void Downloader::download(QUrl url)
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
+
+    QTimer *timer = new QTimer(reply);
+    connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
+    m_mapTimerToReply.insert(timer, reply);
+    timer->start(15000);
 }
 
 void Downloader::finished()
@@ -75,7 +80,7 @@ void Downloader::finished()
             }
         }
 
-        QString urlString = reply->url().toString().replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
+        QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
         filename = filename.replace("%{s}", urlString);
 
         QFileInfo fi(filename);
@@ -98,10 +103,22 @@ void Downloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
         emit downloadReport(logText);
     }
 
     --m_runningDownloads;
     reply->deleteLater();
+    QTimer *timer = m_mapTimerToReply.key(reply, NULL);
+    if (timer != NULL) m_mapTimerToReply.remove(timer);
+}
+
+void Downloader::timeout()
+{
+    QTimer *timer = qobject_cast<QTimer *>(sender());
+    QNetworkReply *reply = m_mapTimerToReply[timer];
+    if (reply != NULL) {
+        reply->close();
+        m_mapTimerToReply.remove(timer);
+    }
 }

@@ -24,11 +24,13 @@
 
 #include <QObject>
 #include <QUrl>
+#include <QTimer>
+#include <QMap>
 
 #include "watchable.h"
 
 class QNetworkAccessManager;
-class QTextStream;
+class QNetworkReply;
 
 class Downloader : public QObject, public Watchable
 {
@@ -52,9 +54,11 @@ private:
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
     int m_runningDownloads;
+    QMap<QTimer *, QNetworkReply *> m_mapTimerToReply;
 
 private slots:
     void finished();
+    void timeout();
 };
 
 #endif // DOWNLOADER_H
