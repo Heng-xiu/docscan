@@ -31,6 +31,7 @@
 
 #include "fileanalyzerodf.h"
 #include "watchdog.h"
+#include "general.h"
 
 class ODFMetaFileHandler: public  QXmlDefaultHandler
 {
@@ -58,21 +59,19 @@ public:
 
         QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
         if (nodeName == "title" || nodeName == "subject")
-            m_logText += QString("<%1>%2</%1>\n").arg(nodeName).arg(text);
+            m_logText += QString("<%1>%2</%1>\n").arg(nodeName).arg(DocScan::xmlify(text));
         else if (nodeName == "generator")
-            m_logText += QString("<generator>%1</generator>\n").arg(text);
+            m_logText += QString("<generator>%1</generator>\n").arg(DocScan::xmlify(text));
         else if (nodeName == "creator" || nodeName == "initial-creator")
-            m_logText += QString("<meta name=\"%1\">%2</meta>\n").arg(nodeName.replace("creator", "author")).arg(text);
+            m_logText += QString("<meta name=\"%1\">%2</meta>\n").arg(nodeName.replace("creator", "author")).arg(DocScan::xmlify(text));
         else if (nodeName == "keyword")
-            m_logText += QString("<meta name=\"%1s\">%2</meta>\n").arg(nodeName).arg(text);
+            m_logText += QString("<meta name=\"%1s\">%2</meta>\n").arg(nodeName).arg(DocScan::xmlify(text));
         else if (nodeName == "creation-date" && date.isValid())
             m_logText += QString("<date base=\"creation\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
         else if (nodeName == "date" && date.isValid())
             m_logText += QString("<date base=\"modification\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
         else if (nodeName == "print-date" && date.isValid())
             m_logText += QString("<date base=\"print\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate));
-        else
-            qDebug() << "text" << text << m_nodeName.top();
 
         return QXmlDefaultHandler::characters(text);
     }
@@ -103,18 +102,21 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             }
         }
 
-        QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(filename);
+        QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
 
         if (zipFile.setCurrentFile("meta.xml", QuaZip::csInsensitive)) {
             QuaZipFile metaXML(&zipFile, parent());
             analyzeMetaXML(metaXML, logText);
+        } else {
+            emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-meta\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+            return;
         }
 
         logText += "</fileanalysis>\n";
 
         emit analysisReport(logText);
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
 }
 
 void FileAnalyzerODF::analyzeMetaXML(QIODevice &device, QString &logText)
@@ -124,19 +126,4 @@ void FileAnalyzerODF::analyzeMetaXML(QIODevice &device, QString &logText)
     QXmlSimpleReader reader;
     reader.setContentHandler(&handler);
     reader.parse(&source);
-
-    /*
-    QDomElement rootNode = metaXML.documentElement();
-
-    QRegExp versionRegExp("(\\d+)\\.(\\d+)");
-    if (versionRegExp.indexIn(rootNode.attributes().namedItem("office:version").nodeValue()))
-        logText += QString("<version major=\"%1\" minor=\"%2\" />\n").arg(versionRegExp.cap(1)).arg(versionRegExp.cap(2));
-    */
-    /*
-    QDomNode officeMetaNode = rootNode.firstChildElement("office:meta");
-    qDebug() << "officeMetaNode=" << officeMetaNode.nodeValue() << officeMetaNode.localName() << officeMetaNode.nodeName();
-    QDomElement dcCreatorNode = officeMetaNode.firstChildElement("dc:creator");
-    qDebug() << "dcCreatorNode=" << dcCreatorNode.childNodes().item(0).toText().data() << dcCreatorNode.nodeName();
-    qDebug() << "dcCreatorNode=" << getValue(QStringList() << "office:meta" << "dc:creator", rootNode);
-    */
 }

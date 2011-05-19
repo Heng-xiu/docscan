@@ -31,6 +31,7 @@
 
 #include "downloader.h"
 #include "watchdog.h"
+#include "general.h"
 
 Downloader::Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_runningDownloads(0)
@@ -86,7 +87,7 @@ void Downloader::finished()
                 output.write(data);
                 output.close();
 
-                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"/>\n").arg(reply->url().toString().replace("\"", "'")).arg(filename.replace("\"", "'"));
+                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename));
                 emit downloadReport(logText);
                 succeeded = true;
 
@@ -97,7 +98,7 @@ void Downloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download url=\"%1\" status=\"error\"/>\n").arg(reply->url().toString().replace("\"", "'"));
+        QString logText = QString("<download url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
         emit downloadReport(logText);
     }
 

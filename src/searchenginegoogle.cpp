@@ -27,6 +27,7 @@
 #include <QDebug>
 
 #include "searchenginegoogle.h"
+#include "general.h"
 
 SearchEngineGoogle::SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0), m_runningSearches(0)
@@ -44,7 +45,7 @@ void SearchEngineGoogle::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(url.toString().replace("\"", "'")));
+    emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
@@ -84,7 +85,7 @@ void SearchEngineGoogle::finished()
         } else
             emit result(ResultNoError);
     } else {
-        QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\"/>\n").arg(reply->url().toString().replace("\"", "'"));
+        QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
 

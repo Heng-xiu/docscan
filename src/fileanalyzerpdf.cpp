@@ -25,6 +25,7 @@
 
 #include "fileanalyzerpdf.h"
 #include "watchdog.h"
+#include "general.h"
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent)
@@ -42,7 +43,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {
-        QString logText = QString("<fileanalysis mimetype=\"application/pdf\" filename=\"%1\">").arg(filename);
+        QString logText = QString("<fileanalysis mimetype=\"application/pdf\" filename=\"%1\">").arg(DocScan::xmlify(filename));
 
         int majorVersion = 0, minorVersion = 0;
         doc->getPdfVersion(&majorVersion, &minorVersion);
@@ -59,21 +60,21 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         QStringList metaNames = QStringList() << "Author" << "Keywords";
         foreach(const QString &metaName, metaNames) {
             QString text = doc->info(metaName);
-            if (!text.isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(text);
+            if (!text.isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(DocScan::xmlify(text));
         }
 
         metaNames = QStringList() << "Title" << "Subject";
         foreach(const QString &metaName, metaNames) {
             QString text = doc->info(metaName);
-            if (!text.isEmpty()) logText += QString("<%1>%2</%1>\n").arg(metaName.toLower()).arg(text);
+            if (!text.isEmpty()) logText += QString("<%1>%2</%1>\n").arg(metaName.toLower()).arg(DocScan::xmlify(text));
         }
 
         QString text = doc->info("Creator");
         if (!text.isEmpty())
-            logText += QString("<generator type=\"editor\">%1</generator>\n").arg(text);
+            logText += QString("<generator type=\"editor\">%1</generator>\n").arg(DocScan::xmlify(text));
         text = doc->info("Producer");
         if (!text.isEmpty())
-            logText += QString("<generator type=\"postprocessing\">%1</generator>\n").arg(text);
+            logText += QString("<generator type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text));
 
         logText.append("</fileanalysis>\n");
 
@@ -81,5 +82,5 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         delete doc;
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(filename));
 }

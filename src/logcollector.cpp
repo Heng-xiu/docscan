@@ -48,7 +48,7 @@ void LogCollector::writeOut()
 {
     QTextStream ts(&m_output);
 
-    ts << "<log>" << endl;
+    ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log>" << endl;
     foreach(QString logText, m_logData) {
         ts << logText;
     }
