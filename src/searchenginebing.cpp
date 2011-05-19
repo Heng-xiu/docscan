@@ -81,6 +81,7 @@ void SearchEngineBing::finished()
             QUrl url(reply->url());
             if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
                 url.setPath(nextPageRegExp.cap(1));
+                emit report(QString("<searchengine type=\"bing\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
                 reply = m_networkAccessManager->get(QNetworkRequest(url));
                 connect(reply, SIGNAL(finished()), this, SLOT(finished()));
             } else

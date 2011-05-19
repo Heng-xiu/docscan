@@ -39,7 +39,7 @@ void SearchEngineGoogle::startSearch(int num)
 {
     ++m_runningSearches;
 
-    QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
+    QUrl url(QLatin1String("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8"));
     url.addQueryItem("q", m_searchTerm);
     m_numExpectedHits = num;
     m_currentPage = 0;
@@ -77,9 +77,10 @@ void SearchEngineGoogle::finished()
 
         ++m_currentPage;
         if (m_currentPage * 10 < m_numExpectedHits) {
-            QUrl url(QLatin1String("http://www.google.com/search?hl=en&ie=UTF-8&oe=UTF-8"));
+            QUrl url(QLatin1String("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8"));
             url.addQueryItem("q", m_searchTerm);
             url.addQueryItem("start", QString::number(m_currentPage * 10));
+            emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
             reply = m_networkAccessManager->get(QNetworkRequest(url));
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         } else
