@@ -23,10 +23,12 @@
 #define GENERAL_H
 
 #include <QString>
+#include <QDate>
 
 namespace DocScan
 {
 QString xmlify(QString text);
+QString formatDate(const QDate &date, const QString &base);
 }
 
 #endif // GENERAL_H

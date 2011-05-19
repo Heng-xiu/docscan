@@ -27,4 +27,9 @@ QString xmlify(QString text)
 {
     return text.replace(QChar('&'), "&amp;").replace(QChar('<'), "&lt;").replace(QChar('>'), "&gt;").replace(QChar('"'), "'");
 }
+
+QString formatDate(const QDate &date, const QString &base)
+{
+    return QString("<date epoch=\"%6\" base=\"%5\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
+}
 }
