@@ -14,14 +14,16 @@ SOURCES += src/main.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
     src/fileanalyzerodf.cpp src/watchdog.cpp \
     src/logcollector.cpp \
-    src/general.cpp
+    src/general.cpp \
+    src/fileanalyzeropenxml.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
     src/fileanalyzerpdf.h src/watchdog.h \
     src/fileanalyzerodf.h src/watchable.h \
     src/logcollector.h \
-    src/general.h
+    src/general.h \
+    src/fileanalyzeropenxml.h
 
 # load and parse PDF files
 unix:!macx:!symbian: LIBS += -lpoppler-qt4
