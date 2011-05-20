@@ -27,9 +27,7 @@
 #include "searchenginegoogle.h"
 #include "downloader.h"
 #include "filesystemscan.h"
-#include "fileanalyzerodf.h"
-#include "fileanalyzerpdf.h"
-#include "fileanalyzeropenxml.h"
+#include "fileanalyzermultiplexer.h"
 #include "watchdog.h"
 #include "webcrawler.h"
 #include "logcollector.h"
@@ -39,12 +37,12 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    QStringList filter = QStringList() << "*.pdf";
+    QStringList filter = QStringList() << "*.docx";
     WebCrawler finder(&netAccMan, filter, QUrl("http://www.his.se/"));
     //SearchEngineGoogle finder(&netAccMan, QLatin1String("filetype:pdf site:se"));
     //FileSystemScan finder(filter, "/home/fish/HiS/Research/OSS/");
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerPDF fileAnalyzer;
+    FileAnalyzerMultiplexer fileAnalyzer;
 
     WatchDog watchDog;
     QFile output("/tmp/log.txt");
