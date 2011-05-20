@@ -26,7 +26,7 @@
 #include "fileanalyzerodf.h"
 #include "fileanalyzeropenxml.h"
 #include "fileanalyzerpdf.h"
-#include "fileanalyzermicrosoftbinary.h"
+#include "fileanalyzercompoundbinary.h"
 
 class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
 {
@@ -36,9 +36,6 @@ public:
 
     virtual bool isAlive();
 
-signals:
-    void analysisReport(QString);
-
 public slots:
     virtual void analyzeFile(const QString &filename);
 
@@ -46,7 +43,7 @@ private:
     FileAnalyzerODF m_fileAnalyzerODF;
     FileAnalyzerPDF m_fileAnalyzerPDF;
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
-    FileAnalyzerMicrosoftBinary m_fileAnalyzerMicrosoftBinary;
+    FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
 };
 
 #endif // FILEANALYZERMULTIPLEXER_H

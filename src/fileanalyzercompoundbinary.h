@@ -19,18 +19,22 @@
 
  */
 
-#include "fileanalyzermicrosoftbinary.h"
+#ifndef FILEANALYZERCOMPOUNDBINARY_H
+#define FILEANALYZERCOMPOUNDBINARY_H
 
-FileAnalyzerMicrosoftBinary::FileAnalyzerMicrosoftBinary(QObject *parent)
-    : FileAnalyzerAbstract(parent)
+#include "fileanalyzerabstract.h"
+
+class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
 {
-}
+    Q_OBJECT
+public:
+    explicit FileAnalyzerCompoundBinary(QObject *parent = 0);
 
-bool FileAnalyzerMicrosoftBinary::isAlive() {
-    return false;
-}
+    virtual bool isAlive();
 
-void FileAnalyzerMicrosoftBinary::analyzeFile(const QString &filename) {
-    Q_UNUSED(filename);
-    // TODO
-}
+public slots:
+    virtual void analyzeFile(const QString &filename);
+
+};
+
+#endif // FILEANALYZERCOMPOUNDBINARY_H

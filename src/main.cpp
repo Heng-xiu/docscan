@@ -37,10 +37,10 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    QStringList filter = QStringList() << "*.docx";
-    WebCrawler finder(&netAccMan, filter, QUrl("http://www.his.se/"));
+    QStringList filter = QStringList() << "*.doc";
+    //WebCrawler finder(&netAccMan, filter, QUrl("http://www.his.se/"));
     //SearchEngineGoogle finder(&netAccMan, QLatin1String("filetype:pdf site:se"));
-    //FileSystemScan finder(filter, "/home/fish/HiS/Research/OSS/");
+    FileSystemScan finder(filter, "/home/fish/HiS/Lectures/20101_IntrDet/");
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
     FileAnalyzerMultiplexer fileAnalyzer;
 
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
     QObject::connect(&finder, SIGNAL(report(QString)), &logCollector, SLOT(receiveLog(QString)));
 
-    finder.startSearch(29);
+    finder.startSearch(100);
 
     return a.exec();
 }

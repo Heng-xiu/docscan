@@ -29,17 +29,19 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(QObject *parent)
     connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerOpenXML, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
-    connect(&m_fileAnalyzerMicrosoftBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
 }
 
-bool FileAnalyzerMultiplexer::isAlive() {
+bool FileAnalyzerMultiplexer::isAlive()
+{
     return m_fileAnalyzerODF.isAlive() || m_fileAnalyzerPDF.isAlive() || m_fileAnalyzerOpenXML.isAlive();
 }
 
-void FileAnalyzerMultiplexer::analyzeFile(const QString &filename) {
+void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
+{
     static QRegExp odfExtension(".od[pst]$");
     static QRegExp openXMLExtension(".(doc|ppt|xls)x$");
-    static QRegExp microsoftBinaryExtension(".(doc|ppt|xls)x$");
+    static QRegExp compoundBinaryExtension(".(doc|ppt|xls)$");
 
     if (filename.endsWith(".pdf"))
         m_fileAnalyzerPDF.analyzeFile(filename);
@@ -47,6 +49,6 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename) {
         m_fileAnalyzerODF.analyzeFile(filename);
     else if (filename.indexOf(openXMLExtension) >= 0)
         m_fileAnalyzerOpenXML.analyzeFile(filename);
-    else if (filename.indexOf(microsoftBinaryExtension) >= 0)
-        m_fileAnalyzerMicrosoftBinary.analyzeFile(filename);
+    else if (filename.indexOf(compoundBinaryExtension) >= 0)
+        m_fileAnalyzerCompoundBinary.analyzeFile(filename);
 }
