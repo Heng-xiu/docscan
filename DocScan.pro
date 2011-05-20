@@ -17,7 +17,8 @@ SOURCES += src/main.cpp \
     src/general.cpp \
     src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp \
-    src/filesystemscan.cpp
+    src/filesystemscan.cpp \
+    src/webcrawler.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
@@ -27,7 +28,8 @@ HEADERS += src/searchengineabstract.h \
     src/general.h \
     src/fileanalyzeropenxml.h \
     src/filefinder.h \
-    src/filesystemscan.h
+    src/filesystemscan.h \
+    src/webcrawler.h
 
 # load and parse PDF files
 unix:!macx:!symbian: LIBS += -lpoppler-qt4

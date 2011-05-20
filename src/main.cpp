@@ -31,6 +31,7 @@
 #include "fileanalyzerpdf.h"
 #include "fileanalyzeropenxml.h"
 #include "watchdog.h"
+#include "webcrawler.h"
 #include "logcollector.h"
 
 int main(int argc, char *argv[])
@@ -38,16 +39,17 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QNetworkAccessManager netAccMan;
-    SearchEngineGoogle finder(&netAccMan, QLatin1String("filetype:odt site:se"));
-    //QStringList filter = QStringList() << "*.pdf";
+    QStringList filter = QStringList() << "*.pdf";
+    WebCrawler finder(&netAccMan, filter, QUrl("http://www.his.se/"));
+    //SearchEngineGoogle finder(&netAccMan, QLatin1String("filetype:pdf site:se"));
     //FileSystemScan finder(filter, "/home/fish/HiS/Research/OSS/");
     Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerODF fileAnalyzer;
+    FileAnalyzerPDF fileAnalyzer;
 
     WatchDog watchDog;
     QFile output("/tmp/log.txt");
     output.open(QFile::WriteOnly);
-    LogCollector logCollector(output);
+    LogCollector logCollector(&output);
 
     watchDog.addWatchable(&fileAnalyzer);
     watchDog.addWatchable(&downloader);
@@ -62,7 +64,7 @@ int main(int argc, char *argv[])
     QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
     QObject::connect(&finder, SIGNAL(report(QString)), &logCollector, SLOT(receiveLog(QString)));
 
-    finder.startSearch(19);
+    finder.startSearch(29);
 
     return a.exec();
 }
