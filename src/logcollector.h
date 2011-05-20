@@ -29,11 +29,13 @@
 
 #include "watchable.h"
 
+class QIODevice;
+
 class LogCollector : public QObject, public Watchable
 {
     Q_OBJECT
 public:
-    explicit LogCollector(QIODevice &output, QObject *parent = 0);
+    explicit LogCollector(QIODevice *output, QObject *parent = 0);
 
     virtual bool isAlive();
 
@@ -43,7 +45,7 @@ public slots:
 
 private:
     QStringList m_logData;
-    QIODevice &m_output;
+    QIODevice *m_output;
     QRegExp m_tagStart;
 };
 

@@ -26,7 +26,7 @@
 
 #include "logcollector.h"
 
-LogCollector::LogCollector(QIODevice &output, QObject *parent)
+LogCollector::LogCollector(QIODevice *output, QObject *parent)
     : QObject(parent), m_output(output), m_tagStart("<(\\w+)\\b")
 {
 }
@@ -46,7 +46,7 @@ void LogCollector::receiveLog(QString message)
 
 void LogCollector::writeOut()
 {
-    QTextStream ts(&m_output);
+    QTextStream ts(m_output);
 
     ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log>" << endl;
     foreach(QString logText, m_logData) {

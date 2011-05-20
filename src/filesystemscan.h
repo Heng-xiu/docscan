@@ -22,6 +22,8 @@
 #ifndef FILESYSTEMSCAN_H
 #define FILESYSTEMSCAN_H
 
+#include <QStringList>
+
 #include "filefinder.h"
 
 class FileSystemScan : public FileFinder
@@ -34,7 +36,7 @@ public:
     virtual bool isAlive();
 
 private:
-    const QStringList &m_filters;
+    const QStringList m_filters;
     const QString m_baseDir;
     bool m_alive;
 };
