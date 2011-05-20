@@ -22,10 +22,9 @@
 #include "searchengineabstract.h"
 
 SearchEngineAbstract::SearchEngineAbstract(QObject *parent)
-    : QObject(parent)
+    : FileFinder(parent)
 {
 }
-
 
 QString SearchEngineAbstract::encodeURL(QString rawText)
 {
@@ -37,7 +36,4 @@ QString SearchEngineAbstract::encodeURL(QString rawText)
     return rawText;
 }
 
-
-const int SearchEngineAbstract::ResultNoError = 0;
-const int SearchEngineAbstract::ResultUnspecifiedError = 1;
 const char *SearchEngineAbstract::httpUnsafeChars = "%:/=+$?& \0";

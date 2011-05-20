@@ -61,10 +61,16 @@ void SearchEngineBing::finished()
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
         QTextStream tsAll(reply);
         QString htmlText = tsAll.readAll();
 
+        if (m_currentPage == 0) {
+            const QRegExp countHitsRegExp("of.{,10} ([0-9 ]+) result");
+            if (countHitsRegExp.indexIn(htmlText) >= 0)
+                emit report(QString("<searchengine type=\"bing\" numresults=\"%1\"/>\n").arg(countHitsRegExp.cap(1).replace(" ", "")));
+        }
+
+        const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
         int p = -1;
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
             QUrl url(searchHitRegExp.cap(1));
@@ -82,6 +88,7 @@ void SearchEngineBing::finished()
             if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
                 url.setPath(nextPageRegExp.cap(1));
                 emit report(QString("<searchengine type=\"bing\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
+                ++m_runningSearches;
                 reply = m_networkAccessManager->get(QNetworkRequest(url));
                 connect(reply, SIGNAL(finished()), this, SLOT(finished()));
             } else

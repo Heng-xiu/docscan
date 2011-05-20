@@ -61,10 +61,16 @@ void SearchEngineGoogle::finished()
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
         QTextStream tsAll(reply);
         QString htmlText = tsAll.readAll();
 
+        if (m_currentPage == 0) {
+            const QRegExp countHitsRegExp("of.{,10} ([0-9,]+) result");
+            if (countHitsRegExp.indexIn(htmlText) >= 0)
+                emit report(QString("<searchengine type=\"google\" numresults=\"%1\"/>\n").arg(countHitsRegExp.cap(1).replace(",", "")));
+        }
+
+        const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
         int p = -1;
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
             QUrl url(searchHitRegExp.cap(1));
@@ -81,6 +87,7 @@ void SearchEngineGoogle::finished()
             url.addQueryItem("q", m_searchTerm);
             url.addQueryItem("start", QString::number(m_currentPage * 10));
             emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
+            ++m_runningSearches;
             reply = m_networkAccessManager->get(QNetworkRequest(url));
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         } else

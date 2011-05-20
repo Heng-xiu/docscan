@@ -23,26 +23,16 @@
 #define SEARCHENGINEABSTRACT_H
 
 #include <QObject>
-#include <QUrl>
 
-#include "watchable.h"
+#include "filefinder.h"
 
-class SearchEngineAbstract : public QObject, public Watchable
+class SearchEngineAbstract : public FileFinder
 {
     Q_OBJECT
 public:
-    static const int ResultNoError;
-    static const int ResultUnspecifiedError;
-
     explicit SearchEngineAbstract(QObject *parent = 0);
 
-    virtual void startSearch(int numExpectedHits) = 0;
     QString encodeURL(QString rawText);
-
-signals:
-    void foundUrl(QUrl);
-    void result(int);
-    void report(QString);
 
 private:
     static const char *httpUnsafeChars;
