@@ -125,7 +125,7 @@ public:
                 }
                 documentProperties += FileAnalyzerODF::evaluatePaperSize(mmw, mmh);
             }
-            m_logText += "<document>\n" + documentProperties + "</document>\n";
+            m_logText +=  documentProperties;
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }

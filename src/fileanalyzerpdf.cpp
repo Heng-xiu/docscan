@@ -101,7 +101,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
             logText += "<statistics type=\"pagecount\" origin=\"document\">" + QString::number(doc->numPages()) + "</statistics>\n";
         }
-        logText += "<document>\n" + documentProperties + "</document>\n";
+        logText += documentProperties;
 
         logText.append("</fileanalysis>\n");
 

@@ -22,7 +22,6 @@
 #include <limits>
 
 #include <QProcess>
-#include <QDebug>
 
 #include "fileanalyzerabstract.h"
 
@@ -75,7 +74,6 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text)
 
     foreach(QString lang, getAspellLanguages()) {
         int c = runAspell(text, lang).count();
-        qDebug() << lang << c;
         if (c < count) {
             count = c;
             best = lang;
