@@ -23,235 +23,20 @@
 #include <QDebug>
 #include <QtEndian>
 
+#include <olestream.h>
+#include <word_helper.h>
+#include <word97_helper.h>
+#include <word97_generated.h>
+
 #include "fileanalyzercompoundbinary.h"
+#include "general.h"
 
-enum DirectoryEntryType {
-    Empty = 0, UserStorage = 1, UserStream = 2, LockBytes = 3, Property = 4, RootStorage = 5
-};
-enum NodeColor {
-    Red = 0, Black = 1
-};
-
-struct cfdirentry {
-    QString name;
-    DirectoryEntryType entryType;
-    NodeColor nodeColor;
-    qint32 leftChildDirID, rightChildDirID, rootNodeDirID;
-    quint64 timeStampCreation, timeStampModification;
-    qint32 firstSecID;
-    quint32 size;
-};
-
-struct cfheader {
-    quint8 uid[16];
-    quint16 revisionNumber;
-    quint16 versionNumber;
-    int sectorSize;
-    int shortSectorSize;
-    quint32 numSectorsUsedInSAT;
-    qint32 secIDofFirstSectorDirectoryStream;
-    quint32 minSizeStandardStream;
-    qint32 secIDofFirstSSAT;
-    quint32 numSectorsUsedInSSAT;
-    qint32 secIDofFirstMSAT;
-    quint32 numSectorsUsedInMSAT;
-};
-
-struct compoundfile {
-    struct cfheader *header;
-};
-
-struct cfheader *readHeader(QIODevice *device) {
-    device->seek(0);
-
-    {
-        /// read and check compound document file identifier
-        /// D0 CF 11 E0 A1 B1 1A E1
-        quint32 a32 = 0, b32 = 0;
-        device->read((char *)(&a32), 4);
-        device->read((char *)(&b32), 4);
-
-        if (a32 != 0xe011cfd0 || b32 != 0xe11ab1a1)
-            return NULL;
-    }
-
-    struct cfheader *result = new struct cfheader;
-
-    /// read UID
-    device->read((char *)result->uid, 16);
-    /// read revision number
-    device->read((char *) & (result->revisionNumber), 2);
-    /// read version number
-    device->read((char *) & (result->versionNumber), 2);
-
-    {
-        /// read endianess
-        quint8 buffer[2];
-        device->read((char *)buffer, 2);
-        // TODO check for correct endianess
-    }
-
-    {
-        /// read sector sizes
-        quint16 buffer;
-
-        device->read((char *)&buffer, 2);
-        result->sectorSize = 1 << buffer;
-
-        device->read((char *)&buffer, 2);
-        result->shortSectorSize = 1 << buffer;
-    }
-
-    {
-        /// skip 10 bytes
-        quint16 buffer[8];
-        device->read((char *)&buffer, 10);
-    }
-
-    {
-        /// read number of sectors, first sectors, and minimum size
-        quint32 unused;
-        device->read((char *) & (result->numSectorsUsedInSAT), 4);
-        device->read((char *) & (result->secIDofFirstSectorDirectoryStream), 4);
-        device->read((char *)&unused, 4);
-        device->read((char *) & (result->minSizeStandardStream), 4);
-        device->read((char *) & (result->secIDofFirstSSAT), 4);
-        device->read((char *) & (result->numSectorsUsedInSSAT), 4);
-        device->read((char *) & (result->secIDofFirstMSAT), 4);
-        device->read((char *) & (result->numSectorsUsedInMSAT), 4);
-    }
-
-    return result;
-}
-
-int sectorFileOffset(int secID, struct cfheader *header)
-{
-    Q_ASSERT(secID >= 0);
-    return 512 + secID * header->sectorSize;
-}
-
-qint32 *readMSAT(QIODevice *device, struct cfheader *header)
-{
-    const quint32 sectorIDperSector = (header->sectorSize - 4) / 4;
-    qint32 *result = new qint32[header->numSectorsUsedInMSAT * sectorIDperSector + 110];
-
-    {
-        /// read first 109 secIDs
-        device->seek(76);
-        device->read((char *)result, 109);
-    }
-
-    int pos = 109;
-    qint32 secID = header->secIDofFirstMSAT;
-    for (quint32 i = 0; secID >= 0 && i < header->numSectorsUsedInMSAT; ++i) {
-        device->seek(sectorFileOffset(secID, header));
-        device->read((char *)(result + pos), header->sectorSize - 4);
-        pos += sectorIDperSector;
-        device->read((char *)&secID, 4);
-    }
-
-    return result;
-}
-
-qint32 *readSAT(QIODevice *device, struct cfheader *header, qint32 *msat)
-{
-    const quint32 sectorIDperSector = header->sectorSize / 4;
-    int countSectors = 0;
-    while (msat[countSectors] >= 0) ++countSectors;
-    qint32 *sat = new qint32[countSectors * sectorIDperSector];
-
-    for (int i = 0; i < countSectors; ++i) {
-        device->seek(sectorFileOffset(msat[i], header));
-        device->read((char *)(sat + i * sectorIDperSector), header->sectorSize);
-    }
-
-    return sat;
-}
-
-qint32 *readSSAT(QIODevice *device, struct cfheader *header, qint32 *sat)
-{
-    const quint32 sectorIDperSector = header->sectorSize / 4;
-    qint32 curPos = header->secIDofFirstSSAT;
-    int countSectors = 0;
-    while (curPos >= 0) {
-        curPos = sat[curPos];
-        ++countSectors;
-    }
-    qint32 *ssat = new qint32[countSectors * sectorIDperSector];
-
-    curPos = header->secIDofFirstSSAT;
-    for (int i = 0; i < countSectors; ++i) {
-        device->seek(sectorFileOffset(curPos, header));
-        curPos = sat[curPos];
-        device->read((char *)(ssat + i * sectorIDperSector), header->sectorSize);
-    }
-
-    /*for (int i=0; i<20&& ssat[i]>=0; i+=4)
-        qDebug()<<QString::number(ssat[i],16)<<QString::number(ssat[i+1],16)<<QString::number(ssat[i+2],16)<<QString::number(ssat[i+3],16);
-    */
-    return ssat;
-}
-
-cfdirentry *readDirEntry(QIODevice *device, qint32 startPos)
-{
-    device->seek(startPos);
-    cfdirentry *result = new struct cfdirentry;
-
-    {
-        /// read name
-        quint16 nameBuffer[32];
-        quint16 nameLen;
-        device->read((char *)nameBuffer, 64);
-        device->read((char *)&nameLen, 2);
-        result->name = QString::fromUtf16(nameBuffer, nameLen / 2 - 1);
-    }
-
-    {
-        /// read type of entry and color
-        quint8 byte;
-        device->read((char *)&byte, 1);
-        result->entryType = (DirectoryEntryType)byte;
-        device->read((char *)&byte, 1);
-        result->nodeColor = (NodeColor)byte;
-    }
-
-    {
-        /// read right and left dir node ide and root node dir id
-        device->read((char *) & (result->leftChildDirID), 4);
-        device->read((char *) & (result->rightChildDirID), 4);
-        device->read((char *) & (result->rootNodeDirID), 4);
-    }
-
-    {
-        /// skipping 20 bytes
-        quint32 buffer[5];
-        device->read((char *)buffer, 20);
-    }
-
-    {
-        /// read creation and modification time stamp
-        device->read((char *) & (result->timeStampCreation), 8);
-        device->read((char *) & (result->timeStampModification), 8);
-    }
-
-    {
-        /// read secID of first sector and total size
-        device->read((char *) & (result->firstSecID), 4);
-        device->read((char *) & (result->size), 4);
-    }
-
-    {
-        /// skipping 4 bytes
-        quint32 buffer;
-        device->read((char *)&buffer, 4);
-    }
-
-    return result;
-}
+using namespace wvWare;
 
 FileAnalyzerCompoundBinary::FileAnalyzerCompoundBinary(QObject *parent)
     : FileAnalyzerAbstract(parent)
 {
+    // nothing
 }
 
 bool FileAnalyzerCompoundBinary::isAlive()
@@ -261,32 +46,134 @@ bool FileAnalyzerCompoundBinary::isAlive()
 
 void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 {
-    QFile compoundFileHandle(filename);
-    if (compoundFileHandle.open(QFile::ReadOnly)) {
-        struct cfheader *header = readHeader(&compoundFileHandle);
-
-        if (header != NULL) {
-            qint32 *msat = readMSAT(&compoundFileHandle, header);
-            if (msat != NULL) {
-                qint32 *sat = readSAT(&compoundFileHandle, header, msat);
-                if (sat != NULL) {
-                    qint32 *ssat = readSSAT(&compoundFileHandle, header, sat);
-                    if (ssat != NULL) {
-                        struct cfdirentry *direntry = readDirEntry(&compoundFileHandle, sectorFileOffset(header->secIDofFirstSectorDirectoryStream, header));
-                        if (direntry != NULL) {
-
-                            delete direntry;
-                        }
-
-                        delete[] ssat;
-                    }
-                    delete[] sat;
-                }
-                delete[] msat;
-            }
-            delete header;
-        }
-        compoundFileHandle.close();
+    /// perform various file checks before starting the analysis
+    OLEStorage storage(std::string(filename.toUtf8().constData()));
+    if (!storage.open(OLEStorage::ReadOnly)) {
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"OLEStorage cannot be opened\" filename=\"%1\" />\n").arg(filename));
+        return;
     }
-    // TODO
+
+    OLEStreamReader *document = storage.createStreamReader("WordDocument");
+    if (document == NULL || !document->isValid()) {
+        if (document != NULL)  delete document;
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Not a valid Word document\" filename=\"%1\" />\n").arg(filename));
+        return;
+    }
+
+    /// get the FIB (File information block) which contains a lot of interesting information
+    Word97::FIB fib(document, true);
+
+    OLEStreamReader *table = storage.createStreamReader(fib.fWhichTblStm ? "1Table" : "0Table");
+    if (table == NULL || !table->isValid()) {
+        if (document != NULL)  delete document;
+        if (table != NULL)  delete table;
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Cannot read table\" filename=\"%1\" />\n").arg(filename));
+        return;
+    }
+
+    /// determine mimetype and write file analysis header
+    QString mimetype = "application/octet-stream";
+    if (filename.endsWith(".doc"))
+        mimetype = "application/msword";
+    QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
+
+    /// try to guess operating system based on header information
+    // TODO: What value is set by non-Microsoft editors on e.g. Linux?
+    QString opsys;
+    switch (fib.envr) {
+    case 0: opsys = "windows"; break;
+    case 1: opsys = "unix|macos"; break;
+    default: opsys = QString("unknown=%1").arg(fib.envr);
+    }
+
+    /// determine version format of this file
+    // FIXME this number guessing doesn't see correct
+    int versionNumber = -1;
+    QString versionText;
+    switch (fib.nFib) {
+    case 0x101:
+    case 0x0065:
+        versionNumber = 6;
+        versionText = "Word 6.0";
+        break;
+    case 0x104:
+    case 0x0068:
+        versionNumber = 7;
+        versionText = "Word 95";
+        break;
+    case 0x105:
+    case 0x00c1:
+        versionNumber = 8;
+        versionText = "Word 97";
+        break;
+    case 0x00d9:
+        versionNumber = 9;
+        versionText = "Word 2000";
+        break;
+    default:
+        versionNumber = 0;
+        versionText = QString::number(fib.nFib, 16);
+    }
+    if (versionNumber >= 0) {
+        logText += QString("<fileformat-version major=\"%1\" minor=\"0\">%2</fileformat-version>\n").arg(versionNumber).arg(versionText);
+    }
+
+    /// determine used editor
+    QString editorString;
+    switch (fib.wMagicCreated) {
+    case 0x6a62:
+        editorString = "Microsoft Word 97";
+        break;
+    case 0x626a:
+        editorString = "Microsoft Word 98/Mac";
+        break;
+    case 0x6143:
+        editorString = "unnamed (0x6143)";
+        break;
+    case 0xa5dc:
+        editorString = "Microsoft Word 6.0/7.0";
+        break;
+    case 0xa5ec:
+        editorString = "Microsoft Word 8.0";
+        break;
+    default:
+        editorString = QString::number(fib.wMagicCreated, 16);
+    }
+    logText += QString("<generator license=\"proprietary\" opsys=\"windows\" type=\"editor\" origin=\"document\">%1</generator>\n").arg(editorString);
+
+    /// read meta information from table
+    table->seek(fib.fcSttbfAssoc);
+    STTBF sttbf(fib.lid, table);
+    int i = 0;
+    for (UString s = sttbf.firstString(); !s.isNull(); s = sttbf.nextString(), ++i) {
+        if (s.isEmpty()) continue;
+
+        switch (i) {
+        case 2:
+            logText += QString("<title>%1</title>\n").arg(DocScan::xmlify(s.ascii()));
+            break;
+        case 3:
+            logText += QString("<subject>%1</subject>\n").arg(DocScan::xmlify(s.ascii()));
+            break;
+        case 4:
+            logText += QString("<keywords>%1</keywords>\n").arg(DocScan::xmlify(s.ascii()));
+            break;
+        case 6:
+            logText += QString("<meta name=\"initial-creator\">%1</meta>\n").arg(DocScan::xmlify(s.ascii()));
+            break;
+        case 7:
+            logText += QString("<meta name=\"creator\">%1</meta>\n").arg(DocScan::xmlify(s.ascii()));
+            break;
+        }
+    }
+
+    /// dump data on dates
+    logText += "<unknown>" + QString::number((fib.lProductCreated & 0xE0000000) >> 29) + "|" + QString::number((fib.lProductCreated & 0x1FF00000) >> 20) + "|" + QString::number((fib.lProductCreated & 0x000F0000) >> 16) + "|" + QString::number((fib.lProductCreated & 0xF800) >> 11) + "|" + QString::number((fib.lProductCreated & 0x07C0) >> 6) + "|" + QString::number(fib.lProductCreated & 0x003F) + "|" + "</unknown>\n";
+    logText += "<unknown>" + QString::number((fib.lProductRevised & 0xE0000000) >> 29) + "|" + QString::number((fib.lProductRevised & 0x1FF00000) >> 20) + "|" + QString::number((fib.lProductRevised & 0x000F0000) >> 16) + "|" + QString::number((fib.lProductRevised & 0xF800) >> 11) + "|" + QString::number((fib.lProductRevised & 0x07C0) >> 6) + "|" + QString::number(fib.lProductRevised & 0x003F) + "|" + "</unknown>\n";
+
+    delete document;
+    delete table;
+
+    logText += "</fileanalysis>";
+    emit analysisReport(logText);
 }
