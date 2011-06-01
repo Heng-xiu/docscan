@@ -33,6 +33,7 @@ public:
     explicit FileAnalyzerAbstract(QObject *parent = 0);
 
     static QString evaluatePaperSize(int mmw, int mmh);
+    static QString guessLicenseFromProduct(const QString &product);
 
 signals:
     void analysisReport(QString);
@@ -41,8 +42,8 @@ public slots:
     virtual void analyzeFile(const QString &filename) = 0;
 
 protected:
-    QStringList runAspell(const QString &text, const QString &dictionary);
     QString guessLanguage(const QString &text);
+    QStringList runAspell(const QString &text, const QString &dictionary);
 
 private:
     static QStringList aspellLanguages;

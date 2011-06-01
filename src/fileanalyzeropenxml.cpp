@@ -129,7 +129,7 @@ private:
         if (versionRegExp.indexIn(generatorString) >= 0)
             arguments += QString(" version=\"%1\"").arg(versionRegExp.cap(1));
 
-        return QString("<generator%2>%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments);
+        return QString("<generator%2 license=\"%3\">%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments).arg(FileAnalyzerAbstract::guessLicenseFromProduct(generatorString));
     }
 
 public:

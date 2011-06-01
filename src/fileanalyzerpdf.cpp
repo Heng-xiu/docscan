@@ -72,18 +72,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         QString text = doc->info("Creator");
         QString title = doc->info("Title");
         if (title.startsWith("Microsoft Word - "))
-            logText += QString("<generator type=\"editor\">Microsoft Word</generator>\n");
+            logText += QString("<generator license=\"proprietary\" type=\"editor\">Microsoft Word</generator>\n");
         else if (!text.isEmpty())
-            logText += QString("<generator type=\"editor\">%1</generator>\n").arg(DocScan::xmlify(text));
+            logText += QString("<generator license=\"%2\" type=\"editor\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(guessLicenseFromProduct(text));
         text = doc->info("Producer");
         if (!text.isEmpty()) {
             QString arguments;
             if (text.indexOf("Quartz PDFContext") >= 0 || text.indexOf("Mac OS X") >= 0 || text.indexOf("Macintosh") >= 0)
                 arguments += " opsys=\"unix|macos\"";
-            else if (text.indexOf("Windows") >= 0 || text.indexOf("PDF Complete") >= 0 || text.indexOf("Nitro PDF") >= 0 || text.indexOf("PrimoPDF") >= 0)
+            else if (text.indexOf("Windows") >= 0 || text.indexOf(".dll") >= 0 || text.indexOf("PDF Complete") >= 0 || text.indexOf("Nitro PDF") >= 0 || text.indexOf("PrimoPDF") >= 0)
                 arguments += " opsys=\"windows\"";
 
-            logText += QString("<generator%2 type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(arguments);
+            logText += QString("<generator%2 license=\"%3\" type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(arguments).arg(guessLicenseFromProduct(text));
         }
 
         logText += "<meta name=\"language\" origin=\"aspell\">" + guessLanguage(plainText(doc)) + "</meta>\n";

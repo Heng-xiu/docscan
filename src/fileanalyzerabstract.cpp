@@ -109,4 +109,20 @@ QStringList FileAnalyzerAbstract::getAspellLanguages()
     return aspellLanguages;
 }
 
+QString FileAnalyzerAbstract::guessLicenseFromProduct(const QString &product)
+{
+    const QString lowerText = product.toLower();
+
+    if (lowerText.contains("microsoft") || lowerText.contains("adobe") || lowerText.contains("excel") || lowerText.contains("powerpoint"))
+        return QLatin1String("proprietary");
+    if (lowerText.contains("neooffice") || lowerText.contains("broffice") || lowerText.contains("koffice") || lowerText.contains("calligra"))
+        return QLatin1String("opensource");
+    if (lowerText.contains("openoffice") || lowerText.contains("libreoffice"))
+        return QLatin1String("opensource|LGPL");
+    if (lowerText.contains("pdftex") || lowerText.contains("ghostscript"))
+        return QLatin1String("opensource|GPL");
+
+    return QLatin1String("unknown");
+}
+
 QStringList FileAnalyzerAbstract::aspellLanguages;

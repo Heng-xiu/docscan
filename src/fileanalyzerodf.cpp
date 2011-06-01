@@ -190,6 +190,8 @@ private:
                 arguments += " program=\"openoffice\"";
         }
 
+        arguments += QString(" license=\"%1\"").arg(FileAnalyzerAbstract::guessLicenseFromProduct(generatorString));
+
         QRegExp versionRegExp("/(\\d+(\\.\\d+(\\.\\d+)?)?)");
         if (versionRegExp.indexIn(generatorString) >= 0)
             arguments += QString(" version=\"%1\"").arg(versionRegExp.cap(1));
