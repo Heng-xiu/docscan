@@ -119,7 +119,7 @@ QString FileAnalyzerAbstract::guessLicenseFromProduct(const QString &product)
         return QLatin1String("opensource");
     if (lowerText.contains("openoffice") || lowerText.contains("libreoffice"))
         return QLatin1String("opensource|LGPL");
-    if (lowerText.contains("pdftex") || lowerText.contains("ghostscript"))
+    if (lowerText.contains("pdftex") || lowerText.contains("ghostscript") || lowerText.contains("pdfcreator"))
         return QLatin1String("opensource|GPL");
 
     return QLatin1String("unknown");
