@@ -22,6 +22,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QtEndian>
+#include <QFileInfo>
 
 #include <olestream.h>
 #include <word_helper.h>
@@ -174,6 +175,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     delete document;
     delete table;
 
+    logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
     logText += "</fileanalysis>";
     emit analysisReport(logText);
 }

@@ -28,6 +28,7 @@
 #include <QXmlDefaultHandler>
 #include <QXmlSimpleReader>
 #include <QStack>
+#include <QFileInfo>
 
 #include "fileanalyzerodf.h"
 #include "watchdog.h"
@@ -303,6 +304,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             return;
         }
 
+        logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
         logText += "</fileanalysis>\n";
 
         emit analysisReport(logText);
