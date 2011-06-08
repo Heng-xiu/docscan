@@ -21,6 +21,7 @@
 
 #include <poppler/qt4/poppler-qt4.h>
 
+#include <QFileInfo>
 #include <QDebug>
 
 #include "fileanalyzerpdf.h"
@@ -101,6 +102,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
             logText += "<statistics type=\"pagecount\" origin=\"document\">" + QString::number(doc->numPages()) + "</statistics>\n";
         }
+
+        QList<Poppler::FontInfo> fontList = doc->fonts();
+        if (!fontList.isEmpty()) {
+            logText += QString("<statistics type=\"fonts\" origin=\"document\" count=\"%1\">\n").arg(fontList.count());
+            static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
+            foreach(Poppler::FontInfo fi, fontList) {
+                QString fontName = fi.name().replace(fontNameNormalizer, "");
+                logText += QString("<font name=\"%1\" type=\"%2\" />\n").arg(DocScan::xmlify(fontName)).arg(DocScan::xmlify(fi.typeName()));
+            }
+            logText += "</statistics>\n";
+        }
+        logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
         logText += documentProperties;
 
         logText.append("</fileanalysis>\n");

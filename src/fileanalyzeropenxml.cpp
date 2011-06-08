@@ -27,6 +27,7 @@
 #include <QXmlDefaultHandler>
 #include <QStack>
 #include <QDebug>
+#include <QFileInfo>
 
 #include "fileanalyzeropenxml.h"
 #include "general.h"
@@ -39,6 +40,7 @@ private:
     QString &m_logText;
     QStack<QString> m_nodeName;
     bool m_insideText;
+    QStringList m_fontNames;
 
 public:
     OpenXMLDocumentHandler(QString &text, QString &logText)
@@ -49,6 +51,13 @@ public:
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
         m_insideText |= qName == "w:t";
+
+        if (qName == "w:rFonts") {
+            QString fontName = atts.value("w:ascii");
+            if (!fontName.isEmpty() && !m_fontNames.contains(fontName))
+                m_fontNames.append(fontName);
+        }
+
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
 
@@ -56,6 +65,15 @@ public:
         m_nodeName.pop();
         if (qName == "w:t") m_insideText = false;
         if (qName == "w:p" && m_text.length() < 16384) m_text += "\n";
+        if (qName == "w:document") {
+            if (!m_fontNames.isEmpty()) {
+                m_logText += QString("<statistics type=\"fonts\" origin=\"document\" count=\"%1\">\n").arg(m_fontNames.count());
+                foreach(QString fontName, m_fontNames) {
+                    m_logText += QString("<font name=\"%1\" />\n").arg(DocScan::xmlify(fontName));
+                }
+                m_logText += "</statistics>\n";
+            }
+        }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 
@@ -196,6 +214,7 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
         if (!processApp(zipFile, logText))
             emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-appfile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
 
+        logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
         logText += "</fileanalysis>\n";
 
         emit analysisReport(logText);
