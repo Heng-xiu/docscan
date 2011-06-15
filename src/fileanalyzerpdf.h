@@ -43,6 +43,8 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    bool m_isAlive;
+
     QString plainText(Poppler::Document *doc);
 };
 

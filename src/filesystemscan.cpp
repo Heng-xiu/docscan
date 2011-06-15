@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QDebug>
 
+#include "general.h"
 #include "filesystemscan.h"
 
 FileSystemScan::FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent)
@@ -31,14 +32,13 @@ FileSystemScan::FileSystemScan(const QStringList &filters, const QString &baseDi
 
 void FileSystemScan::startSearch(int numExpectedHits)
 {
+    m_alive = true;
     QStringList queue = QStringList() << m_baseDir;
     int hits = 0;
-    m_alive = true;
 
     while (hits < numExpectedHits && !queue.isEmpty()) {
         QDir dir = QDir(queue.first());
         queue.removeFirst();
-        emit report(QString("<filesystemscan directory=\"%1\"/>\n").arg(dir.absolutePath()));
 
         QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name & QDir::IgnoreCase);
         foreach(const QString &filename, files) {
@@ -53,7 +53,7 @@ void FileSystemScan::startSearch(int numExpectedHits)
             }
     }
 
-    emit report(QString("<filesystemscan numresults=\"%1\"/>\n").arg(QString::number(hits)));
+    emit report(QString("<filesystemscan directory=\"%2\" numresults=\"%1\"/>\n").arg(QString::number(hits)).arg(DocScan::xmlify(QDir(m_baseDir).absolutePath())));
     m_alive = false;
 }
 

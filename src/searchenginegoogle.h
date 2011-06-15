@@ -43,6 +43,7 @@ private:
     const QString m_searchTerm;
     int m_numExpectedHits, m_currentPage, m_numFoundHits;
     int m_runningSearches;
+    static const int m_hitsPerPage;
 
 private slots:
     void finished();

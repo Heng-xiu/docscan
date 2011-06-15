@@ -20,6 +20,7 @@
  */
 
 #include <QRegExp>
+#include <QDebug>
 
 #include "fileanalyzermultiplexer.h"
 
@@ -43,6 +44,9 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
     static QRegExp openXMLExtension(".(doc|ppt|xls)x$");
     static QRegExp compoundBinaryExtension(".(doc|ppt|xls)$");
 
+
+    qDebug() << "Analyzing file" << filename;
+
     if (filename.endsWith(".pdf"))
         m_fileAnalyzerPDF.analyzeFile(filename);
     else if (filename.indexOf(odfExtension) >= 0)
@@ -51,4 +55,6 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
         m_fileAnalyzerOpenXML.analyzeFile(filename);
     else if (filename.indexOf(compoundBinaryExtension) >= 0)
         m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+    else
+        qWarning() << "Could not analyze file " << filename;
 }

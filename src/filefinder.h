@@ -40,7 +40,6 @@ public:
 
 signals:
     void foundUrl(QUrl);
-    void result(int);
     void report(QString);
 };
 

@@ -39,9 +39,13 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    bool m_isAlive;
+
     bool processWordFile(QuaZip &zipFile, QString &logText);
     bool processCore(QuaZip &zipFile, QString &logText);
     bool processApp(QuaZip &zipFile, QString &logText);
+    bool processSettings(QuaZip &zipFile, QString &logText);
+    bool processSlides(QuaZip &zipFile, QString &logText);
     QString text(QIODevice &device, QString &logText);
 };
 

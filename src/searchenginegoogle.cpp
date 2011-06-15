@@ -25,6 +25,7 @@
 #include <QRegExp>
 #include <QTextStream>
 #include <QDebug>
+#include <QCoreApplication>
 
 #include "searchenginegoogle.h"
 #include "general.h"
@@ -39,7 +40,7 @@ void SearchEngineGoogle::startSearch(int num)
 {
     ++m_runningSearches;
 
-    QUrl url(QLatin1String("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8"));
+    QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
     url.addQueryItem("q", m_searchTerm);
     m_numExpectedHits = num;
     m_currentPage = 0;
@@ -75,28 +76,31 @@ void SearchEngineGoogle::finished()
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
             QUrl url(searchHitRegExp.cap(1));
             if (url.isValid()) {
-                emit foundUrl(url);
                 ++m_numFoundHits;
+                qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
+                emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
         }
 
         ++m_currentPage;
-        if (m_currentPage * 10 < m_numExpectedHits) {
-            QUrl url(QLatin1String("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8"));
+        if (m_currentPage * m_hitsPerPage < m_numExpectedHits) {
+            QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
             url.addQueryItem("q", m_searchTerm);
-            url.addQueryItem("start", QString::number(m_currentPage * 10));
+            url.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
             emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
             reply = m_networkAccessManager->get(QNetworkRequest(url));
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-        } else
-            emit result(ResultNoError);
+        }
     } else {
         QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
 
+    QCoreApplication::instance()->processEvents();
+
     --m_runningSearches;
 }
 
+const int SearchEngineGoogle::m_hitsPerPage = 50;

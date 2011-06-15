@@ -25,6 +25,7 @@
 #include <QRegExp>
 #include <QTextStream>
 #include <QDebug>
+#include <QCoreApplication>
 
 #include "searchenginebing.h"
 #include "general.h"
@@ -75,8 +76,9 @@ void SearchEngineBing::finished()
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
             QUrl url(searchHitRegExp.cap(1));
             if (url.isValid()) {
-                emit foundUrl(url);
                 ++m_numFoundHits;
+                qDebug() << "Bing found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "): " << url.toString();
+                emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
         }
@@ -91,14 +93,14 @@ void SearchEngineBing::finished()
                 ++m_runningSearches;
                 reply = m_networkAccessManager->get(QNetworkRequest(url));
                 connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-            } else
-                emit result(ResultUnspecifiedError);
-        } else
-            emit result(ResultNoError);
+            }
+        }
     } else {
         QString logText = QString("<searchengine type=\"bing\" url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
+
+    QCoreApplication::instance()->processEvents();
 
     --m_runningSearches;
 }

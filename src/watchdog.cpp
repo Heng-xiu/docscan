@@ -54,8 +54,10 @@ void WatchDog::watch()
         --m_countDown;
 
     if (m_countDown == countDownInit / 2) {
+        qDebug() << "Watchdog says it time to quit soon";
         emit aboutToQuit();
     } else  if (m_countDown == 0) {
+        qDebug() << "Watchdog says quit now";
         emit quit();
         m_timer.stop();
     }

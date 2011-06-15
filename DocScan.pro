@@ -16,7 +16,7 @@ SOURCES += src/main.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
     src/fileanalyzerodf.cpp src/watchdog.cpp \
     src/logcollector.cpp \
-    src/general.cpp \
+    src/general.cpp src/urldownloader.cpp \
     src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp \
     src/filesystemscan.cpp \
@@ -29,7 +29,7 @@ HEADERS += src/searchengineabstract.h \
     src/fileanalyzerpdf.h src/watchdog.h \
     src/fileanalyzerodf.h src/watchable.h \
     src/logcollector.h \
-    src/general.h \
+    src/general.h src/urldownloader.h \
     src/fileanalyzeropenxml.h \
     src/filefinder.h \
     src/filesystemscan.h \

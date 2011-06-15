@@ -19,13 +19,15 @@
 
  */
 
+#include <QRegExp>
+
 #include "general.h"
 
 namespace DocScan
 {
 QString xmlify(QString text)
 {
-    return text.replace(QChar('&'), "&amp;").replace(QChar('<'), "&lt;").replace(QChar('>'), "&gt;").replace(QChar('"'), "'");
+    return text.replace(QRegExp("[^'a-z0-9,;.:-_+\\}{@|* !\"#%&/()=?åäöü]", Qt::CaseInsensitive), "").replace(QChar('&'), "&amp;").replace(QChar('<'), "&lt;").replace(QChar('>'), "&gt;").replace(QChar('"'), "'");
 }
 
 QString formatDate(const QDate &date, const QString &base)

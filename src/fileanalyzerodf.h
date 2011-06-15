@@ -38,6 +38,8 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    bool m_isAlive;
+
     void analyzeMetaXML(QIODevice &device, QString &logText);
     void analyzeStylesXML(QIODevice &device, QString &logText);
     QString text(QIODevice &contentFile, QString &logText);

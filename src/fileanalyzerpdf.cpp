@@ -29,18 +29,19 @@
 #include "general.h"
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent)
+    : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
     // nothing
 }
 
 bool FileAnalyzerPDF::isAlive()
 {
-    return false;
+    return m_isAlive;
 }
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
+    m_isAlive = true;
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {
@@ -123,6 +124,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         delete doc;
     } else
         emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(filename));
+
+    m_isAlive = false;
 }
 
 QString FileAnalyzerPDF::plainText(Poppler::Document *doc)

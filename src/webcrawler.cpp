@@ -33,7 +33,7 @@ WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStrin
     QString reText;
     foreach(QString filter, filters) {
         if (!reText.isEmpty()) reText += '|';
-        reText += "(^|/)" + filter.replace(".", "\\.").replace("*", "[^ \"]*") + '$';
+        reText += "(^|/)" + filter.replace(".", "\\.").replace("?", ".").replace("*", "[^ \"]*") + '$';
     }
     m_filePattern = QRegExp(reText);
 }

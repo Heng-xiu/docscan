@@ -250,17 +250,18 @@ public:
 };
 
 FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
-    : FileAnalyzerAbstract(parent)
+    : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
 }
 
 bool FileAnalyzerODF::isAlive()
 {
-    return false;
+    return m_isAlive;
 }
 
 void FileAnalyzerODF::analyzeFile(const QString &filename)
 {
+    m_isAlive = true;
     QuaZip zipFile(filename);
 
     if (zipFile.open(QuaZip::mdUnzip)) {
@@ -311,6 +312,8 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         zipFile.close();
     } else
         emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+
+    m_isAlive = false;
 }
 
 void FileAnalyzerODF::analyzeMetaXML(QIODevice &device, QString &logText)
