@@ -25,44 +25,104 @@
 #include <QNetworkAccessManager>
 
 #include "searchenginegoogle.h"
-#include "downloader.h"
+#include "searchenginebing.h"
+#include "urldownloader.h"
+// #include "cachedfilefinder.h"
 #include "filesystemscan.h"
 #include "fileanalyzermultiplexer.h"
 #include "watchdog.h"
 #include "webcrawler.h"
 #include "logcollector.h"
 
+QNetworkAccessManager netAccMan;
+QStringList filter;
+FileFinder *finder;
+Downloader *downloader;
+LogCollector *logCollector;
+int numHits;
+
+bool evaluateConfigfile(const QString &filename)
+{
+    QFile configFile(filename);
+    if (configFile.open(QFile::ReadOnly)) {
+        QTextStream ts(&configFile);
+        QString line(QString::null);
+        while (!(line = ts.readLine()).isNull()) {
+            if (line.length() == 0 || line[0] == '#') continue;
+            int i = line.indexOf('=');
+            if (i > 1) {
+                QString key = line.left(i).trimmed().toLower();
+                QString value = line.mid(i + 1).trimmed();
+
+                if (key == "filter") {
+                    filter.clear();
+                    filter << value;
+                } else if (key == "webcrawler" && finder == NULL) {
+                    finder = new WebCrawler(&netAccMan, filter, value);
+                } else if (key == "searchenginegoogle" && finder == NULL) {
+                    finder = new SearchEngineGoogle(&netAccMan, value);
+                } else if (key == "searchenginebing" && finder == NULL) {
+                    finder = new SearchEngineBing(&netAccMan, value);
+                } else if (key == "filesystemscan" && finder == NULL) {
+                    finder = new FileSystemScan(filter, value);
+                    /*
+                    } else if (key == "cachedfilefinder" && finder == NULL && downloader == NULL) {
+                    CachedFileFinder *cff = new CachedFileFinder(filter, value);
+                    downloader=cff;
+                    finder=cff;
+                    */
+                } else if (key == "urldownloader" && downloader == NULL) {
+                    downloader = new UrlDownloader(&netAccMan, value);
+                } else if (key == "logcollector" && logCollector == NULL) {
+                    QFile *logOutput = new QFile(value);
+                    logOutput->open(QFile::WriteOnly);
+                    logCollector = new LogCollector(logOutput);
+                } else if (key == "finder:numhits") {
+                    bool ok = false;
+                    numHits = value.toInt(&ok);
+                    if (!ok) numHits = 10;
+                }
+            } else {
+                configFile.close();
+                return false;
+            }
+        }
+        configFile.close();
+    } else
+        return false;
+
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QNetworkAccessManager netAccMan;
-    QStringList filter = QStringList() << "*.doc";
-    //WebCrawler finder(&netAccMan, filter, QUrl("http://www.his.se/"));
-    //SearchEngineGoogle finder(&netAccMan, QLatin1String("filetype:pdf site:se"));
-    FileSystemScan finder(filter, "/home/fish/HiS/Lectures/20101_IntrDet/");
-    Downloader downloader(&netAccMan, QLatin1String("/tmp/test/%{h:4}/%{h}_%{s}"));
-    FileAnalyzerMultiplexer fileAnalyzer;
+    logCollector = NULL;
+    downloader = NULL;
+    finder = NULL;
+    numHits = 0;
 
-    WatchDog watchDog;
-    QFile output("/tmp/log.txt");
-    output.open(QFile::WriteOnly);
-    LogCollector logCollector(&output);
+    if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && downloader != NULL && finder != NULL && numHits > 0) {
+        FileAnalyzerMultiplexer fileAnalyzer;
 
-    watchDog.addWatchable(&fileAnalyzer);
-    watchDog.addWatchable(&downloader);
-    watchDog.addWatchable(&finder);
-    watchDog.addWatchable(&logCollector);
+        WatchDog watchDog;
+        watchDog.addWatchable(&fileAnalyzer);
+        watchDog.addWatchable(downloader);
+        watchDog.addWatchable(finder);
+        watchDog.addWatchable(logCollector);
 
-    QObject::connect(&finder, SIGNAL(foundUrl(QUrl)), &downloader, SLOT(download(QUrl)));
-    QObject::connect(&downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
-    QObject::connect(&watchDog, SIGNAL(aboutToQuit()), &logCollector, SLOT(writeOut()));
-    QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
-    QObject::connect(&downloader, SIGNAL(downloadReport(QString)), &logCollector, SLOT(receiveLog(QString)));
-    QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), &logCollector, SLOT(receiveLog(QString)));
-    QObject::connect(&finder, SIGNAL(report(QString)), &logCollector, SLOT(receiveLog(QString)));
+        QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
+        QObject::connect(downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
+        QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
+        QObject::connect(downloader, SIGNAL(downloadReport(QString)), logCollector, SLOT(receiveLog(QString)));
+        QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(QString)));
+        QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
 
-    finder.startSearch(100);
+        finder->startSearch(numHits);
 
-    return a.exec();
+        a.exec();
+    } else {
+        fprintf(stderr, "Require single configuration file as parameter\n");
+    }
 }
