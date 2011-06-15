@@ -22,6 +22,9 @@
 #ifndef FILEANALYZERCOMPOUNDBINARY_H
 #define FILEANALYZERCOMPOUNDBINARY_H
 
+#include <word_helper.h>
+#include <word97_generated.h>
+
 #include "fileanalyzerabstract.h"
 
 class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
@@ -35,6 +38,12 @@ public:
 public slots:
     virtual void analyzeFile(const QString &filename);
 
+private:
+    bool m_isAlive;
+
+    void analyzeFiB(wvWare::Word97::FIB &fib, QString &logText);
+    void analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, QString &logText);
+    void analyzeWithParser(std::string &filename, QString &logText);
 };
 
 #endif // FILEANALYZERCOMPOUNDBINARY_H

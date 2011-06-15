@@ -23,60 +23,78 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QFileInfo>
+#include <QStringList>
 
 #include <olestream.h>
-#include <word_helper.h>
 #include <word97_helper.h>
-#include <word97_generated.h>
+#include <parser.h>
+#include <fields.h>
+#include <handlers.h>
+#include <parserfactory.h>
 
 #include "fileanalyzercompoundbinary.h"
 #include "general.h"
 
-using namespace wvWare;
+inline QString string(const wvWare::UString &str)
+{
+    // Do a deep copy.  We used to not do that, but it lead to several
+    // memory corruption bugs that were difficult to find.
+    //
+    // FIXME: Get rid of UString altogether and port wv2 to QString.
+    return QString(reinterpret_cast<const QChar *>(str.data()), str.length());
+}
+
+
+class DocScanTextHandler: public wvWare::TextHandler
+{
+private:
+    QString lidToLangCode(int lid) {
+        switch (lid) {
+        case 0x0c09:
+        case 0x0809:
+        case 0x0409: return QLatin1String("en");
+        case 0x807:
+        case 0x407: return QLatin1String("de");
+        case 0x41d: return QLatin1String("sv");
+        default: {
+            QString language;
+            language.setNum(lid, 16);
+            return "0x" + language;
+        }
+        }
+    }
+
+public:
+    QString wholeText;
+    QString language;
+
+    DocScanTextHandler()
+        : wvWare::TextHandler() {
+        wholeText = "";
+        language = "";
+    }
+
+    void runOfText(const wvWare::UString &text, wvWare::SharedPtr<const wvWare::Word97::CHP> chp) {
+        QString qString = string(text);
+        wholeText += qString;
+        if (language.isEmpty())
+            language = lidToLangCode(chp->lidDefault);
+    }
+};
 
 FileAnalyzerCompoundBinary::FileAnalyzerCompoundBinary(QObject *parent)
-    : FileAnalyzerAbstract(parent)
+    : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
     // nothing
 }
 
 bool FileAnalyzerCompoundBinary::isAlive()
 {
-    return false;
+    return m_isAlive;
 }
 
-void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
+void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, QString &logText)
 {
-    /// perform various file checks before starting the analysis
-    OLEStorage storage(std::string(filename.toUtf8().constData()));
-    if (!storage.open(OLEStorage::ReadOnly)) {
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"OLEStorage cannot be opened\" filename=\"%1\" />\n").arg(filename));
-        return;
-    }
-
-    OLEStreamReader *document = storage.createStreamReader("WordDocument");
-    if (document == NULL || !document->isValid()) {
-        if (document != NULL)  delete document;
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Not a valid Word document\" filename=\"%1\" />\n").arg(filename));
-        return;
-    }
-
-    /// get the FIB (File information block) which contains a lot of interesting information
-    Word97::FIB fib(document, true);
-
-    OLEStreamReader *table = storage.createStreamReader(fib.fWhichTblStm ? "1Table" : "0Table");
-    if (table == NULL || !table->isValid()) {
-        if (document != NULL)  delete document;
-        if (table != NULL)  delete table;
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Cannot read table\" filename=\"%1\" />\n").arg(filename));
-        return;
-    }
-
-    /// determine mimetype and write file analysis header
-    QString mimetype = "application/octet-stream";
-    if (filename.endsWith(".doc"))
-        mimetype = "application/msword";
-    QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
 
     /// try to guess operating system based on header information
     // TODO: What value is set by non-Microsoft editors on e.g. Linux?
@@ -141,12 +159,21 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
         editorString = QString::number(fib.wMagicCreated, 16);
     }
     logText += QString("<generator license=\"proprietary\" opsys=\"windows\" type=\"editor\" origin=\"document\">%1</generator>\n").arg(editorString);
+}
+
+void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, QString &logText)
+{
+    wvWare::OLEStreamReader *table = storage.createStreamReader(fib.fWhichTblStm ? "1Table" : "0Table");
+    if (table == NULL || !table->isValid()) {
+        if (table != NULL)  delete table;
+        return;
+    }
 
     /// read meta information from table
     table->seek(fib.fcSttbfAssoc);
-    STTBF sttbf(fib.lid, table);
+    wvWare::STTBF sttbf(fib.lid, table);
     int i = 0;
-    for (UString s = sttbf.firstString(); !s.isNull(); s = sttbf.nextString(), ++i) {
+    for (wvWare::UString s = sttbf.firstString(); !s.isNull(); s = sttbf.nextString(), ++i) {
         if (s.isEmpty()) continue;
 
         switch (i) {
@@ -168,14 +195,79 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
         }
     }
 
-    /// dump data on dates
-    logText += "<unknown>" + QString::number((fib.lProductCreated & 0xE0000000) >> 29) + "|" + QString::number((fib.lProductCreated & 0x1FF00000) >> 20) + "|" + QString::number((fib.lProductCreated & 0x000F0000) >> 16) + "|" + QString::number((fib.lProductCreated & 0xF800) >> 11) + "|" + QString::number((fib.lProductCreated & 0x07C0) >> 6) + "|" + QString::number(fib.lProductCreated & 0x003F) + "|" + "</unknown>\n";
-    logText += "<unknown>" + QString::number((fib.lProductRevised & 0xE0000000) >> 29) + "|" + QString::number((fib.lProductRevised & 0x1FF00000) >> 20) + "|" + QString::number((fib.lProductRevised & 0x000F0000) >> 16) + "|" + QString::number((fib.lProductRevised & 0xF800) >> 11) + "|" + QString::number((fib.lProductRevised & 0x07C0) >> 6) + "|" + QString::number(fib.lProductRevised & 0x003F) + "|" + "</unknown>\n";
+    delete table;
+}
+
+void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, QString &logText)
+{
+    wvWare::SharedPtr<wvWare::Parser> parser(wvWare::ParserFactory::createParser(filename));
+    if (parser != NULL) {
+        if (parser->isOk()) {
+            DocScanTextHandler *textHandler = new DocScanTextHandler();
+            parser->setTextHandler(textHandler);
+
+            if (parser->parse()) {
+                const wvWare::Word97::DOP dop = parser->dop();
+
+                QDate creationDate(1900 + dop.dttmCreated.yr, dop.dttmCreated.mon, dop.dttmCreated.dom);
+                logText += DocScan::formatDate(creationDate, "creation");
+
+                QDate modificationDate(1900 + dop.dttmRevised.yr, dop.dttmRevised.mon, dop.dttmRevised.dom);
+                logText += DocScan::formatDate(modificationDate, "modification");
+
+                QString language;
+                if (textHandler->wholeText.length() > 1024 && !(language = guessLanguage(textHandler->wholeText)).isEmpty())
+                    logText += "<meta name=\"language\" origin=\"aspell\">" + language + "</meta>\n";
+                if (!textHandler->language.isEmpty())
+                    logText += "<meta name=\"language\" origin=\"document\">" + textHandler->language + "</meta>\n";
+            }
+
+            delete textHandler;
+        }
+    }
+
+}
+
+void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
+{
+    m_isAlive = true;
+
+    std::string cppFilename = std::string(filename.toUtf8().constData());
+
+    /// perform various file checks before starting the analysis
+    wvWare::OLEStorage storage(cppFilename);
+    if (!storage.open(wvWare::OLEStorage::ReadOnly)) {
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"OLEStorage cannot be opened\" filename=\"%1\" />\n").arg(filename));
+        m_isAlive = false;
+        return;
+    }
+    wvWare::OLEStreamReader *document = storage.createStreamReader("WordDocument");
+    if (document == NULL || !document->isValid()) {
+        if (document != NULL)  delete document;
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Not a valid Word document\" filename=\"%1\" />\n").arg(filename));
+        m_isAlive = false;
+        return;
+    }
+
+    /// determine mimetype and write file analysis header
+    QString mimetype = "application/octet-stream";
+    if (filename.endsWith(".doc"))
+        mimetype = "application/msword";
+    QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
+
+    /// get the FIB (File information block) which contains a lot of interesting information
+    wvWare::Word97::FIB fib(document, true);
+    analyzeFiB(fib, logText);
+
+    /// read meta information from table
+    analyzeTable(storage, fib, logText);
+
+    analyzeWithParser(cppFilename, logText);
 
     delete document;
-    delete table;
 
-    logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
-    logText += "</fileanalysis>";
+    logText += "</fileanalysis>\n";
     emit analysisReport(logText);
+
+    m_isAlive = false;
 }
