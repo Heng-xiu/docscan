@@ -23,9 +23,6 @@
 #define DOWNLOADER_H
 
 #include <QObject>
-#include <QUrl>
-#include <QTimer>
-#include <QMap>
 
 #include "watchable.h"
 
@@ -36,29 +33,7 @@ class Downloader : public QObject, public Watchable
 {
     Q_OBJECT
 public:
-    explicit Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
-
-    virtual bool isAlive();
-
-    friend class DownloadJob;
-
-public slots:
-    void download(QUrl);
-
-signals:
-    void downloaded(QUrl, QString);
-    void downloaded(QString);
-    void downloadReport(QString);
-
-private:
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_filePattern;
-    int m_runningDownloads;
-    QMap<QTimer *, QNetworkReply *> m_mapTimerToReply;
-
-private slots:
-    void finished();
-    void timeout();
+    explicit Downloader(QObject *parent = 0);
 };
 
 #endif // DOWNLOADER_H

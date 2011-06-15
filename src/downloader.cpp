@@ -30,95 +30,9 @@
 #include <QDir>
 
 #include "downloader.h"
-#include "watchdog.h"
-#include "general.h"
 
-Downloader::Downloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
-    : QObject(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_runningDownloads(0)
+Downloader::Downloader(QObject *parent)
+    : QObject(parent)
 {
     // nothing
-}
-
-bool Downloader::isAlive()
-{
-    return m_runningDownloads > 0;
-}
-
-void Downloader::download(QUrl url)
-{
-    ++m_runningDownloads;
-
-    QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
-    connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-
-    QTimer *timer = new QTimer(reply);
-    connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    m_mapTimerToReply.insert(timer, reply);
-    timer->start(15000);
-}
-
-void Downloader::finished()
-{
-    bool succeeded = false;
-
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
-    if (reply->error() == QNetworkReply::NoError) {
-        QByteArray data(reply->readAll());
-        QString filename = m_filePattern;
-
-        QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
-        QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
-        int p = -1;
-        while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
-            if (md5sumRegExp.cap(1).isEmpty())
-                filename = filename.replace(md5sumRegExp.cap(0), md5sum);
-            else {
-                bool ok = false;
-                int left = md5sumRegExp.cap(2).toInt(&ok);
-                if (ok && left > 0 && left <= md5sum.length())
-                    filename = filename.replace(md5sumRegExp.cap(0), md5sum.left(left));
-            }
-        }
-
-        QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
-        filename = filename.replace("%{s}", urlString);
-
-        QFileInfo fi(filename);
-        if (!fi.absoluteDir().mkpath(fi.absolutePath())) {
-            qCritical() << "Cannot create directory" << fi.absolutePath();
-        } else {
-            QFile output(filename);
-            if (output.open(QIODevice::WriteOnly)) {
-                output.write(data);
-                output.close();
-
-                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename));
-                emit downloadReport(logText);
-                succeeded = true;
-
-                emit downloaded(reply->url(), filename);
-                emit downloaded(filename);
-            }
-        }
-    }
-
-    if (!succeeded) {
-        QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
-        emit downloadReport(logText);
-    }
-
-    --m_runningDownloads;
-    reply->deleteLater();
-    QTimer *timer = m_mapTimerToReply.key(reply, NULL);
-    if (timer != NULL) m_mapTimerToReply.remove(timer);
-}
-
-void Downloader::timeout()
-{
-    QTimer *timer = qobject_cast<QTimer *>(sender());
-    QNetworkReply *reply = m_mapTimerToReply[timer];
-    if (reply != NULL) {
-        reply->close();
-        m_mapTimerToReply.remove(timer);
-    }
 }
