@@ -20,7 +20,10 @@
 #define WVLOG_H
 
 #include <iostream>
+#include <fstream>
 
-#define wvlog std::cout
+extern std::ofstream debugFile;
+
+#define wvlog debugFile
 
 #endif // WVLOG_H
