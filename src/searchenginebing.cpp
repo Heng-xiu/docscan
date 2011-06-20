@@ -31,7 +31,7 @@
 #include "general.h"
 
 SearchEngineBing::SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
-    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0)
+    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0), m_runningSearches(0)
 {
     // nothing
 }
@@ -85,7 +85,7 @@ void SearchEngineBing::finished()
 
         ++m_currentPage;
         if (m_currentPage * 10 < m_numExpectedHits) {
-            QRegExp nextPageRegExp("<li><a href=\"(/search\\?q=[^\"]+)\"[^>]*>Next</a></li>");
+            QRegExp nextPageRegExp("<li><a href=\"(/search[^\"]+)\"[^>]*>Next</a></li>");
             QUrl url(reply->url());
             if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
                 url.setPath(nextPageRegExp.cap(1));
@@ -93,7 +93,8 @@ void SearchEngineBing::finished()
                 ++m_runningSearches;
                 reply = m_networkAccessManager->get(QNetworkRequest(url));
                 connect(reply, SIGNAL(finished()), this, SLOT(finished()));
-            }
+            } else
+                qDebug() << "Cannot find link to continue";
         }
     } else {
         QString logText = QString("<searchengine type=\"bing\" url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
