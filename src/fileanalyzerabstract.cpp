@@ -113,11 +113,13 @@ QString FileAnalyzerAbstract::guessLicenseFromProduct(const QString &product)
 {
     const QString lowerText = product.toLower();
 
-    if (lowerText.contains("microsoft") || lowerText.contains("adobe") || lowerText.contains("excel") || lowerText.contains("powerpoint"))
+    if (lowerText.contains("primopdf"))
+        return QLatin1String("freeware");
+    if (lowerText.contains("microsoft") || lowerText.contains("framemaker") || lowerText.contains("adobe") || lowerText.contains("acrobat") || lowerText.contains("excel") || lowerText.contains("powerpoint") || lowerText.contains("quartz") || lowerText.contains("pdfxchange") || lowerText.contains("freehand") || lowerText.contains("quarkxpress") || lowerText.contains("illustrator") || lowerText.contains("hp pdf") || lowerText.contains("pscript5") || lowerText.contains("s.a.") || lowerText.contains("KDK") || lowerText.contains("scansoft"))
         return QLatin1String("proprietary");
     if (lowerText.contains("neooffice") || lowerText.contains("broffice") || lowerText.contains("koffice") || lowerText.contains("calligra"))
         return QLatin1String("opensource");
-    if (lowerText.contains("openoffice") || lowerText.contains("libreoffice"))
+    if (lowerText.contains("openoffice") || lowerText.contains("libreoffice") || lowerText == "writer")
         return QLatin1String("opensource|LGPL");
     if (lowerText.contains("pdftex") || lowerText.contains("ghostscript") || lowerText.contains("pdfcreator"))
         return QLatin1String("opensource|GPL");
