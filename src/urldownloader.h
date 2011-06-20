@@ -58,6 +58,7 @@ private:
     QMap<QTimer *, QNetworkReply *> m_mapTimerToReply;
     QMutex m_mapTimerToReplyMutex;
     QSet<QString> m_knownUrls;
+    static const QRegExp domainRegExp;
 
 private slots:
     void finished();
