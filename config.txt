@@ -1,8 +1,8 @@
 filter=*.pdf
-searchenginegoogle=site:de ( filetype:pdf )
+searchenginebing=site:com increase ( filetype:pdf )
 #searchenginegoogle=site:se ( filetype:doc )
 #searchenginegoogle=site:se ( filetype:docx | filetype:xlsx | filetype:pptx )
 #filesystemscan=/tmp/t
-urldownloader=/tmp/test/%{h:4}/%{h}_%{s}
+urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
 logcollector=/tmp/log.txt
-finder:numhits=1250
+finder:numhits=500
