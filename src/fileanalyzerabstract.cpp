@@ -22,35 +22,21 @@
 #include <limits>
 
 #include <QProcess>
+#include <QCoreApplication>
+#include <QDate>
 
 #include "fileanalyzerabstract.h"
+#include "general.h"
 
 FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
     : QObject(parent)
 {
 }
 
-QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh)
-{
-    QString result;
-    result = QString("<pagesize width=\"%1\" height=\"%2\" unit=\"mm\" />\n").arg(mmw).arg(mmh);
-
-    if (mmw >= 208 && mmw <= 212 && mmh >= 295 && mmh <= 299)
-        result += QString("<pagesize name=\"A4\" orientation=\"portrait\" unit=\"name\" />\n");
-    else if (mmh >= 208 && mmh <= 212 && mmw >= 295 && mmw <= 299)
-        result += QString("<pagesize name=\"A4\" orientation=\"landscape\" unit=\"name\" />\n");
-    else if (mmw >= 214 && mmw <= 218 && mmh >= 277 && mmh <= 281)
-        result += QString("<pagesize name=\"Letter\" orientation=\"portrait\" unit=\"name\" />\n");
-    else if (mmw >= 214 && mmw <= 218 && mmh >= 254 && mmh <= 258)
-        result += QString("<pagesize name=\"Legal\" orientation=\"portrait\" unit=\"name\" />\n");
-
-    return result;
-}
-
-QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &dictionary)
+QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &dictionary) const
 {
     QStringList wordList;
-    QProcess aspell(this);
+    QProcess aspell(QCoreApplication::instance());
     QStringList args = QStringList() << "-d" << dictionary << "list";
     aspell.start("/usr/bin/aspell", args);
     if (aspell.waitForStarted(10000)) {
@@ -67,7 +53,7 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
     return wordList;
 }
 
-QString FileAnalyzerAbstract::guessLanguage(const QString &text)
+QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 {
     int count = std::numeric_limits<int>::max();
     QString best = QString::null;
@@ -83,7 +69,7 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text)
     return best;
 }
 
-QStringList FileAnalyzerAbstract::getAspellLanguages()
+QStringList FileAnalyzerAbstract::getAspellLanguages() const
 {
     if (aspellLanguages.isEmpty()) {
         /*
@@ -109,22 +95,225 @@ QStringList FileAnalyzerAbstract::getAspellLanguages()
     return aspellLanguages;
 }
 
-QString FileAnalyzerAbstract::guessLicenseFromProduct(const QString &product)
+QMap<QString, QString> FileAnalyzerAbstract::guessLicense(const QString &license) const
 {
-    const QString lowerText = product.toLower();
+    const QString text = license.toLower();
+    QMap<QString, QString> result;
 
-    if (lowerText.contains("primopdf"))
-        return QLatin1String("freeware");
-    if (lowerText.contains("microsoft") || lowerText.contains("framemaker") || lowerText.contains("adobe") || lowerText.contains("acrobat") || lowerText.contains("excel") || lowerText.contains("powerpoint") || lowerText.contains("quartz") || lowerText.contains("pdfxchange") || lowerText.contains("freehand") || lowerText.contains("quarkxpress") || lowerText.contains("illustrator") || lowerText.contains("hp pdf") || lowerText.contains("pscript5") || lowerText.contains("s.a.") || lowerText.contains("KDK") || lowerText.contains("scansoft"))
-        return QLatin1String("proprietary");
-    if (lowerText.contains("neooffice") || lowerText.contains("broffice") || lowerText.contains("koffice") || lowerText.contains("calligra"))
-        return QLatin1String("opensource");
-    if (lowerText.contains("openoffice") || lowerText.contains("libreoffice") || lowerText == "writer")
-        return QLatin1String("opensource|LGPL");
-    if (lowerText.contains("pdftex") || lowerText.contains("ghostscript") || lowerText.contains("pdfcreator"))
-        return QLatin1String("opensource|GPL");
+    if (text.contains("primopdf")) {
+        result["type"] = "beer";
+    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("scansoft")) {
+        result["type"] = "proprietary";
+    } else if (text.contains("neooffice") || text.contains("broffice") || text.contains("koffice") || text.contains("calligra")) {
+        result["type"] = "open";
+    } else if (text.contains("openoffice") || text.contains("libreoffice") || text == "writer") {
+        result["type"] = "open";
+    } else if (text.contains("pdftex") || text.contains("ghostscript") || text.contains("dvips") || text.contains("pdfcreator")) {
+        result["type"] = "open";
+    }
 
-    return QLatin1String("unknown");
+    return result;
+}
+
+QMap<QString, QString> FileAnalyzerAbstract::guessOpSys(const QString &opsys) const
+{
+    const QString text = opsys.toLower();
+    QMap<QString, QString> result;
+
+    if (text.indexOf("neooffice") >= 0 || text.indexOf("quartz pdfcontext") >= 0 || text.indexOf("mac os x") >= 0 || text.indexOf("macintosh") >= 0) {
+        result["type"] = "mac";
+    } else if (text.indexOf("win32") >= 0) {
+        result["type"] = "windows";
+        result["arch"] = "win32";
+    } else if (text.indexOf("win64") >= 0) {
+        result["type"] = "windows";
+        result["arch"] = "win64";
+    } else if (text.indexOf("microsoftoffice") >= 0 || text.indexOf("windows") >= 0 || text.indexOf(".dll") >= 0 || text.indexOf("pdf complete") >= 0 || text.indexOf("nitro pdf") >= 0 || text.indexOf("primopdf") >= 0) {
+        result["type"] = "windows";
+    } else if (text.indexOf("linux") >= 0) {
+        result["type"] = "linux";
+    } else if (text.indexOf("unix") >= 0) {
+        result["type"] = "unix";
+    } else if (text.indexOf("solaris") >= 0) {
+        result["type"] = "unix";
+        result["brand"] = "solaris";
+    }
+
+    return result;
+}
+
+QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program) const
+{
+    const QString text = program.toLower();
+    QMap<QString, QString> result;
+    result[""] = DocScan::xmlify(program);
+    bool checkOOoVersion = false;
+
+    if (text.indexOf("dvips") >= 0) {
+        static const QRegExp radicaleyeVersion("\\b\\d+\\.\\d+[a-z]*\\b");
+        result["manufacturer"] = "radicaleye";
+        if (radicaleyeVersion.indexIn(text) >= 0)
+            result["version"] = radicaleyeVersion.cap(0);
+    } else if (text.indexOf("koffice") >= 0) {
+        result["manufacturer"] = "kde";
+    } else if (text.indexOf("abiword") >= 0) {
+        result["manufacturer"] = "abisource";
+        result["product"] = "abiword";
+    } else if (text.indexOf("libreoffice") >= 0) {
+        checkOOoVersion = true;
+        result["manufacturer"] = "tdf";
+        result["product"] = "libreoffice";
+    }  else if (text.indexOf("lotus symphony") >= 0) {
+        result["manufacturer"] = "ibm";
+        result["product"] = "libreoffice";
+        result["based-on"] = "openoffice";
+    } else if (text.indexOf("openoffice") >= 0) {
+        checkOOoVersion = true;
+        if (text.indexOf("staroffice") >= 0) {
+            result["manufacturer"] = "oracle";
+            result["based-on"] = "openoffice";
+            result["product"] = "staroffice";
+        } else if (text.indexOf("broffice") >= 0) {
+            result["product"] = "broffice";
+            result["based-on"] = "openoffice";
+        } else if (text.indexOf("neooffice") >= 0) {
+            result["product"] = "neooffice";
+            result["based-on"] = "openoffice";
+        } else {
+            result["manufacturer"] = "oracle";
+            result["product"] = "openoffice";
+        }
+    } else {
+        static const QRegExp microsoftProducts("powerpoint|excel|word");
+        static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
+        if (microsoftProducts.indexIn(text) >= 0) {
+            result["manufacturer"] = "microsoft";
+            result["product"] = microsoftProducts.cap(0);
+            if (!result.contains("version") && microsoftVersion.indexIn(text) >= 0)
+                result["version"] = microsoftVersion.cap(0);
+        }
+    }
+
+    if (checkOOoVersion) {
+        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)[$a-z]", Qt::CaseInsensitive);
+        if (OOoVersion.indexIn(text) >= 0)
+            result["version"] = OOoVersion.cap(1);
+    }
+
+    return result;
+}
+
+QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString &altToolString) const
+{
+    QString result;
+    QString text;
+
+    if (microsoftToolRegExp.indexIn(altToolString) == 0)
+        text = microsoftToolRegExp.cap(1);
+    else if (!toolString.isEmpty())
+        text = toolString;
+    else if (!altToolString.isEmpty())
+        text = altToolString;
+
+    if (!text.isEmpty()) {
+        QMap<QString, QString> programMap = guessProgram(text);
+        QMap<QString, QString> opSysMap = guessOpSys(text);
+
+        QString version;
+        if (programMap["manufacturer"] == "microsoft" && !(version = programMap["version"]).isEmpty()) {
+            if (version == "97" || version == "2000" || version == "9.0" || version == "2002" || version == "10.0" || version == "2003" || version == "11.0" || version == "2007" || version == "12.0" || version == "2010" || version == "14.0")
+                opSysMap["type"] = "windows";
+            else if (version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
+                opSysMap["type"] = "mac";
+            else
+                opSysMap["remark"] = "unknown version: " + version;
+        }
+
+        result += formatMap("name", programMap);
+        result += formatMap("license", guessLicense(text));
+        result += formatMap("opsys", opSysMap);
+    }
+
+    return result;
+}
+
+QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &typeName) const
+{
+    QMap<QString, QString> name, license, technology;
+    name[""] = DocScan::xmlify(fontName);
+
+    if (fontName.contains("Libertine")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Nimbus")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Liberation")) {
+        license["type"] = "open";
+    } else if (fontName.contains("DejaVu")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Ubuntu")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Gentium")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Vera") || fontName.contains("Bera")) {
+        license["type"] = "open";
+    } else if (fontName.contains("Computer Modern")) {
+        license["type"] = "open";
+    } else {
+        license["type"] = "proprietary";
+    }
+
+    QString text = typeName.toLower();
+    if (text.indexOf("truetype") >= 0)
+        technology["type"] = "truetype";
+    else if (text.indexOf("type1") >= 0)
+        technology["type"] = "type1";
+    else if (text.indexOf("type3") >= 0)
+        technology["type"] = "type3";
+
+    return formatMap("name", name) + formatMap("technology", technology) + formatMap("license", license);
+}
+
+QString FileAnalyzerAbstract::formatDate(const QDate &date, const QString &base) const
+{
+    return QString("<date epoch=\"%6\" %5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base.isEmpty() ? QLatin1String("") : QString("base=\"%1\"").arg(base)).arg(QString::number(QDateTime(date).toTime_t()));
+}
+
+QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
+{
+    QString formatName;
+
+    if (mmw >= 208 && mmw <= 212 && mmh >= 295 && mmh <= 299)
+        formatName = "A4";
+    else if (mmh >= 208 && mmh <= 212 && mmw >= 295 && mmw <= 299)
+        formatName = "A4";
+    else if (mmw >= 214 && mmw <= 218 && mmh >= 277 && mmh <= 281)
+        formatName = "Letter";
+    else if (mmw >= 214 && mmw <= 218 && mmh >= 254 && mmh <= 258)
+        formatName = "Legal";
+
+    return QString("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n").arg(mmh).arg(mmw).arg(formatName).arg(mmw > mmh ? "landscape" : "portrait");
+}
+
+QString FileAnalyzerAbstract::formatMap(const QString &key, const QMap<QString, QString> &attrs) const
+{
+    if (attrs.isEmpty()) return QLatin1String("");
+
+    const QString body = DocScan::xmlify(attrs[""]);
+    QString result = QString("<%1").arg(key);
+    for (QMap<QString, QString>::ConstIterator it = attrs.constBegin(); it != attrs.constEnd(); ++it)
+        if (!it.key().isEmpty())
+            result.append(QString(" %1=\"%2\"").arg(it.key()).arg(DocScan::xmlify(it.value())));
+
+    if (body.isEmpty())
+        result.append(" />\n");
+    else
+        result.append(">").append(body).append(QString("</%1>\n").arg(key));
+
+    return result;
 }
 
 QStringList FileAnalyzerAbstract::aspellLanguages;
+
+const QRegExp FileAnalyzerAbstract::microsoftToolRegExp("^(Microsoft\\s(.+\\S) [ -][ ]?(\\S.*)$");
+const QString FileAnalyzerAbstract::creationDate = QLatin1String("creation");
+const QString FileAnalyzerAbstract::modificationDate = QLatin1String("modification");

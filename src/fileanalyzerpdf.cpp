@@ -45,79 +45,101 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {
-        QString logText = QString("<fileanalysis mimetype=\"application/pdf\" filename=\"%1\">").arg(DocScan::xmlify(filename));
+        QString guess;
 
+        QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+        QString metaText = QLatin1String("<meta>\n");
+        QString headerText = QLatin1String("<header>\n");
+
+        /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         doc->getPdfVersion(&majorVersion, &minorVersion);
-        logText += QString("<fileformat-version major=\"%1\" minor=\"%2\">%1.%2</fileformat-version>\n").arg(QString::number(majorVersion)).arg(QString::number(minorVersion));
+        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n</fileformat>").arg(majorVersion).arg(minorVersion));
 
+        /// file information including size
+        QFileInfo fi = QFileInfo(filename);
+        metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
+
+        /// guess and evaluate editor (a.k.a. creator)
+        QString creator = doc->info("Creator");
+        guess.clear();
+        if (!creator.isEmpty())
+            guess = guessTool(creator, doc->info("Title"));
+        if (!guess.isEmpty())
+            metaText.append(QString("<tool type=\"editor\">\n%1</tool>\n").arg(guess));
+        /// guess and evaluate producer
+        QString producer = doc->info("Producer");
+        guess.clear();
+        if (!producer.isEmpty())
+            guess = guessTool(producer, doc->info("Title"));
+        if (!guess.isEmpty())
+            metaText.append(QString("<tool type=\"producer\">\n%1</tool>\n").arg(guess));
+
+        /// retrieve font information
+        QList<Poppler::FontInfo> fontList = doc->fonts();
+        static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
+        foreach(Poppler::FontInfo fi, fontList) {
+            QString fontName = fi.name().replace(fontNameNormalizer, "");
+            metaText.append(QString("<font>\n%1</font>").arg(guessFont(fontName, fi.typeName())));
+        }
+
+        /// format creation date
         QDate date = doc->date("CreationDate").toUTC().date();
         if (date.isValid())
-            logText += DocScan::formatDate(date, "creation");
-
+            headerText.append(formatDate(date, creationDate));
+        /// format modification date
         date = doc->date("ModDate").toUTC().date();
         if (date.isValid())
-            logText += DocScan::formatDate(date, "modification");
+            headerText.append(formatDate(date, modificationDate));
 
-        QStringList metaNames = QStringList() << "Author" << "Keywords";
-        foreach(const QString &metaName, metaNames) {
-            QString text = doc->info(metaName);
-            if (!text.isEmpty()) logText += QString("<meta name=\"%1\">%2</meta>\n").arg(metaName.toLower()).arg(DocScan::xmlify(text));
-        }
+        /// retrieve author
+        QString author = doc->info("Author").simplified();
+        if (!author.isEmpty())
+            headerText.append(QString("<author>%1</author>\n").arg(DocScan::xmlify(author)));
 
-        metaNames = QStringList() << "Title" << "Subject";
-        foreach(const QString &metaName, metaNames) {
-            QString text = doc->info(metaName);
-            if (!text.isEmpty()) logText += QString("<%1>%2</%1>\n").arg(metaName.toLower()).arg(DocScan::xmlify(text));
-        }
+        /// retrieve title
+        QString title = doc->info("Title").simplified();
+        /// clean-up title
+        if (microsoftToolRegExp.indexIn(title) == 0)
+            title = microsoftToolRegExp.cap(3);
+        if (!title.isEmpty())
+            headerText.append(QString("<title>%1</title>\n").arg(DocScan::xmlify(title)));
 
-        QString text = doc->info("Creator");
-        QString title = doc->info("Title");
-        if (title.startsWith("Microsoft Word - "))
-            logText += QString("<generator license=\"proprietary\" type=\"editor\">Microsoft Word</generator>\n");
-        else if (!text.isEmpty())
-            logText += QString("<generator license=\"%2\" type=\"editor\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(guessLicenseFromProduct(text));
-        text = doc->info("Producer");
-        if (!text.isEmpty()) {
-            QString arguments;
-            if (text.indexOf("Quartz PDFContext") >= 0 || text.indexOf("Mac OS X") >= 0 || text.indexOf("Macintosh") >= 0)
-                arguments += " opsys=\"unix|macos\"";
-            else if (text.indexOf("Windows") >= 0 || text.indexOf(".dll") >= 0 || text.indexOf("PDF Complete") >= 0 || text.indexOf("Nitro PDF") >= 0 || text.indexOf("PrimoPDF") >= 0)
-                arguments += " opsys=\"windows\"";
+        /// retrieve subject
+        QString subject = doc->info("Subject").simplified();
+        if (!subject.isEmpty())
+            headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(subject)));
 
-            logText += QString("<generator%2 license=\"%3\" type=\"postprocessing\">%1</generator>\n").arg(DocScan::xmlify(text)).arg(arguments).arg(guessLicenseFromProduct(text));
-        }
+        /// retrieve keywords
+        QString keywords = doc->info("Keywords").simplified();
+        if (!keywords.isEmpty())
+            headerText.append(QString("<keyword>%1</keyword>\n").arg(DocScan::xmlify(keywords)));
 
-        logText += "<meta name=\"language\" origin=\"aspell\">" + guessLanguage(plainText(doc)) + "</meta>\n";
+        /// guess language using aspell
+        QString language = guessLanguage(plainText(doc));
+        if (!language.isEmpty())
+            headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
 
-        QString documentProperties;
-        if (doc->numPages() > 0) {
+        /// look into first page for info
+        int numPages = doc->numPages();
+        headerText.append(QString("<num-pages>%1</num-pages>\n").arg(numPages));
+        if (numPages > 0) {
             Poppler::Page *page = doc->page(0);
+            /// retrieve and evaluate paper size
             QSize size = page->pageSize();
-            if (size.width() > 0 && size.height() > 0) {
-                documentProperties += QString("<pagesize width=\"%1\" height=\"%2\" unit=\"1/72inch\" />\n").arg(size.width()).arg(size.height());
-                int mmw = size.width() * 0.3527778;
-                int mmh = size.height() * 0.3527778;
-                documentProperties += evaluatePaperSize(mmw, mmh);
+            int mmw = size.width() * 0.3527778;
+            int mmh = size.height() * 0.3527778;
+            if (mmw > 0 && mmh > 0) {
+                headerText += evaluatePaperSize(mmw, mmh);
             }
-
-            logText += "<statistics type=\"pagecount\" origin=\"document\">" + QString::number(doc->numPages()) + "</statistics>\n";
         }
 
-        QList<Poppler::FontInfo> fontList = doc->fonts();
-        if (!fontList.isEmpty()) {
-            logText += QString("<statistics type=\"fonts\" origin=\"document\" count=\"%1\">\n").arg(fontList.count());
-            static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
-            foreach(Poppler::FontInfo fi, fontList) {
-                QString fontName = fi.name().replace(fontNameNormalizer, "");
-                logText += QString("<font name=\"%1\" type=\"%2\" />\n").arg(DocScan::xmlify(fontName)).arg(DocScan::xmlify(fi.typeName()));
-            }
-            logText += "</statistics>\n";
-        }
-        logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
-        logText += documentProperties;
-
-        logText.append("</fileanalysis>\n");
+        /// close all tags, merge text
+        metaText += QLatin1String("</meta>\n");
+        logText.append(metaText);
+        headerText += QLatin1String("</header>\n");
+        logText.append(headerText);
+        logText += QLatin1String("</fileanalysis>\n");
 
         emit analysisReport(logText);
 

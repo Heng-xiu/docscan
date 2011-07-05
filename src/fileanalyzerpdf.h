@@ -45,6 +45,7 @@ public slots:
 private:
     bool m_isAlive;
 
+
     QString plainText(Poppler::Document *doc);
 };
 

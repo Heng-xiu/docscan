@@ -33,19 +33,19 @@
 #include "general.h"
 
 
-class OpenXMLDocumentHandler: public QXmlDefaultHandler
+class FileAnalyzerOpenXML::OpenXMLDocumentHandler: public QXmlDefaultHandler
 {
 private:
-    QString &m_text;
-    QString &m_logText;
+    FileAnalyzerOpenXML *p;
+    ResultContainer &result;
     QStack<QString> m_nodeName;
     bool m_insideText;
     QStringList m_fontNames;
     QString c;
 
 public:
-    OpenXMLDocumentHandler(QString &text, QString &logText)
-        : QXmlDefaultHandler(), m_text(text), m_logText(logText), m_insideText(false) {
+    OpenXMLDocumentHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false) {
         // nothing
     }
 
@@ -57,7 +57,17 @@ public:
             QString fontName = atts.value("w:ascii");
             if (!fontName.isEmpty() && !m_fontNames.contains(fontName))
                 m_fontNames.append(fontName);
-        }
+        } else if (qName == "w:pgSz") {
+            bool ok = false;
+            int mmw = atts.value("w:w").toInt(&ok) / 56.695238f;
+            if (ok) {
+                result.paperSizeWidth = mmw;
+                int mmh = atts.value("w:h").toInt(&ok) / 56.695238f;
+                if (ok)
+                    result.paperSizeHeight = mmh;
+            }
+        } else if (qName == "w:lang")
+            result.languageDocument = atts.value("w:eastAsia");
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
@@ -65,34 +75,37 @@ public:
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
         if (qName == "w:t") m_insideText = false;
-        if (qName == "w:p" && m_text.length() < 16384) m_text += "\n";
+        if (qName == "w:p") result.plainText += "\n";
         if (qName == "w:document") {
             if (!m_fontNames.isEmpty()) {
+                /* FIXME
                 m_logText += QString("<statistics type=\"fonts\" origin=\"document\" count=\"%1\">\n").arg(m_fontNames.count());
                 foreach(QString fontName, m_fontNames) {
                     m_logText += QString("<font name=\"%1\" />\n").arg(DocScan::xmlify(fontName));
                 }
                 m_logText += "</statistics>\n";
+                */
             }
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 
     virtual bool characters(const QString &text) {
-        if (m_insideText && m_text.length() < 16384) m_text += text;
+        if (m_insideText) result.plainText += text;
         return QXmlDefaultHandler::characters(text);
     }
 };
 
-class OpenXMLSettingsHandler: public QXmlDefaultHandler
+class FileAnalyzerOpenXML::OpenXMLSettingsHandler: public QXmlDefaultHandler
 {
 private:
-    QString &m_logText;
+    FileAnalyzerOpenXML *p;
+    ResultContainer &result;
     QString m_language;
 
 public:
-    OpenXMLSettingsHandler(QString &logText)
-        : QXmlDefaultHandler(), m_logText(logText), m_language(QString::null) {
+    OpenXMLSettingsHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_language(QString::null) {
         // nothing
     }
 
@@ -105,22 +118,22 @@ public:
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         if (qName == "w:document" && !m_language.isEmpty()) {
-            m_logText += "<meta name=\"language\" origin=\"document\">" + m_language + "</meta>\n";
-
+            result.languageDocument = m_language;
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 };
 
-class OpenXMLSlideHandler: public QXmlDefaultHandler
+class FileAnalyzerOpenXML::OpenXMLSlideHandler: public QXmlDefaultHandler
 {
 private:
-    QString &m_logText;
+    FileAnalyzerOpenXML *p;
+    ResultContainer &result;
     QString m_language;
 
 public:
-    OpenXMLSlideHandler(QString &logText)
-        : QXmlDefaultHandler(), m_logText(logText), m_language(QString::null) {
+    OpenXMLSlideHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_language(QString::null) {
         // nothing
     }
 
@@ -133,22 +146,23 @@ public:
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         if (qName == "p:sld" && !m_language.isEmpty()) {
-            m_logText += "<meta name=\"language\" origin=\"document\">" + m_language + "</meta>\n";
+            result.languageDocument = m_language;
 
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 };
 
-class OpenXMLCoreHandler: public QXmlDefaultHandler
+class FileAnalyzerOpenXML::OpenXMLCoreHandler: public QXmlDefaultHandler
 {
 private:
-    QString &m_logText;
+    FileAnalyzerOpenXML *p;
+    ResultContainer &result;
     QStack<QString> m_nodeName;
 
 public:
-    OpenXMLCoreHandler(QString &logText)
-        : QXmlDefaultHandler(), m_logText(logText) {
+    OpenXMLCoreHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), p(parent), result(resultContainer)  {
         // nothing
     }
 
@@ -164,26 +178,28 @@ public:
 
     virtual bool characters(const QString &text) {
         if (m_nodeName.top() == "dc:creator")
-            m_logText += QString("<meta name=\"initial-creator\">%1</meta>\n").arg(DocScan::xmlify(text));
+            result.authorInitial = QString("<author type=\"first\">%1</author>\n").arg(DocScan::xmlify(text));
         else if (m_nodeName.top() == "cp:lastModifiedBy")
-            m_logText += QString("<meta name=\"creator\">%1</meta>\n").arg(DocScan::xmlify(text));
+            result.authorLast = QString("<author type=\"last\">%1</author>\n").arg(DocScan::xmlify(text));
         else if (m_nodeName.top() == "dcterms:created") {
             QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
-            m_logText += DocScan::formatDate(date, "creation");
+            result.dateCreation = DocScan::formatDate(date, "creation");
         } else if (m_nodeName.top() == "dcterms:modified") {
             QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
-            m_logText += DocScan::formatDate(date, "modification");
+            result.dateModification = DocScan::formatDate(date, "modification");
         }
 
         return QXmlDefaultHandler::characters(text);
     }
 };
 
-class OpenXMLAppHandler: public QXmlDefaultHandler
+class FileAnalyzerOpenXML::OpenXMLAppHandler: public QXmlDefaultHandler
 {
 private:
-    QString &m_logText;
+    FileAnalyzerOpenXML *p;
+    ResultContainer &result;
     QStack<QString> m_nodeName;
+    QString application, appVersion;
 
     QString interpeteGenerator(const QString &generatorString) {
         QString arguments;
@@ -204,12 +220,12 @@ private:
         if (versionRegExp.indexIn(generatorString) >= 0)
             arguments += QString(" version=\"%1\"").arg(versionRegExp.cap(1));
 
-        return QString("<generator%2 license=\"%3\">%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments).arg(FileAnalyzerAbstract::guessLicenseFromProduct(generatorString));
+        return QString("<generator%2 license=\"%3\">%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments).arg("" /*p->guessLicenseFromProduct(generatorString)*/);
     }
 
 public:
-    OpenXMLAppHandler(QString &logText)
-        : QXmlDefaultHandler(), m_logText(logText) {
+    OpenXMLAppHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), p(parent), result(resultContainer) {
         // nothing
     }
 
@@ -220,12 +236,31 @@ public:
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
+
+        if (qName == "Properties") {
+            QString guess = p->guessTool(application + " " + appVersion);
+            if (!guess.isEmpty())
+                result.toolGenerator = QString("<tool type=\"generator\">\n%1</tool>\n").arg(guess);
+        }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 
     virtual bool characters(const QString &text) {
         if (m_nodeName.top() == "Application")
-            m_logText += interpeteGenerator(text);
+            application = text;
+        else if (m_nodeName.top() == "AppVersion")
+            appVersion = QString(text).replace("0000", "0");
+        else if (m_nodeName.top() == "Characters") {
+            bool ok = false;
+            result.characterCount = text.toInt(&ok);
+            if (!ok) result.characterCount = 0;
+        } else if (m_nodeName.top() == "Pages") {
+            bool ok = false;
+            result.pageCount = text.toInt(&ok);
+            if (!ok) result.pageCount = 0;
+        }
+
+
         return QXmlDefaultHandler::characters(text);
     }
 };
@@ -242,12 +277,18 @@ bool FileAnalyzerOpenXML::isAlive()
 
 void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 {
+    ResultContainer result;
+    result.characterCount = 0;
+    result.pageCount = 0;
+    result.paperSizeHeight = result.paperSizeWidth = 0;
+
     m_isAlive = true;
     QuaZip zipFile(filename);
 
     if (zipFile.open(QuaZip::mdUnzip)) {
-        QString mimetype = "application/octet-stream";
 
+        /// determine mime type
+        QString mimetype = "application/octet-stream";
         if (zipFile.setCurrentFile("[Content_Types].xml", QuaZip::csInsensitive)) {
             QuaZipFile contentTypeFile(&zipFile, parent());
             if (contentTypeFile.open(QIODevice::ReadOnly)) {
@@ -260,21 +301,98 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
             }
         }
 
-        QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
+        if (mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+            if (!processWordFile(zipFile, result)) {
+                emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-document\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+                return;
+            }
+        }
 
         if (mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            if (!processWordFile(zipFile, logText))
+            if (!processWordFile(zipFile, result))
                 emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-document\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
         }
 
-        if (!processCore(zipFile, logText))
+        if (!processCore(zipFile, result)) {
             emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-corefile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
-        if (!processApp(zipFile, logText))
-            emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-appfile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
-        processSettings(zipFile, logText) || processSlides(zipFile, logText);
+            return;
+        }
 
-        logText += "<statistics type=\"size\" unit=\"bytes\">" + QString::number(QFileInfo(filename).size()) + "</statistics>\n";
-        logText += "</fileanalysis>\n";
+        if (!processApp(zipFile, result)) {
+            emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-appfile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+            return;
+        }
+
+        if (!processSettings(zipFile, result)) {
+            if (!processSlides(zipFile, result)) {
+                emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+                return;
+            }
+        }
+
+        QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+        QString metaText = QLatin1String("<meta>\n");
+        QString headerText = QLatin1String("<header>\n");
+
+
+        /// file format including mime type and file format version
+        // TODO document version
+        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n</fileformat>").arg(mimetype));
+
+
+        /// file information including size
+        QFileInfo fi = QFileInfo(filename);
+        metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
+
+        /// evaluate used tool
+        if (!result.toolGenerator.isEmpty())
+            metaText.append(result.toolGenerator);
+
+        /// evaluate editor (a.k.a. creator)
+        if (!result.authorInitial.isEmpty())
+            headerText.append(result.authorInitial);
+        if (!result.authorLast.isEmpty())
+            headerText.append(result.authorLast);
+
+        /// evaluate title
+        // TODO if (!result.title.isEmpty())
+        // TODO     headerText.append(result.title);
+
+        /// evaluate subject
+        // TODO if (!result.subject.isEmpty())
+        // TODO     headerText.append(result.subject);
+
+        /// evaluate language
+        if (!result.languageDocument.isEmpty())
+            headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(result.languageDocument));
+        if (!result.languageAspell.isEmpty())
+            headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(result.languageAspell));
+
+        /// evaluate paper size
+        if (result.paperSizeHeight > 0 && result.paperSizeWidth > 0)
+            headerText.append(evaluatePaperSize(result.paperSizeWidth, result.paperSizeHeight));
+
+        /// evaluate number of pages
+        if (result.pageCount > 0)
+            headerText.append(QString("<num-pages origin=\"document\">%1</num-pages>\n").arg(result.pageCount));
+
+        /// evaluate dates
+        if (!result.dateCreation.isEmpty())
+            headerText.append(result.dateCreation);
+        if (!result.dateModification.isEmpty())
+            headerText.append(result.dateModification);
+
+        // TODO fonts
+
+        QString bodyText = QString("<body length=\"%1\" />\n").arg(result.characterCount);
+
+/// close all tags, merge text
+        metaText += QLatin1String("</meta>\n");
+        logText.append(metaText);
+        headerText += QLatin1String("</header>\n");
+        logText.append(headerText);
+        logText.append(bodyText);
+        logText += QLatin1String("</fileanalysis>\n");
 
         emit analysisReport(logText);
 
@@ -285,16 +403,14 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
     m_isAlive = false;
 }
 
-bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, QString &logText)
+bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, ResultContainer &result)
 {
     if (zipFile.setCurrentFile("word/document.xml", QuaZip::csInsensitive)) {
         QuaZipFile documentFile(&zipFile, parent());
         if (documentFile.open(QIODevice::ReadOnly)) {
-            QString plain = text(documentFile, logText);
-            QString language;
-            if (plain.length() > 1024 && !(language = guessLanguage(plain)).isEmpty())
-                logText += "<meta name=\"language\" origin=\"aspell\">" + language + "</meta>\n";
-
+            text(documentFile, result);
+            if (result.plainText.length() > 1024)
+                result.languageAspell = guessLanguage(result.plainText);
             documentFile.close();
             return true;
         }
@@ -303,13 +419,12 @@ bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, QString &logText)
 }
 
 
-bool FileAnalyzerOpenXML::processCore(QuaZip &zipFile, QString &logText)
+bool FileAnalyzerOpenXML::processCore(QuaZip &zipFile, ResultContainer &result)
 {
     if (zipFile.setCurrentFile("docProps/core.xml", QuaZip::csInsensitive)) {
         QuaZipFile coreFile(&zipFile, parent());
         if (coreFile.open(QIODevice::ReadOnly)) {
-            QString result;
-            OpenXMLCoreHandler handler(logText);
+            OpenXMLCoreHandler handler(this, result);
             QXmlInputSource source(&coreFile);
             QXmlSimpleReader reader;
             reader.setContentHandler(&handler);
@@ -322,13 +437,12 @@ bool FileAnalyzerOpenXML::processCore(QuaZip &zipFile, QString &logText)
     return false;
 }
 
-bool FileAnalyzerOpenXML::processApp(QuaZip &zipFile, QString &logText)
+bool FileAnalyzerOpenXML::processApp(QuaZip &zipFile, ResultContainer &result)
 {
     if (zipFile.setCurrentFile("docProps/app.xml", QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
-            QString result;
-            OpenXMLAppHandler handler(logText);
+            OpenXMLAppHandler handler(this, result);
             QXmlInputSource source(&appFile);
             QXmlSimpleReader reader;
             reader.setContentHandler(&handler);
@@ -341,13 +455,12 @@ bool FileAnalyzerOpenXML::processApp(QuaZip &zipFile, QString &logText)
     return false;
 }
 
-bool FileAnalyzerOpenXML::processSettings(QuaZip &zipFile, QString &logText)
+bool FileAnalyzerOpenXML::processSettings(QuaZip &zipFile, ResultContainer &result)
 {
     if (zipFile.setCurrentFile("word/settings.xml", QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
-            QString result;
-            OpenXMLSettingsHandler handler(logText);
+            OpenXMLSettingsHandler handler(this, result);
             QXmlInputSource source(&appFile);
             QXmlSimpleReader reader;
             reader.setContentHandler(&handler);
@@ -360,13 +473,12 @@ bool FileAnalyzerOpenXML::processSettings(QuaZip &zipFile, QString &logText)
     return false;
 }
 
-bool FileAnalyzerOpenXML::processSlides(QuaZip &zipFile, QString &logText)
+bool FileAnalyzerOpenXML::processSlides(QuaZip &zipFile, ResultContainer &result)
 {
     if (zipFile.setCurrentFile("ppt/slides/slide1.xml", QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
-            QString result;
-            OpenXMLSlideHandler handler(logText);
+            OpenXMLSlideHandler handler(this, result);
             QXmlInputSource source(&appFile);
             QXmlSimpleReader reader;
             reader.setContentHandler(&handler);
@@ -379,13 +491,11 @@ bool FileAnalyzerOpenXML::processSlides(QuaZip &zipFile, QString &logText)
     return false;
 }
 
-QString FileAnalyzerOpenXML::text(QIODevice &device, QString &logText)
+void FileAnalyzerOpenXML::text(QIODevice &device, ResultContainer &result)
 {
-    QString result;
-    OpenXMLDocumentHandler handler(result, logText);
+    OpenXMLDocumentHandler handler(this, result);
     QXmlInputSource source(&device);
     QXmlSimpleReader reader;
     reader.setContentHandler(&handler);
     reader.parse(&source);
-    return result;
 }

@@ -22,6 +22,8 @@
 #ifndef FILEANALYZERODF_H
 #define FILEANALYZERODF_H
 
+#include <QStringList>
+
 #include "fileanalyzerabstract.h"
 
 class QIODevice;
@@ -38,11 +40,29 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    enum PageCountOrigin {pcoDocument = 1, pcoOwnCount = 2};
+    typedef struct {
+        QStringList documentVersionNumbers;
+        QString toolGenerator;
+        QString authorInitial, authorLast;
+        QString title, subject;
+        QString language;
+        QString dateCreation, dateModification, datePrint;
+        int pageCount;
+        PageCountOrigin pageCountOrigin;
+        QString plainText;
+        int paperSizeWidth, paperSizeHeight;
+    } ResultContainer;
+
+    class ODFContentFileHandler;
+    class ODFMetaFileHandler;
+    class ODFStylesFileHandler;
+
     bool m_isAlive;
 
-    void analyzeMetaXML(QIODevice &device, QString &logText);
-    void analyzeStylesXML(QIODevice &device, QString &logText);
-    QString text(QIODevice &contentFile, QString &logText);
+    void analyzeMetaXML(QIODevice &device, ResultContainer &result);
+    void analyzeStylesXML(QIODevice &device, ResultContainer &result);
+    void text(QIODevice &contentFile, ResultContainer &result);
 };
 
 #endif // FILEANALYZERODF_H

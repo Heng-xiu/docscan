@@ -23,17 +23,19 @@
 #define FILEANALYZERABSTRACT_H
 
 #include <QObject>
+#include <QMap>
 
 #include "watchable.h"
+
+class QDate;
 
 class FileAnalyzerAbstract : public QObject, public Watchable
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerAbstract(QObject *parent = 0);
+    static const QString licenseCategoryProprietary, licenseCategoryFreeware, licenseCategoryOpen;
 
-    static QString evaluatePaperSize(int mmw, int mmh);
-    static QString guessLicenseFromProduct(const QString &product);
+    explicit FileAnalyzerAbstract(QObject *parent = 0);
 
 signals:
     void analysisReport(QString);
@@ -42,13 +44,26 @@ public slots:
     virtual void analyzeFile(const QString &filename) = 0;
 
 protected:
-    QString guessLanguage(const QString &text);
-    QStringList runAspell(const QString &text, const QString &dictionary);
+    static const QString creationDate, modificationDate;
+    static const QRegExp microsoftToolRegExp;
+
+    QString guessLanguage(const QString &text) const;
+    QStringList runAspell(const QString &text, const QString &dictionary) const;
+    QMap<QString, QString> guessLicense(const QString &license) const;
+    QMap<QString, QString> guessOpSys(const QString &opsys) const;
+    QMap<QString, QString> guessProgram(const QString &program) const;
+    QString guessTool(const QString &toolString, const QString &altToolString = QString::null) const;
+    QString guessFont(const QString &fontString, const QString &typeName = QString::null) const;
+    QStringList guessLicenseFromFont(const QString &fontName) const;
+    QString formatDate(const QDate &date, const QString &base = QString::null) const;
+    QString evaluatePaperSize(int mmw, int mmh) const;
+
+    QString formatMap(const QString &key, const QMap<QString, QString> &attrs) const;
 
 private:
     static QStringList aspellLanguages;
 
-    QStringList getAspellLanguages();
+    QStringList getAspellLanguages() const;
 };
 
 #endif // FILEANALYZERABSTRACT_H

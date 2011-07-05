@@ -22,6 +22,8 @@
 #ifndef FILEANALYZEROPENXML_H
 #define FILEANALYZEROPENXML_H
 
+#include <QStringList>
+
 #include "fileanalyzerabstract.h"
 
 class QuaZip;
@@ -39,14 +41,31 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    typedef struct {
+        QString toolGenerator;
+        QString authorInitial, authorLast;
+        QString languageAspell, languageDocument;
+        QString dateCreation, dateModification;
+        int pageCount;
+        QString plainText;
+        int characterCount;
+        int paperSizeWidth, paperSizeHeight;
+    } ResultContainer;
+
+    class OpenXMLDocumentHandler;
+    class OpenXMLCoreHandler;
+    class OpenXMLAppHandler;
+    class OpenXMLSettingsHandler;
+    class OpenXMLSlideHandler;
+
     bool m_isAlive;
 
-    bool processWordFile(QuaZip &zipFile, QString &logText);
-    bool processCore(QuaZip &zipFile, QString &logText);
-    bool processApp(QuaZip &zipFile, QString &logText);
-    bool processSettings(QuaZip &zipFile, QString &logText);
-    bool processSlides(QuaZip &zipFile, QString &logText);
-    QString text(QIODevice &device, QString &logText);
+    bool processWordFile(QuaZip &zipFile, ResultContainer &result);
+    bool processCore(QuaZip &zipFile, ResultContainer &result);
+    bool processApp(QuaZip &zipFile, ResultContainer &result);
+    bool processSettings(QuaZip &zipFile, ResultContainer &result);
+    bool processSlides(QuaZip &zipFile, ResultContainer &result);
+    void text(QIODevice &device, ResultContainer &result);
 };
 
 #endif // FILEANALYZEROPENXML_H
