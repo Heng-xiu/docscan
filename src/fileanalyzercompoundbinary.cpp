@@ -45,7 +45,7 @@ inline QString string(const wvWare::UString &str)
 }
 
 
-class DocScanTextHandler: public wvWare::TextHandler
+class FileAnalyzerCompoundBinary::DocScanTextHandler: public wvWare::TextHandler
 {
 private:
     QString lidToLangCode(int lid) {
@@ -55,7 +55,9 @@ private:
         case 0x0409: return QLatin1String("en");
         case 0x807:
         case 0x407: return QLatin1String("de");
+        case 0x41c: return QLatin1String("en"); ///< ?
         case 0x41d: return QLatin1String("sv");
+        case 0x410: return QLatin1String("it"); ///< ?
         default: {
             QString language;
             language.setNum(lid, 16);
@@ -64,21 +66,19 @@ private:
         }
     }
 
-public:
-    QString wholeText;
-    QString language;
+    ResultContainer &resultContainer;
 
-    DocScanTextHandler()
-        : wvWare::TextHandler() {
-        wholeText = "";
-        language = "";
+public:
+    DocScanTextHandler(ResultContainer &result)
+        : wvWare::TextHandler(), resultContainer(result) {
+        // nothing
     }
 
     void runOfText(const wvWare::UString &text, wvWare::SharedPtr<const wvWare::Word97::CHP> chp) {
         QString qString = string(text);
-        wholeText += qString;
-        if (language.isEmpty())
-            language = lidToLangCode(chp->lidDefault);
+        resultContainer.plainText += qString;
+        if (resultContainer.language.isEmpty())
+            resultContainer.language = lidToLangCode(chp->lidDefault);
     }
 };
 
@@ -93,75 +93,68 @@ bool FileAnalyzerCompoundBinary::isAlive()
     return m_isAlive;
 }
 
-void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, QString &logText)
+void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, ResultContainer &result)
 {
 
     /// try to guess operating system based on header information
     // TODO: What value is set by non-Microsoft editors on e.g. Linux?
     QString opsys;
     switch (fib.envr) {
-    case 0: opsys = "windows"; break;
-    case 1: opsys = "unix|macos"; break;
-    default: opsys = QString("unknown=%1").arg(fib.envr);
+    case 0: result.opSys = QLatin1String("windows"); break;
+    case 1: result.opSys = QLatin1String("mac"); break;
+    default: result.opSys = QString("unknown=%1").arg(fib.envr);
     }
 
     /// determine version format of this file
     // FIXME this number guessing doesn't see correct
-    int versionNumber = -1;
-    QString versionText;
     switch (fib.nFib) {
     case 0x101:
     case 0x0065:
-        versionNumber = 6;
-        versionText = "Word 6.0";
+        result.versionNumber = 6;
+        result.versionText = QLatin1String("Word 6.0");
         break;
     case 0x104:
     case 0x0068:
-        versionNumber = 7;
-        versionText = "Word 95";
+        result.versionNumber = 7;
+        result.versionText = QLatin1String("Word 95");
         break;
     case 0x105:
     case 0x00c1:
-        versionNumber = 8;
-        versionText = "Word 97";
+        result.versionNumber = 8;
+        result.versionText = QLatin1String("Word 97");
         break;
     case 0x00d9:
-        versionNumber = 9;
-        versionText = "Word 2000";
+        result.versionNumber = 9;
+        result.versionText = QLatin1String("Word 2000");
         break;
     default:
-        versionNumber = 0;
-        versionText = QString::number(fib.nFib, 16);
-    }
-    if (versionNumber >= 0) {
-        logText += QString("<fileformat-version major=\"%1\" minor=\"0\">%2</fileformat-version>\n").arg(versionNumber).arg(versionText);
+        result.versionNumber = 0;
+        result.versionText = QString::number(fib.nFib, 16);
     }
 
     /// determine used editor
-    QString editorString;
     switch (fib.wMagicCreated) {
     case 0x6a62:
-        editorString = "Microsoft Word 97";
+        result.editorText = QLatin1String("Microsoft Word 97");
         break;
     case 0x626a:
-        editorString = "Microsoft Word 98/Mac";
+        result.editorText = QLatin1String("Microsoft Word 98/Mac");
         break;
     case 0x6143:
-        editorString = "unnamed (0x6143)";
+        result.editorText = QLatin1String("unnamed (0x6143)");
         break;
     case 0xa5dc:
-        editorString = "Microsoft Word 6.0/7.0";
+        result.editorText = QLatin1String("Microsoft Word 6.0/7.0");
         break;
     case 0xa5ec:
-        editorString = "Microsoft Word 8.0";
+        result.editorText = QLatin1String("Microsoft Word 8.0");
         break;
     default:
-        editorString = QString::number(fib.wMagicCreated, 16);
+        result.editorText = QString::number(fib.wMagicCreated, 16);
     }
-    logText += QString("<generator license=\"proprietary\" opsys=\"windows\" type=\"editor\" origin=\"document\">%1</generator>\n").arg(editorString);
 }
 
-void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, QString &logText)
+void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, ResultContainer &result)
 {
     wvWare::OLEStreamReader *table = storage.createStreamReader(fib.fWhichTblStm ? "1Table" : "0Table");
     if (table == NULL || !table->isValid()) {
@@ -178,19 +171,19 @@ void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWar
 
         switch (i) {
         case 2:
-            logText += QString("<title>%1</title>\n").arg(DocScan::xmlify(s.ascii()));
+            result.title = s.ascii();
             break;
         case 3:
-            logText += QString("<subject>%1</subject>\n").arg(DocScan::xmlify(s.ascii()));
+            result.subject = s.ascii();
             break;
         case 4:
-            logText += QString("<keywords>%1</keywords>\n").arg(DocScan::xmlify(s.ascii()));
+            result.keywords = s.ascii();
             break;
         case 6:
-            logText += QString("<meta name=\"initial-creator\">%1</meta>\n").arg(DocScan::xmlify(s.ascii()));
+            result.authorInitial = s.ascii();
             break;
         case 7:
-            logText += QString("<meta name=\"creator\">%1</meta>\n").arg(DocScan::xmlify(s.ascii()));
+            result.authorLast = s.ascii();
             break;
         }
     }
@@ -198,28 +191,23 @@ void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWar
     delete table;
 }
 
-void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, QString &logText)
+void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, ResultContainer &result)
 {
     wvWare::SharedPtr<wvWare::Parser> parser(wvWare::ParserFactory::createParser(filename));
     if (parser != NULL) {
         if (parser->isOk()) {
-            DocScanTextHandler *textHandler = new DocScanTextHandler();
+            DocScanTextHandler *textHandler = new DocScanTextHandler(result);
             parser->setTextHandler(textHandler);
 
             if (parser->parse()) {
                 const wvWare::Word97::DOP dop = parser->dop();
 
-                QDate creationDate(1900 + dop.dttmCreated.yr, dop.dttmCreated.mon, dop.dttmCreated.dom);
-                logText += DocScan::formatDate(creationDate, "creation");
-
-                QDate modificationDate(1900 + dop.dttmRevised.yr, dop.dttmRevised.mon, dop.dttmRevised.dom);
-                logText += DocScan::formatDate(modificationDate, "modification");
-
-                QString language;
-                if (textHandler->wholeText.length() > 1024 && !(language = guessLanguage(textHandler->wholeText)).isEmpty())
-                    logText += "<meta name=\"language\" origin=\"aspell\">" + language + "</meta>\n";
-                if (!textHandler->language.isEmpty())
-                    logText += "<meta name=\"language\" origin=\"document\">" + textHandler->language + "</meta>\n";
+                result.dateCreation = QDate(1900 + dop.dttmCreated.yr, dop.dttmCreated.mon, dop.dttmCreated.dom);
+                result.dateModification = QDate(1900 + dop.dttmRevised.yr, dop.dttmRevised.mon, dop.dttmRevised.dom);
+                result.pageCount = dop.cPg;
+                result.charCount = dop.cCh;
+                result.paperWidth = 0;
+                result.paperHeight = 0;
             }
 
             delete textHandler;
@@ -231,6 +219,7 @@ void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, QStrin
 void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 {
     m_isAlive = true;
+    ResultContainer result;
 
     std::string cppFilename = std::string(filename.toUtf8().constData());
 
@@ -253,20 +242,74 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     QString mimetype = "application/octet-stream";
     if (filename.endsWith(".doc"))
         mimetype = "application/msword";
-    QString logText = QString("<fileanalysis mimetype=\"%1\" filename=\"%2\">\n").arg(mimetype).arg(DocScan::xmlify(filename));
 
     /// get the FIB (File information block) which contains a lot of interesting information
     wvWare::Word97::FIB fib(document, true);
-    analyzeFiB(fib, logText);
+    analyzeFiB(fib, result);
 
     /// read meta information from table
-    analyzeTable(storage, fib, logText);
+    analyzeTable(storage, fib, result);
 
-    analyzeWithParser(cppFilename, logText);
+    /// analyze file with parser
+    analyzeWithParser(cppFilename, result);
+
+    QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+    QString metaText = QLatin1String("<meta>\n");
+    QString headerText = QLatin1String("<header>\n");
+
+    /// file format including mime type and file format version
+    metaText.append(QString("<fileformat>\n<mimetype>%3</mimetype>\n<version major=\"%1\" minor=\"0\">%2</version>\n</fileformat>").arg(result.versionNumber).arg(result.versionText).arg(mimetype));
+
+    /// editor as stated in file format
+    QString guess = guessTool(result.editorText);
+    metaText.append(QString("<tool origin=\"document\" type=\"editor\">\n%1</tool>\n").arg(guess));
+
+    /// evaluate editor (a.k.a. creator)
+    if (!result.authorInitial.isEmpty())
+        headerText.append(QString("<author type=\"first\">%1</author>\n").arg(DocScan::xmlify(result.authorInitial)));
+    if (!result.authorLast.isEmpty())
+        headerText.append(QString("<author type=\"last\">%1</author>\n").arg(DocScan::xmlify(result.authorLast)));
+
+    /// evaluate title
+    if (!result.title.isEmpty())
+        headerText.append(QString("<title>%1</title>\n").arg(DocScan::xmlify(result.title)));
+
+    /// evaluate subject
+    if (!result.subject.isEmpty())
+        headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(result.subject)));
+
+    /// evaluate language
+    if (!result.language.isEmpty())
+        headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(result.language));
+    if (result.plainText.length() > 1024)
+        headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+
+    /// evaluate dates
+    if (result.dateCreation.isValid())
+        headerText.append(DocScan::formatDate(result.dateCreation, "creation"));
+    if (result.dateModification.isValid())
+        headerText.append(DocScan::formatDate(result.dateModification, "modification"));
+
+    /// evaluate number of pages
+    if (result.pageCount > 0)
+        headerText.append(QString("<num-pages>%1</num-pages>\n").arg(result.pageCount));
+
+    // TODO paper size
+
+    // TODO fonts
+
+    QString bodyText = QString("<body length=\"%1\" />\n").arg(result.plainText.length());
+
+    /// close all tags, merge text
+    metaText += QLatin1String("</meta>\n");
+    logText.append(metaText);
+    headerText += QLatin1String("</header>\n");
+    logText.append(headerText);
+    logText.append(bodyText);
+    logText += QLatin1String("</fileanalysis>\n");
 
     delete document;
 
-    logText += "</fileanalysis>\n";
     emit analysisReport(logText);
 
     m_isAlive = false;

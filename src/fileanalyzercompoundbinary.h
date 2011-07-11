@@ -22,6 +22,8 @@
 #ifndef FILEANALYZERCOMPOUNDBINARY_H
 #define FILEANALYZERCOMPOUNDBINARY_H
 
+#include <QDate>
+
 #include <word_helper.h>
 #include <word97_generated.h>
 
@@ -39,11 +41,26 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    typedef struct {
+        int versionNumber;
+        QString versionText;
+        QString opSys;
+        QString editorText;
+        QString title, subject, keywords;
+        QString authorInitial, authorLast;
+        QString plainText, language;
+        QDate dateCreation, dateModification;
+        int pageCount, charCount;
+        int paperWidth, paperHeight;
+    } ResultContainer;
+
     bool m_isAlive;
 
-    void analyzeFiB(wvWare::Word97::FIB &fib, QString &logText);
-    void analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, QString &logText);
-    void analyzeWithParser(std::string &filename, QString &logText);
+    void analyzeFiB(wvWare::Word97::FIB &fib, ResultContainer &result);
+    void analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, ResultContainer &result);
+    void analyzeWithParser(std::string &filename, ResultContainer &result);
+
+    class DocScanTextHandler;
 };
 
 #endif // FILEANALYZERCOMPOUNDBINARY_H

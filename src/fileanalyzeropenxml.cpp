@@ -187,7 +187,10 @@ public:
         } else if (m_nodeName.top() == "dcterms:modified") {
             QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
             result.dateModification = DocScan::formatDate(date, "modification");
-        }
+        } else if (m_nodeName.top() == "dc:title")
+            result.title = QString("<title>%1</title>\n").arg(DocScan::xmlify(text));
+        else if (m_nodeName.top() == "dc:subject")
+            result.subject = QString("<subject>%1</subject>\n").arg(DocScan::xmlify(text));
 
         return QXmlDefaultHandler::characters(text);
     }
@@ -355,12 +358,12 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
             headerText.append(result.authorLast);
 
         /// evaluate title
-        // TODO if (!result.title.isEmpty())
-        // TODO     headerText.append(result.title);
+        if (!result.title.isEmpty())
+            headerText.append(result.title);
 
         /// evaluate subject
-        // TODO if (!result.subject.isEmpty())
-        // TODO     headerText.append(result.subject);
+        if (!result.subject.isEmpty())
+            headerText.append(result.subject);
 
         /// evaluate language
         if (!result.languageDocument.isEmpty())

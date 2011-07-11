@@ -44,6 +44,7 @@ private:
     typedef struct {
         QString toolGenerator;
         QString authorInitial, authorLast;
+        QString title, subject;
         QString languageAspell, languageDocument;
         QString dateCreation, dateModification;
         int pageCount;

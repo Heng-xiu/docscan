@@ -82,7 +82,7 @@ void UrlDownloader::finished()
         QByteArray data(reply->readAll());
         QString filename = m_filePattern;
 
-        QString host = reply->url().host();
+        QString host = reply->url().host().replace(QRegExp("[^.a-z-]", Qt::CaseInsensitive), "X");
         if (domainRegExp.indexIn(host) >= 0)
             filename = filename.replace("%{d}", domainRegExp.cap(0));
         else

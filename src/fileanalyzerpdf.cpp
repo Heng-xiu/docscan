@@ -116,7 +116,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             headerText.append(QString("<keyword>%1</keyword>\n").arg(DocScan::xmlify(keywords)));
 
         /// guess language using aspell
-        QString language = guessLanguage(plainText(doc));
+        const QString text = plainText(doc);
+        QString language = guessLanguage(text);
         if (!language.isEmpty())
             headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
 
@@ -134,11 +135,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             }
         }
 
+        QString bodyText = QString("<body length=\"%1\" />\n").arg(text.length());
+
         /// close all tags, merge text
         metaText += QLatin1String("</meta>\n");
         logText.append(metaText);
         headerText += QLatin1String("</header>\n");
         logText.append(headerText);
+        logText.append(bodyText);
         logText += QLatin1String("</fileanalysis>\n");
 
         emit analysisReport(logText);

@@ -183,6 +183,42 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["manufacturer"] = "oracle";
             result["product"] = "openoffice";
         }
+    } else if (text.indexOf("framemaker") >= 0) {
+        static const QRegExp framemakerVersion("\\b\\d+(\\.\\d+)+(\\b|\\.|p\\d+)");
+        result["manufacturer"] = "adobe";
+        result["product"] = "framemaker";
+        if (framemakerVersion.indexIn(text) >= 0)
+            result["version"] = framemakerVersion.cap(0);
+    } else if (text.indexOf("distiller") >= 0) {
+        static const QRegExp distillerVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "distiller";
+        if (distillerVersion.indexIn(text) >= 0)
+            result["version"] = distillerVersion.cap(0);
+    } else if (text.indexOf("pdf library") >= 0) {
+        static const QRegExp pdflibraryVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "pdflibrary";
+        if (pdflibraryVersion.indexIn(text) >= 0)
+            result["version"] = pdflibraryVersion.cap(0);
+    } else if (text.indexOf("pdfmaker") >= 0) {
+        static const QRegExp pdfmakerVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "pdfmaker";
+        if (pdfmakerVersion.indexIn(text) >= 0)
+            result["version"] = pdfmakerVersion.cap(0);
+    } else if (text.indexOf("indesign") >= 0) {
+        static const QRegExp indesignVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "indesign";
+        if (indesignVersion.indexIn(text) >= 0)
+            result["version"] = indesignVersion.cap(0);
+    } else if (text.indexOf("quartz") >= 0) {
+        static const QRegExp quartzVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "apple";
+        result["product"] = "quartz";
+        if (quartzVersion.indexIn(text) >= 0)
+            result["version"] = quartzVersion.cap(0);
     } else {
         static const QRegExp microsoftProducts("powerpoint|excel|word");
         static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
