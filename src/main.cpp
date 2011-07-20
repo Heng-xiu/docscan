@@ -118,6 +118,8 @@ int main(int argc, char *argv[])
         QObject::connect(downloader, SIGNAL(downloadReport(QString)), logCollector, SLOT(receiveLog(QString)));
         QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(QString)));
         QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
+        QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
+        QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
 
         finder->startSearch(numHits);
 

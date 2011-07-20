@@ -42,6 +42,7 @@ public:
 
 public slots:
     void receiveLog(QString);
+    void close();
 
 private:
     QTextStream m_ts;

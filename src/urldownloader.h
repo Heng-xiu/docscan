@@ -24,12 +24,12 @@
 
 #include <QUrl>
 #include <QTimer>
-#include <QMap>
 #include <QSet>
-#include <QMutex>
 
 #include "downloader.h"
 
+class QSignalMapper;
+class QMutex;
 class QNetworkAccessManager;
 class QNetworkReply;
 
@@ -38,6 +38,7 @@ class UrlDownloader : public Downloader
     Q_OBJECT
 public:
     explicit UrlDownloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+    ~UrlDownloader();
 
     virtual bool isAlive();
 
@@ -45,6 +46,7 @@ public:
 
 public slots:
     void download(QUrl);
+    void finalReport();
 
 signals:
     void downloaded(QUrl, QString);
@@ -52,17 +54,19 @@ signals:
     void downloadReport(QString);
 
 private:
+    QSet<QNetworkReply *> *m_setRunningJobs;
+    QMutex *m_mutexRunningJobs;
+    QSignalMapper *m_signalMapperTimeout;
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
     int m_runningDownloads;
-    QMap<QTimer *, QNetworkReply *> m_mapTimerToReply;
-    QMutex m_mapTimerToReplyMutex;
     QSet<QString> m_knownUrls;
     static const QRegExp domainRegExp;
+    int m_countSuccessfulDownloads, m_countFaileDownloads;
 
 private slots:
     void finished();
-    void timeout();
+    void timeout(QObject *);
 };
 
 #endif // URLDOWNLOADER_H

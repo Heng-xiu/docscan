@@ -50,3 +50,10 @@ void LogCollector::receiveLog(QString message)
     QString time = QDateTime::currentDateTime().toUTC().toString(Qt::ISODate);
     m_ts << "<logitem source=\"" << key << "\" time=\"" << time << "\">" << endl << message << "</logitem>" << endl;
 }
+
+void LogCollector::close()
+{
+    m_ts << "</log>" << endl;
+    m_ts.flush();
+    m_output->close();
+}

@@ -25,7 +25,7 @@
 #include "watchdog.h"
 #include "watchable.h"
 
-static const int countDownInit = 5;
+static const int countDownInit = 8;
 
 WatchDog::WatchDog(QObject *parent)
     : QObject(parent), m_countDown(countDownInit)
@@ -53,9 +53,12 @@ void WatchDog::watch()
     else
         --m_countDown;
 
-    if (m_countDown == countDownInit / 2) {
-        qDebug() << "Watchdog says it time to quit soon";
-        emit aboutToQuit();
+    if (m_countDown == countDownInit * 2 / 3) {
+        qDebug() << "Watchdog gives first warning";
+        emit firstWarning();
+    } else if (m_countDown == countDownInit / 3) {
+        qDebug() << "Watchdog gives last warning";
+        emit lastWarning();
     } else  if (m_countDown == 0) {
         qDebug() << "Watchdog says quit now";
         emit quit();

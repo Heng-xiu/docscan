@@ -51,7 +51,7 @@ private:
         QString plainText, language;
         QDate dateCreation, dateModification;
         int pageCount, charCount;
-        int paperWidth, paperHeight;
+        int paperSizeWidth, paperSizeHeight;
     } ResultContainer;
 
     bool m_isAlive;

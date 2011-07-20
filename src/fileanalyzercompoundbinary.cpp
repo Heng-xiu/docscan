@@ -50,14 +50,24 @@ class FileAnalyzerCompoundBinary::DocScanTextHandler: public wvWare::TextHandler
 private:
     QString lidToLangCode(int lid) {
         switch (lid) {
-        case 0x0c09:
-        case 0x0809:
-        case 0x0409: return QLatin1String("en");
-        case 0x807:
-        case 0x407: return QLatin1String("de");
-        case 0x41c: return QLatin1String("en"); ///< ?
-        case 0x41d: return QLatin1String("sv");
-        case 0x410: return QLatin1String("it"); ///< ?
+        case 0x0400: return QLatin1String("-none-");
+        case 0x0405: return QLatin1String("cs-CZ");
+        case 0x0406: return QLatin1String("da-DK");
+        case 0x0407: return QLatin1String("de-DE");
+        case 0x0409: return QLatin1String("en-US");
+        case 0x040b: return QLatin1String("fi-FI");
+        case 0x040c: return QLatin1String("fr-FR");
+        case 0x040d: return QLatin1String("iw-IL");
+        case 0x0410: return QLatin1String("it-IT");
+        case 0x0413: return QLatin1String("nl-NL");
+        case 0x0416: return QLatin1String("pt-BR");
+        case 0x0419: return QLatin1String("ru-RU");
+        case 0x041d: return QLatin1String("sv-SE");
+        case 0x0809: return QLatin1String("en-GB");
+        case 0x080a: return QLatin1String("es-ES"); ///< es-MX?
+        case 0x0816: return QLatin1String("pt-PT");
+        case 0x0c09: return QLatin1String("en-AU");
+        case 0x0c0a: return QLatin1String("pt"); ///< ?
         default: {
             QString language;
             language.setNum(lid, 16);
@@ -79,6 +89,11 @@ public:
         resultContainer.plainText += qString;
         if (resultContainer.language.isEmpty())
             resultContainer.language = lidToLangCode(chp->lidDefault);
+    }
+
+    void sectionStart(wvWare::SharedPtr<const wvWare::Word97::SEP> sep) {
+        resultContainer.paperSizeWidth = sep->xaPage / 56.694;
+        resultContainer.paperSizeHeight = sep->yaPage / 56.694;
     }
 };
 
@@ -206,8 +221,6 @@ void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, Result
                 result.dateModification = QDate(1900 + dop.dttmRevised.yr, dop.dttmRevised.mon, dop.dttmRevised.dom);
                 result.pageCount = dop.cPg;
                 result.charCount = dop.cCh;
-                result.paperWidth = 0;
-                result.paperHeight = 0;
             }
 
             delete textHandler;
@@ -220,6 +233,8 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 {
     m_isAlive = true;
     ResultContainer result;
+    result.paperSizeWidth = 0;
+    result.paperSizeHeight = 0;
 
     std::string cppFilename = std::string(filename.toUtf8().constData());
 
@@ -294,7 +309,9 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     if (result.pageCount > 0)
         headerText.append(QString("<num-pages>%1</num-pages>\n").arg(result.pageCount));
 
-    // TODO paper size
+    /// evaluate paper size
+    if (result.paperSizeHeight > 0 && result.paperSizeWidth > 0)
+        headerText.append(evaluatePaperSize(result.paperSizeWidth, result.paperSizeHeight));
 
     // TODO fonts
 

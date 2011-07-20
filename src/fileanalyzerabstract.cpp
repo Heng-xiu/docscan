@@ -55,9 +55,11 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
 
 QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 {
-    int count = std::numeric_limits<int>::max();
+    Q_UNUSED(text);
+    //int count = std::numeric_limits<int>::max();
     QString best = QString::null;
 
+    /*
     foreach(QString lang, getAspellLanguages()) {
         int c = runAspell(text, lang).count();
         if (c < count) {
@@ -65,6 +67,7 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
             best = lang;
         }
     }
+    */
 
     return best;
 }
@@ -122,16 +125,21 @@ QMap<QString, QString> FileAnalyzerAbstract::guessOpSys(const QString &opsys) co
 
     if (text.indexOf("neooffice") >= 0 || text.indexOf("quartz pdfcontext") >= 0 || text.indexOf("mac os x") >= 0 || text.indexOf("macintosh") >= 0) {
         result["type"] = "mac";
+        result["license"] = "proprietary";
     } else if (text.indexOf("win32") >= 0) {
         result["type"] = "windows";
         result["arch"] = "win32";
+        result["license"] = "proprietary";
     } else if (text.indexOf("win64") >= 0) {
         result["type"] = "windows";
         result["arch"] = "win64";
+        result["license"] = "proprietary";
     } else if (text.indexOf("microsoftoffice") >= 0 || text.indexOf("windows") >= 0 || text.indexOf(".dll") >= 0 || text.indexOf("pdf complete") >= 0 || text.indexOf("nitro pdf") >= 0 || text.indexOf("primopdf") >= 0) {
         result["type"] = "windows";
+        result["license"] = "proprietary";
     } else if (text.indexOf("linux") >= 0) {
         result["type"] = "linux";
+        result["license"] = "open";
     } else if (text.indexOf("unix") >= 0) {
         result["type"] = "unix";
     } else if (text.indexOf("solaris") >= 0) {
@@ -163,9 +171,10 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         checkOOoVersion = true;
         result["manufacturer"] = "tdf";
         result["product"] = "libreoffice";
+        result["based-on"] = "openoffice";
     }  else if (text.indexOf("lotus symphony") >= 0) {
         result["manufacturer"] = "ibm";
-        result["product"] = "libreoffice";
+        result["product"] = "lotus-symphony";
         result["based-on"] = "openoffice";
     } else if (text.indexOf("openoffice") >= 0) {
         checkOOoVersion = true;
@@ -220,7 +229,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (quartzVersion.indexIn(text) >= 0)
             result["version"] = quartzVersion.cap(0);
     } else {
-        static const QRegExp microsoftProducts("powerpoint|excel|word");
+        static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
         static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
         if (microsoftProducts.indexIn(text) >= 0) {
             result["manufacturer"] = "microsoft";
@@ -257,10 +266,10 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
         QString version;
         if (programMap["manufacturer"] == "microsoft" && !(version = programMap["version"]).isEmpty()) {
-            if (version == "97" || version == "2000" || version == "9.0" || version == "2002" || version == "10.0" || version == "2003" || version == "11.0" || version == "2007" || version == "12.0" || version == "2010" || version == "14.0")
-                opSysMap["type"] = "windows";
-            else if (version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
+            if (text.contains("Macintosh") || version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
                 opSysMap["type"] = "mac";
+            else if (version == "97" || version == "2000" || version == "9.0" || version == "2002" || version == "10.0" || version == "2003" || version == "11.0" || version == "2007" || version == "12.0" || version == "2010" || version == "14.0")
+                opSysMap["type"] = "windows";
             else
                 opSysMap["remark"] = "unknown version: " + version;
         }

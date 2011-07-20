@@ -36,7 +36,8 @@ public:
     void addWatchable(Watchable *watchable);
 
 signals:
-    void aboutToQuit();
+    void firstWarning();
+    void lastWarning();
     void quit();
 
 private:

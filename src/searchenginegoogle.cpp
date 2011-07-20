@@ -66,9 +66,9 @@ void SearchEngineGoogle::finished()
         QString htmlText = tsAll.readAll();
 
         if (m_currentPage == 0) {
-            const QRegExp countHitsRegExp("of.{,10} ([0-9,]+) result");
+            const QRegExp countHitsRegExp("([0-9,. ]+) results");
             if (countHitsRegExp.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine type=\"google\" numresults=\"%1\"/>\n").arg(countHitsRegExp.cap(1).replace(",", "")));
+                emit report(QString("<searchengine type=\"google\" numresults=\"%1\"/>\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
         }
 
         const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
