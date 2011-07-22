@@ -58,7 +58,7 @@ bool UrlDownloader::isAlive()
     return m_runningDownloads > 0;
 }
 
-void UrlDownloader::download(QUrl url)
+void UrlDownloader::download(const QUrl &url)
 {
     /// avoid duplicate URLs
     QString urlString = url.toString();
@@ -84,7 +84,7 @@ void UrlDownloader::download(QUrl url)
 void UrlDownloader::finalReport()
 {
     QString logText = QString("<download count-success=\"%1\" count-fail=\"%2\" />\n").arg(m_countSuccessfulDownloads).arg(m_countFaileDownloads);
-    emit downloadReport(logText);
+    emit report(logText);
 }
 
 void UrlDownloader::finished()
@@ -136,7 +136,7 @@ void UrlDownloader::finished()
                 output.close();
 
                 QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename));
-                emit downloadReport(logText);
+                emit report(logText);
                 succeeded = true;
 
                 emit downloaded(reply->url(), filename);
@@ -149,7 +149,7 @@ void UrlDownloader::finished()
 
     if (!succeeded) {
         QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
-        emit downloadReport(logText);
+        emit report(logText);
         ++m_countFaileDownloads;
     } else
         ++m_countSuccessfulDownloads;
@@ -170,7 +170,7 @@ void UrlDownloader::timeout(QObject *object)
         m_mutexRunningJobs->unlock();
         reply->close();
         QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
-        emit downloadReport(logText);
+        emit report(logText);
     } else
         m_mutexRunningJobs->unlock();
 }

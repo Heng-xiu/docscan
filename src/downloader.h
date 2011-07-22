@@ -23,17 +23,19 @@
 #define DOWNLOADER_H
 
 #include <QObject>
+#include <QUrl>
 
 #include "watchable.h"
-
-class QNetworkAccessManager;
-class QNetworkReply;
 
 class Downloader : public QObject, public Watchable
 {
     Q_OBJECT
 public:
     explicit Downloader(QObject *parent = 0);
+
+public slots:
+    virtual void download(const QUrl &) = 0;
+    virtual void finalReport() = 0;
 };
 
 #endif // DOWNLOADER_H

@@ -19,54 +19,56 @@
 
  */
 
-#ifndef URLDOWNLOADER_H
-#define URLDOWNLOADER_H
+#ifndef FROMLOGFILEFILEFINDER_H
+#define FROMLOGFILEFILEFINDER_H
 
-#include <QUrl>
-#include <QTimer>
 #include <QSet>
+#include <QUrl>
+#include <QPair>
 
+#include "filefinder.h"
 #include "downloader.h"
 
-class QSignalMapper;
-class QMutex;
-class QNetworkAccessManager;
-class QNetworkReply;
-
-class UrlDownloader : public Downloader
+class FromLogFileFileFinder : public FileFinder
 {
     Q_OBJECT
 public:
-    explicit UrlDownloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
-    ~UrlDownloader();
+    explicit FromLogFileFileFinder(const QString &logfilename, QObject *parent = 0);
 
+    virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
 
-    friend class DownloadJob;
+signals:
+    void foundUrl(QUrl);
 
-public slots:
-    void download(const QUrl &);
-    void finalReport();
+private:
+    QSet<QUrl> m_urlSet;
+    bool m_isAlive;
+};
+
+class FromLogFileDownloader: public Downloader
+{
+    Q_OBJECT
+public:
+    explicit FromLogFileDownloader(const QString &logfilename, QObject *parent = 0);
+
+    virtual bool isAlive();
 
 signals:
     void downloaded(QUrl, QString);
     void downloaded(QString);
     void report(QString);
 
-private:
-    QSet<QNetworkReply *> *m_setRunningJobs;
-    QMutex *m_mutexRunningJobs;
-    QSignalMapper *m_signalMapperTimeout;
-    QNetworkAccessManager *m_networkAccessManager;
-    const QString m_filePattern;
-    int m_runningDownloads;
-    QSet<QString> m_knownUrls;
-    static const QRegExp domainRegExp;
-    int m_countSuccessfulDownloads, m_countFaileDownloads;
+public slots:
+    void download(const QUrl &);
+    void finalReport();
 
 private slots:
-    void finished();
-    void timeout(QObject *);
+    void startEmitting();
+
+private:
+    QSet<QPair<QString, QUrl> > m_fileSet;
+    bool m_isAlive;
 };
 
-#endif // URLDOWNLOADER_H
+#endif // FROMLOGFILEFILEFINDER_H

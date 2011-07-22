@@ -33,6 +33,7 @@
 #include "watchdog.h"
 #include "webcrawler.h"
 #include "logcollector.h"
+#include "fromlogfile.h"
 
 QNetworkAccessManager netAccMan;
 QStringList filter;
@@ -71,6 +72,10 @@ bool evaluateConfigfile(const QString &filename)
                     downloader=cff;
                     finder=cff;
                     */
+                } else if (key == "fromlogfilefilefinder" && finder == NULL) {
+                    finder = new FromLogFileFileFinder(value);
+                } else if (key == "fromlogfiledownloader" && downloader == NULL) {
+                    downloader = new FromLogFileDownloader(value);
                 } else if (key == "urldownloader" && downloader == NULL) {
                     downloader = new UrlDownloader(&netAccMan, value);
                 } else if (key == "logcollector" && logCollector == NULL) {
@@ -103,25 +108,25 @@ int main(int argc, char *argv[])
     finder = NULL;
     numHits = 0;
 
-    if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && downloader != NULL && finder != NULL && numHits > 0) {
+    if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
         FileAnalyzerMultiplexer fileAnalyzer;
 
         WatchDog watchDog;
         watchDog.addWatchable(&fileAnalyzer);
-        watchDog.addWatchable(downloader);
-        watchDog.addWatchable(finder);
+        if (downloader != NULL) watchDog.addWatchable(downloader);
+        if (finder != NULL) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
-        QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
-        QObject::connect(downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
+        if (downloader != NULL && finder != NULL) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
+        if (downloader != NULL) QObject::connect(downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
         QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
-        QObject::connect(downloader, SIGNAL(downloadReport(QString)), logCollector, SLOT(receiveLog(QString)));
+        if (downloader != NULL) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
         QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(QString)));
-        QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
-        QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
+        if (finder != NULL) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
+        if (downloader != NULL) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
         QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
 
-        finder->startSearch(numHits);
+        if (finder != NULL) finder->startSearch(numHits);
 
         a.exec();
     } else {

@@ -1,8 +1,14 @@
-filter=*.pdf
+logcollector=/tmp/log.xml
+
+finder:numhits=5
+
 #searchenginebing=site:com increase ( filetype:pdf )
-searchenginegoogle=site:co.uk ( apple | mac ) ( filetype:docx )
-#searchenginegoogle=site:se ( filetype:docx | filetype:xlsx | filetype:pptx )
+#searchenginegoogle=site:com ( business | university | price | media | url ) ( filetype:docx )
+#searchenginegoogle=site:es ( filetype:docx | filetype:xlsx | filetype:pptx )
+#fromlogfilefilefinder=/tmp/log2.xml
+#fromlogfiledownloader=/tmp/log2.xml
+
+#filter=*.docx
 #filesystemscan=/tmp/t
+
 urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
-logcollector=/tmp/log.txt
-finder:numhits=9

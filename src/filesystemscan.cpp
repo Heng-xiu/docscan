@@ -42,7 +42,9 @@ void FileSystemScan::startSearch(int numExpectedHits)
 
         QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name & QDir::IgnoreCase);
         foreach(const QString &filename, files) {
-            emit foundUrl(QUrl(dir.absolutePath() + QDir::separator() + filename));
+            QUrl url = QUrl(dir.absolutePath() + QDir::separator() + filename);
+            emit report(QString("<filefinder event=\"hit\" href=\"%1\"/>\n").arg(url.toString()));
+            emit foundUrl(url);
             ++hits;
             if (hits >= numExpectedHits) break;
         }

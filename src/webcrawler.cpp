@@ -92,6 +92,7 @@ void WebCrawler::finishedDownload()
 
             if (m_numFoundHits < m_numExpectedHits && m_filePattern.indexIn(url) >= 0) {
                 ++m_numFoundHits;
+                emit report(QString("<filefinder event=\"hit\" href=\"%1\"/>\n").arg(url));
                 emit foundUrl(QUrl(url));
             } else if (url.startsWith(baseUrl) && (url.endsWith("/") || url.endsWith(".htm") || url.endsWith(".html")) && !m_knownUrls.contains(url)) {
                 m_knownUrls << url;
