@@ -33,6 +33,8 @@ class QMutex;
 class QNetworkAccessManager;
 class QNetworkReply;
 
+class GeoIP;
+
 class UrlDownloader : public Downloader
 {
     Q_OBJECT
@@ -63,6 +65,7 @@ private:
     QSet<QString> m_knownUrls;
     static const QRegExp domainRegExp;
     int m_countSuccessfulDownloads, m_countFaileDownloads;
+    GeoIP *m_geoip;
 
 private slots:
     void finished();
