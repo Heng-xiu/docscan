@@ -103,15 +103,17 @@ QMap<QString, QString> FileAnalyzerAbstract::guessLicense(const QString &license
     const QString text = license.toLower();
     QMap<QString, QString> result;
 
-    if (text.contains("primopdf")) {
+    if (text.contains("primopdf") || text.contains("freeware")) {
         result["type"] = "beer";
-    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("scansoft")) {
+    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("scansoft") || text.contains("crystal")) {
         result["type"] = "proprietary";
     } else if (text.contains("neooffice") || text.contains("broffice") || text.contains("koffice") || text.contains("calligra")) {
         result["type"] = "open";
     } else if (text.contains("openoffice") || text.contains("libreoffice") || text == "writer") {
         result["type"] = "open";
     } else if (text.contains("pdftex") || text.contains("ghostscript") || text.contains("dvips") || text.contains("pdfcreator")) {
+        result["type"] = "open";
+    } else if (text.contains("gnu") || text.contains("gpl") || text.contains("bsd") || text.contains("apache")) {
         result["type"] = "open";
     }
 
@@ -162,6 +164,12 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["manufacturer"] = "radicaleye";
         if (radicaleyeVersion.indexIn(text) >= 0)
             result["version"] = radicaleyeVersion.cap(0);
+    } else if (text.indexOf("ghostscript") >= 0) {
+        static const QRegExp ghostscriptVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "artifex ";
+        result["product"] = "ghostscript";
+        if (ghostscriptVersion.indexIn(text) >= 0)
+            result["version"] = ghostscriptVersion.cap(0);
     } else if (text.indexOf("koffice") >= 0) {
         result["manufacturer"] = "kde";
     } else if (text.indexOf("abiword") >= 0) {
@@ -228,6 +236,18 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "quartz";
         if (quartzVersion.indexIn(text) >= 0)
             result["version"] = quartzVersion.cap(0);
+    } else if (text.indexOf("pscript5.dll") >= 0) {
+        static const QRegExp pscriptVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "microsoft";
+        result["product"] = "pscript5";
+        if (pscriptVersion.indexIn(text) >= 0)
+            result["version"] = pscriptVersion.cap(0);
+    } else if (text.indexOf("quarkxpress") >= 0) {
+        static const QRegExp quarkxpressVersion(" (\\d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "quark";
+        result["product"] = "xpress";
+        if (quarkxpressVersion.indexIn(text) >= 0)
+            result["version"] = quarkxpressVersion.cap(1);
     } else {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
         static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");

@@ -48,7 +48,7 @@ private:
     QNetworkAccessManager *m_networkAccessManager;
 
     QMutex *m_mutexConcurrentAccess;
-    int m_readerCount;
+    int m_numRunningTasks;
 
     QSet<QString> m_knownHostnames;
     QMap<QString, QString> m_hostnameToIPaddress;

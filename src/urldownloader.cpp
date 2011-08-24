@@ -82,7 +82,7 @@ void UrlDownloader::download(const QUrl &url)
     QTimer *timer = new QTimer(reply);
     connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
     m_signalMapperTimeout->setMapping(timer, reply);
-    timer->start(10000 + m_runningDownloads * 200);
+    timer->start(15000 + m_runningDownloads * 200);
 }
 
 void UrlDownloader::finalReport()

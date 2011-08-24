@@ -31,7 +31,7 @@ GeoIP::GeoIP(QNetworkAccessManager *networkAccessManager, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager)
 {
     m_mutexConcurrentAccess = new QMutex();
-    m_readerCount = 0;
+    m_numRunningTasks = 0;
 }
 
 GeoIP::~GeoIP()
@@ -41,7 +41,7 @@ GeoIP::~GeoIP()
 
 bool GeoIP::isAlive()
 {
-    return m_readerCount > 0;
+    return m_numRunningTasks > 0;
 }
 
 void GeoIP::lookupHost(const QString &hostName)
@@ -51,7 +51,7 @@ void GeoIP::lookupHost(const QString &hostName)
         m_knownHostnames.insert(hostName);
         m_mutexConcurrentAccess->unlock();
 
-        ++m_readerCount;
+        ++m_numRunningTasks;
         QHostInfo::lookupHost(hostName, this, SLOT(gotHostInfo(QHostInfo)));
     } else
         m_mutexConcurrentAccess->unlock();
@@ -60,7 +60,7 @@ void GeoIP::lookupHost(const QString &hostName)
 QString GeoIP::getCountryCode(const QString &hostName) const
 {
     // FIXME: That is active waiting ...
-    while (m_readerCount > 0)
+    while (m_numRunningTasks > 0)
         qApp->processEvents();
 
     m_mutexConcurrentAccess->lock();
@@ -73,7 +73,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
 {
     const QString hostname = hostInfo.hostName();
     if (hostname.isEmpty()) {
-        --m_readerCount;
+        --m_numRunningTasks;
         return;
     }
 
@@ -81,7 +81,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
     if (!hostInfo.addresses().isEmpty())
         ipAddress = hostInfo.addresses().first().toString();
     if (ipAddress.isEmpty()) {
-        --m_readerCount;
+        --m_numRunningTasks;
         return;
     }
 
@@ -93,7 +93,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
     if (!m_ipAddressToCountryCode.contains(ipAddress))       {
         m_mutexConcurrentAccess->unlock();
 
-        ++m_readerCount;
+        ++m_numRunningTasks;
 
         QUrl url(QString(QLatin1String("http://freegeoip.appspot.com/xml/%1")).arg(ipAddress));
         QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
@@ -106,7 +106,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
         reply->setProperty("ip", ipAddress);
     } else {
         m_mutexConcurrentAccess->unlock();
-        --m_readerCount;
+        --m_numRunningTasks;
     }
 }
 
@@ -119,33 +119,30 @@ void GeoIP::finishedGeoInfo()
         QTextStream ts(reply->readAll(), QIODevice::ReadOnly);
         const QString xmlText = ts.readAll();
 
+        QString code = "xx";
+
         if (xmlText.contains(QLatin1String("<Response>")) && xmlText.contains(QLatin1String("<Status>true</Status>"))) {
             if (xmlText.contains(QLatin1String("<City>Tokyo</City>"))) {
-                qDebug() << "Located in Tokyo? I don't think so ..."  ;
+                qDebug() << "Dismissing Tokyo as location";
             } else {
                 const QRegExp regExpCountryCode(QLatin1String("<CountryCode>(\\S+)</CountryCode>"));
-                if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty()) {
-                    const QString code = regExpCountryCode.cap(1).toLower();
-                    if (code != QLatin1String("xx")) {
-                        m_mutexConcurrentAccess->lock();
-                        m_ipAddressToCountryCode.insert(ipAddress, code);
-                        m_mutexConcurrentAccess->unlock();
-                    }
-                }
+                if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty())
+                    code = regExpCountryCode.cap(1).toLower();
             }
         } else if (xmlText.contains(QLatin1String("<HostipLookupResultSet")) && xmlText.contains(QLatin1String("<Hostip>"))) {
             const QRegExp regExpCountryCode(QLatin1String("<countryAbbrev>(\\S+)</countryAbbrev>"));
-            if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty()) {
-                const QString code = regExpCountryCode.cap(1).toLower();
-                if (code != QLatin1String("xx")) {
-                    m_mutexConcurrentAccess->lock();
-                    m_ipAddressToCountryCode.insert(ipAddress, code);
-                    m_mutexConcurrentAccess->unlock();
-                }
-            }
+            if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty())
+                code = regExpCountryCode.cap(1).toLower();
         } else
             qDebug() << "XML is invalid: " << xmlText;
+
+        if (code != QLatin1String("xx")) {
+            if (code == QLatin1String("uk")) code = "gb"; // rewrite United Kingdom to Great Britain
+            m_mutexConcurrentAccess->lock();
+            m_ipAddressToCountryCode.insert(ipAddress, code);
+            m_mutexConcurrentAccess->unlock();
+        }
     }
 
-    --m_readerCount;
+    --m_numRunningTasks;
 }
