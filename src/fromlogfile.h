@@ -25,6 +25,7 @@
 #include <QSet>
 #include <QUrl>
 #include <QPair>
+#include <QStringList>
 
 #include "filefinder.h"
 #include "downloader.h"
@@ -68,6 +69,7 @@ private slots:
 
 private:
     QSet<QPair<QString, QUrl> > m_fileSet;
+    QStringList m_extraLines;
     bool m_isAlive;
 };
 

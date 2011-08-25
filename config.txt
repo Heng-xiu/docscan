@@ -1,14 +1,18 @@
 logcollector=/tmp/log.xml
 
-finder:numhits=5
+finder:numhits=15
 
-#searchenginebing=site:com increase ( filetype:pdf )
-#searchenginegoogle=site:com ( business | university | price | media | url ) ( filetype:docx )
+#searchenginebing=filetype:doc abc
+searchenginegoogle=( filetype:odt site:pl )
 #searchenginegoogle=site:es ( filetype:docx | filetype:xlsx | filetype:pptx )
 #fromlogfilefilefinder=/tmp/log2.xml
 #fromlogfiledownloader=/tmp/log2.xml
 
 #filter=*.docx
-#filesystemscan=/tmp/t
+#filesystemscan=/tmp/a
 
-urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
+#urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
+urldownloader=/tmp/odt/%{h:4}/%{h}_%{s}
+
+fileanalyzer=NULL
+#fileanalyzer=multiplexer

@@ -40,6 +40,7 @@ QStringList filter;
 FileFinder *finder;
 Downloader *downloader;
 LogCollector *logCollector;
+FileAnalyzerAbstract *fileAnalyzer;
 int numHits;
 
 bool evaluateConfigfile(const QString &filename)
@@ -52,8 +53,8 @@ bool evaluateConfigfile(const QString &filename)
             if (line.length() == 0 || line[0] == '#') continue;
             int i = line.indexOf('=');
             if (i > 1) {
-                QString key = line.left(i).trimmed().toLower();
-                QString value = line.mid(i + 1).trimmed();
+                QString key = line.left(i).simplified().toLower();
+                QString value = line.mid(i + 1).simplified();
 
                 if (key == "filter") {
                     filter.clear();
@@ -86,6 +87,19 @@ bool evaluateConfigfile(const QString &filename)
                     bool ok = false;
                     numHits = value.toInt(&ok);
                     if (!ok) numHits = 10;
+                } else if (key == "fileanalyzer") {
+                    if (value.contains("multiplexer"))
+                        fileAnalyzer = new FileAnalyzerMultiplexer();
+                    else if (value.contains("odf"))
+                        fileAnalyzer = new FileAnalyzerODF();
+                    else if (value.contains("openxml"))
+                        fileAnalyzer = new FileAnalyzerOpenXML();
+                    else if (value.contains("pdf"))
+                        fileAnalyzer = new FileAnalyzerPDF();
+                    else if (value.contains("compoundbinary"))
+                        fileAnalyzer = new FileAnalyzerCompoundBinary();
+                    else
+                        fileAnalyzer = NULL;
                 }
             } else {
                 configFile.close();
@@ -103,25 +117,24 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+    fileAnalyzer = NULL;
     logCollector = NULL;
     downloader = NULL;
     finder = NULL;
     numHits = 0;
 
     if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
-        FileAnalyzerMultiplexer fileAnalyzer;
-
         WatchDog watchDog;
-        watchDog.addWatchable(&fileAnalyzer);
+        if (fileAnalyzer != NULL) watchDog.addWatchable(fileAnalyzer);
         if (downloader != NULL) watchDog.addWatchable(downloader);
         if (finder != NULL) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
         if (downloader != NULL && finder != NULL) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
-        if (downloader != NULL) QObject::connect(downloader, SIGNAL(downloaded(QString)), &fileAnalyzer, SLOT(analyzeFile(QString)));
+        if (downloader != NULL && fileAnalyzer != NULL) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
         QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
         if (downloader != NULL) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
-        QObject::connect(&fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(QString)));
+        if (fileAnalyzer != NULL) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(QString)));
         if (finder != NULL) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(QString)));
         if (downloader != NULL) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
         QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));

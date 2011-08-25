@@ -71,11 +71,17 @@ FromLogFileDownloader::FromLogFileDownloader(const QString &logfilename, QObject
         const QString text = textStream.readAll();
         input.close();
 
-        QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\"/>"));
+        QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\""));
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
             qDebug() << "FromLogFileDownloader  url=" << hitRegExp.cap(1) << "  filename=" << hitRegExp.cap(2);
             m_fileSet.insert(QPair<QString, QUrl>(hitRegExp.cap(2), QUrl(hitRegExp.cap(1))));
+        }
+
+        QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
+        if (searchEngineNumResultsRegExp.indexIn(text) >= 0) {
+            qDebug() << "numresults=" << searchEngineNumResultsRegExp.cap(1);
+            m_extraLines << QString(QLatin1String("<searchengine numresults=\"%1\"/>")).arg(searchEngineNumResultsRegExp.cap(1));
         }
     }
 
@@ -86,6 +92,11 @@ void FromLogFileDownloader::startEmitting()
 {
     const QString s = QString("<downloader type=\"fromlogfiledownloader\" count=\"%1\"/>\n").arg(m_fileSet.count());
     emit report(s);
+
+    foreach(const QString &extraLine, m_extraLines) {
+        emit report(extraLine);
+    }
+
     for (QSet<QPair<QString, QUrl> >::ConstIterator it = m_fileSet.constBegin(); it != m_fileSet.constEnd(); ++it) {
         emit downloaded(it->second, it->first);
         emit downloaded(it->first);
