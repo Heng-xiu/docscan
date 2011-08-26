@@ -141,8 +141,9 @@ int main(int argc, char *argv[])
 
         if (finder != NULL) finder->startSearch(numHits);
 
-        a.exec();
+        return a.exec();
     } else {
         fprintf(stderr, "Require single configuration file as parameter\n");
+        return 1;
     }
 }

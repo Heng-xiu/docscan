@@ -49,10 +49,11 @@ void FileSystemScan::startSearch(int numExpectedHits)
             if (hits >= numExpectedHits) break;
         }
 
-        foreach(const QString subdir, dir.entryList(QDir::Dirs))
+        foreach(const QString subdir, dir.entryList(QDir::Dirs)) {
             if (subdir != "." && subdir != "..") {
                 queue.append(dir.absolutePath() + QDir::separator() + subdir);
             }
+        }
     }
 
     emit report(QString("<filesystemscan directory=\"%2\" numresults=\"%1\"/>\n").arg(QString::number(hits)).arg(DocScan::xmlify(QDir(m_baseDir).absolutePath())));

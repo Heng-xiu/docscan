@@ -65,11 +65,10 @@ public slots:
     void finalReport();
 
 private slots:
-    void startEmitting();
+    void startParsingAndEmitting();
 
 private:
-    QSet<QPair<QString, QUrl> > m_fileSet;
-    QStringList m_extraLines;
+    QString m_logfilename;
     bool m_isAlive;
 };
 

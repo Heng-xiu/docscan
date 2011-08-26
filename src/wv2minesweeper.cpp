@@ -19,34 +19,28 @@
 
  */
 
-#ifndef LOGCOLLECTOR_H
-#define LOGCOLLECTOR_H
+#include <QCoreApplication>
+#include <QDebug>
 
-#include <QObject>
-#include <QTextStream>
-#include <QRegExp>
-#include <QTextStream>
+#include "fileanalyzercompoundbinary.h"
 
-#include "watchable.h"
+std::ofstream debugFile("/tmp/wvlog-minesweeper.txt");
 
-class QIODevice;
-
-class LogCollector : public QObject, public Watchable
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-public:
-    explicit LogCollector(QIODevice *output, QObject *parent = 0);
+    QCoreApplication a(argc, argv);
 
-    virtual bool isAlive();
-
-public slots:
-    void receiveLog(QString);
-    void close();
-
-private:
-    QTextStream m_ts;
-    QIODevice *m_output;
-    QRegExp m_tagStart;
-};
-
-#endif // LOGCOLLECTOR_H
+    if (argc == 2) {
+        const QString filename = QString::fromAscii(argv[argc - 1]);
+        FileAnalyzerCompoundBinary facb(&a);
+        qDebug() << "Minesweeping file" << filename;
+        facb.analyzeFile(filename);
+        while (facb.isAlive()) {
+            qApp->processEvents();
+        }
+        return 0;
+    } else {
+        qWarning() << "Needing exactly one filename as parameter";
+        return 1;
+    }
+}

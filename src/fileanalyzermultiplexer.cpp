@@ -44,7 +44,6 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
     static QRegExp openXMLExtension(".(doc|ppt|xls)x$");
     static QRegExp compoundBinaryExtension(".(doc|ppt|xls)$");
 
-
     qDebug() << "Analyzing file" << filename;
 
     if (filename.endsWith(".pdf"))

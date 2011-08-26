@@ -22,7 +22,7 @@
 #ifndef WEBCRAWLER_H
 #define WEBCRAWLER_H
 
-#include <QMap>
+#include <QSet>
 #include <QStringList>
 
 #include "filefinder.h"
@@ -30,12 +30,15 @@
 class QNetworkAccessManager;
 class QTimer;
 class QNetworkReply;
+class QSignalMapper;
+class QMutex;
 
 class WebCrawler : public FileFinder
 {
     Q_OBJECT
 public:
     explicit WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, QObject *parent = 0);
+    ~WebCrawler();
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
@@ -47,7 +50,11 @@ private:
     int m_runningDownloads;
     int m_numExpectedHits, m_numFoundHits, m_visitedPages;
     static const int maxParallelDownloads, maxVisitedPages;
-    QMap<QTimer *, QNetworkReply *> m_mapTimerToReply;
+
+    QSet<QNetworkReply *> *m_setRunningJobs;
+    QMutex *m_mutexRunningJobs;
+    QSignalMapper *m_signalMapperTimeout;
+
     QStringList m_knownUrls;
     QStringList m_queuedUrls;
 
@@ -56,7 +63,7 @@ private:
 
 private slots:
     void finishedDownload();
-    void timeout();
+    void timeout(QObject *object);
 };
 
 #endif // WEBCRAWLER_H

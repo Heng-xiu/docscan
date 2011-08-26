@@ -23,6 +23,8 @@
 #include <QNetworkReply>
 #include <QTimer>
 #include <QRegExp>
+#include <QSignalMapper>
+#include <QMutex>
 
 #include "webcrawler.h"
 #include "general.h"
@@ -30,12 +32,23 @@
 WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, QObject *parent)
     : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl), m_runningDownloads(0)
 {
+    m_signalMapperTimeout = new QSignalMapper(this);
+    connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
+    m_setRunningJobs = new QSet<QNetworkReply *>();
+    m_mutexRunningJobs = new QMutex();
+
     QString reText;
     foreach(QString filter, filters) {
         if (!reText.isEmpty()) reText += '|';
         reText += "(^|/)" + filter.replace(".", "\\.").replace("?", ".").replace("*", "[^ \"]*") + '$';
     }
     m_filePattern = QRegExp(reText);
+}
+
+WebCrawler::~WebCrawler() {
+    delete m_signalMapperTimeout;
+    delete m_setRunningJobs;
+    delete m_mutexRunningJobs;
 }
 
 void WebCrawler::startSearch(int numExpectedHits)
@@ -66,41 +79,51 @@ void WebCrawler::startDownload(const QUrl &url)
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
 
+    m_mutexRunningJobs->lock();
+    m_setRunningJobs->insert(reply);
+    m_mutexRunningJobs->unlock();
     QTimer *timer = new QTimer(reply);
-    connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    m_mapTimerToReply.insert(timer, reply);
-    timer->start(15000);
+    connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
+    m_signalMapperTimeout->setMapping(timer, reply);
+    timer->start(15000 + m_runningDownloads * 200);
+
 }
 
 void WebCrawler::finishedDownload()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    m_mutexRunningJobs->lock();
+    m_setRunningJobs->remove(reply);
+    m_mutexRunningJobs->unlock();
 
     if (reply->error() == QNetworkReply::NoError) {
-        QString baseUrl = m_baseUrl.toString();
+        const QString baseUrl = m_baseUrl.toString();
         QByteArray data(reply->readAll());
         QString text(data);
 
-        // TODO check if is HTML
+        /// check if HTML page ...
+        if (text.left(256).toLower().contains("<html>")) {
 
-        /// for each reference in the HTML code
-        QRegExp referenceRegExp("<a\\b[^>]*href=\"([^\" \t><]+)\"");
-        int p = -1;
-        while ((p = text.indexOf(referenceRegExp, p + 1)) >= 0) {
-            QString url = completeUrl(referenceRegExp.cap(1), reply->url()); // TODO complete
-            if (url.isNull()) continue;
+            /// for each reference in the HTML code
+            QRegExp referenceRegExp("<a\\b[^>]*href=\"([^\" \t><]+)\"");
+            int p = -1;
+            while ((p = text.indexOf(referenceRegExp, p + 1)) >= 0) {
+                QString url = completeUrl(referenceRegExp.cap(1), reply->url()); // TODO complete
+                if (url.isNull()) continue;
 
-            if (m_numFoundHits < m_numExpectedHits && m_filePattern.indexIn(url) >= 0) {
-                ++m_numFoundHits;
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\"/>\n").arg(url));
-                emit foundUrl(QUrl(url));
-            } else if (url.startsWith(baseUrl) && (url.endsWith("/") || url.endsWith(".htm") || url.endsWith(".html")) && !m_knownUrls.contains(url)) {
-                m_knownUrls << url;
-                m_queuedUrls << url;
+                if (m_numFoundHits < m_numExpectedHits && m_filePattern.indexIn(url) >= 0) {
+                    ++m_numFoundHits;
+                    emit report(QString("<filefinder event=\"hit\" href=\"%1\"/>\n").arg(url));
+                    emit foundUrl(QUrl(url));
+                } else if (url.startsWith(baseUrl) && (url.endsWith("/") || url.endsWith(".htm") || url.endsWith(".html")) && !m_knownUrls.contains(url)) {
+                    m_knownUrls << url;
+                    m_queuedUrls << url;
+                }
             }
-        }
 
-        emit report(QString("<webcrawler url=\"%1\" status=\"success\"/>\n").arg(DocScan::xmlify(reply->url().toString())));
+            emit report(QString("<webcrawler url=\"%1\" status=\"success\"/>\n").arg(DocScan::xmlify(reply->url().toString())));
+        } else
+            emit report(QString("<webcrawler url=\"%1\" detailed=\"Not an HTML page\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())));
     } else
         emit report(QString("<webcrawler url=\"%1\" detailed=\"%2\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())));
 
@@ -113,14 +136,18 @@ void WebCrawler::finishedDownload()
     --m_runningDownloads;
 }
 
-void WebCrawler::timeout()
+void WebCrawler::timeout(QObject *object)
 {
-    QTimer *timer = qobject_cast<QTimer *>(sender());
-    QNetworkReply *reply = m_mapTimerToReply[timer];
-    if (reply != NULL) {
+    QNetworkReply *reply = static_cast<QNetworkReply *>(object);
+    m_mutexRunningJobs->lock();
+    if (m_setRunningJobs->contains(reply)) {
+        m_setRunningJobs->remove(reply);
+        m_mutexRunningJobs->unlock();
         reply->close();
-        m_mapTimerToReply.remove(timer);
-    }
+        QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
+        emit report(logText);
+    } else
+        m_mutexRunningJobs->unlock();
 }
 
 QString WebCrawler::completeUrl(const QString &partialUrl, const QUrl &baseUrl)

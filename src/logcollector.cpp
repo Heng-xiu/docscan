@@ -31,13 +31,6 @@ LogCollector::LogCollector(QIODevice *output, QObject *parent)
     m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log>" << endl;
 }
 
-LogCollector::~LogCollector()
-{
-    m_ts << "</log>" << endl;
-    m_ts.flush();
-    m_output->close();
-}
-
 bool LogCollector::isAlive()
 {
     return false;

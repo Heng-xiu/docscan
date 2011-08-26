@@ -121,9 +121,9 @@ void GeoIP::finishedGeoInfo()
 
         QString code = "xx";
 
-        if (xmlText.contains(QLatin1String("<Response>")) && xmlText.contains(QLatin1String("<Status>true</Status>"))) {
-            if (xmlText.contains(QLatin1String("<City>Tokyo</City>"))) {
-                qDebug() << "Dismissing Tokyo as location";
+        if (xmlText.contains(QLatin1String("<Response>"))) {
+            if (!xmlText.contains(QLatin1String("<Status>true</Status>")) || xmlText.contains(QLatin1String("<City>Tokyo</City>"))) {
+                qDebug() << "Could not resolve location for" << ipAddress << "via freegeoip";
             } else {
                 const QRegExp regExpCountryCode(QLatin1String("<CountryCode>(\\S+)</CountryCode>"));
                 if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty())
