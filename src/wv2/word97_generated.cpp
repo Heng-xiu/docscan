@@ -28,10 +28,12 @@
 // If you find bugs or strange behavior please contact Werner Trobin
 // <trobin@kde.org>
 
+#include "msdoc.h"
 #include <word97_generated.h>
 #include <olestream.h>
 #include <string.h>  // memset(), memcpy()
 #include "wvlog.h"
+#include "global.h"
 
 namespace wvWare
 {
@@ -603,10 +605,10 @@ bool SHD::read(OLEStreamReader *stream, bool preservePos)
 
     shifterU16 = stream->readU16();
     ico = shifterU16;
-    cvFore = Word97::icoToRGB(ico);
+    cvFore = Word97::icoToCOLORREF(ico);
     shifterU16 >>= 5;
     ico = shifterU16;
-    cvBack = Word97::icoToRGB(ico);
+    cvBack = Word97::icoToCOLORREF(ico);
     shifterU16 >>= 5;
     ipat = shifterU16;
 
@@ -627,12 +629,18 @@ void SHD::readPtr(const U8 *ptr)
     shifterU16 = readU16(ptr);
     ptr += sizeof(U16);
     icoFore = shifterU16 & 0x1F;
-    cvFore = Word97::icoToRGB(icoFore);
+    cvFore = Word97::icoToCOLORREF(icoFore);
     shifterU16 >>= 5;
     icoBack = shifterU16 & 0x1F;
-    cvBack = Word97::icoToRGB(icoBack);
+    cvBack = Word97::icoToCOLORREF(icoBack);
     shifterU16 >>= 5;
     ipat = shifterU16;
+
+#ifdef WV2_DEBUG_SHD
+    wvlog << "icoFore: 0x" << hex << icoFore << std::endl;
+    wvlog << "icoBack: 0x" << hex << icoBack << std::endl;
+    wvlog << "ipat: 0x" << hex << ipat << std::endl;
+#endif
 
     //check for Shd80Nil
     if (icoFore == 0x001F && icoBack == 0x001F && ipat == 0x003F) {
@@ -677,28 +685,40 @@ void SHD::readSHDOperandPtr(const U8 *ptr)
     U16 shifterU16;
     U8 r, g, b, cvauto;
 
-    U8 cb = readU8(ptr);        // read the cb property and do nothing with it
-
-    cvauto = readU8(ptr);
+    // read the cb property
+    U8 n = readU8(ptr);
     ptr += sizeof(U8);
+    if (n != 10) {
+        wvlog << "Warning: Invalid SHDOperand!";
+        return;
+    }
+
     r = readU8(ptr);
     ptr += sizeof(U8);
     g = readU8(ptr);
     ptr += sizeof(U8);
     b = readU8(ptr);
+    ptr += sizeof(U8);
+    cvauto = readU8(ptr);
     ptr += sizeof(U8);
     cvFore = (cvauto << 24) | (r << 16) | (g << 8) | (b);
-    cvauto = readU8(ptr);
-    ptr += sizeof(U8);
     r = readU8(ptr);
     ptr += sizeof(U8);
     g = readU8(ptr);
     ptr += sizeof(U8);
     b = readU8(ptr);
+    ptr += sizeof(U8);
+    cvauto = readU8(ptr);
     ptr += sizeof(U8);
     cvBack = (cvauto << 24) | (r << 16) | (g << 8) | (b);
     shifterU16 = readU16(ptr);
     ipat = shifterU16;
+
+#ifdef WV2_DEBUG_SHD
+    wvlog << "cvFore: 0x" << hex << cvFore << std::endl;
+    wvlog << "cvBack: 0x" << hex << cvBack << std::endl;
+    wvlog << "ipat: 0x" << hex << ipat << std::endl;
+#endif
 
     // call just to set the member variable shdAutoOrNill
     isShdAutoOrNill();
@@ -762,7 +782,7 @@ std::string SHD::toString() const
     std::string s("SHD:");
     s += "\ncvFore=";
     s += uint2string(cvFore);
-    s += "\nicvBack=";
+    s += "\ncvBack=";
     s += uint2string(cvBack);
     s += "\nipat=";
     s += uint2string(ipat);
@@ -976,7 +996,7 @@ bool BRC::read(OLEStreamReader *stream, bool preservePos)
     brcType = shifterU16;
     shifterU16 = stream->readU16();
     ico = shifterU16 & 0xFF;
-    cv = Word97::icoToRGB(ico);
+    cv = Word97::icoToCOLORREF(ico);
     shifterU16 >>= 8;
     dptSpace = shifterU16;
     shifterU16 >>= 5;
@@ -1004,7 +1024,7 @@ void BRC::readPtr(const U8 *ptr)
     shifterU16 = readU16(ptr);
     ptr += sizeof(U16);
     ico = shifterU16 & 0xFF;
-    cv = Word97::icoToRGB(ico);
+    cv = Word97::icoToCOLORREF(ico);
     shifterU16 >>= 8;
     dptSpace = shifterU16;
     shifterU16 >>= 5;
@@ -1741,6 +1761,10 @@ std::string TAP::toString() const
     s += "\ntextWrap=";
     s += uint2string(textWrap);
     s += "\nrgdxaCenter=";
+    for (uint i = 0; i < rgdxaCenter.size(); i++) {
+        s += "\nrgdxaCenter[" + int2string(i) + "]=";
+        s += int2string(rgdxaCenter[i]);
+    }
     // skipping the std::vector rgdxaCenter
     s += "\nrgdxaCenterPrint=";
     // skipping the std::vector rgdxaCenterPrint
@@ -3422,6 +3446,7 @@ void CHP::clear()
     shd.clear();
     brc.clear();
     cv = cvAuto;
+    cvUl = cvAuto;
     fTNY = 0;
     fTNYCompress = 0;
 }
@@ -3644,6 +3669,7 @@ bool operator==(const CHP &lhs, const CHP &rhs)
            lhs.kul == rhs.kul &&
            lhs.fSpecSymbol == rhs.fSpecSymbol &&
            lhs.cv == rhs.cv &&
+           lhs.cvUl == rhs.cvUl &&
            lhs.unused23_5 == rhs.unused23_5 &&
            lhs.fSysVanish == rhs.fSysVanish &&
            lhs.hpScript == rhs.hpScript &&
@@ -4666,9 +4692,11 @@ bool FIB::read(OLEStreamReader *stream, bool preservePos)
 
     U8 shifterU8;
     U16 shifterU16;
+    int start = stream->tell();
 
-    if (preservePos)
+    if (preservePos) {
         stream->push();
+    }
 
     wIdent = stream->readU16();
     nFib = stream->readU16();
@@ -4946,9 +4974,79 @@ bool FIB::read(OLEStreamReader *stream, bool preservePos)
     fcSttbfUssr = stream->readU32();
     lcbSttbfUssr = stream->readU32();
 
-    if (preservePos)
+    //sizeof(base) + sizeof(csw) + sizeof(clw) + sizeof(cfclcb) +
+    //sizeof(fibRgW) + sizeof(fibRgLw) + sizeof(fibRgFcLcbBlob)
+    int expected = 32 + 6 + (csw * 2) + (clw * 4) + (cfclcb * 8);
+    int n = stream->tell() - start;
+#ifdef WV2_DEBUG_FIB
+    wvlog << "FIB bytes expected:" << expected << std::endl;
+    wvlog << "FIB bytes read:" << n << std::endl;
+#endif
+    if ((expected - n) > 0) {
+        stream->seek((expected - n), G_SEEK_SET);
+    }
+    //this is new compared to Word6/Word8
+    cswNew = stream->readU16();
+
+    if (preservePos) {
         stream->pop();
+    }
+
     return true;
+}
+
+bool FIB::valid() const
+{
+    bool valid = true;
+    if (csw != 0x000e) {
+        wvlog << "Warning: fibRgW count:" << csw << "| expected: 14" << std::endl;
+        valid = false;
+    }
+    if (clw != 0x0016) {
+        wvlog << "Warning: fibRgLw count:" << clw << "| expected: 22" << std::endl;
+        valid = false;
+    }
+    switch (nFib) {
+    case Word8nFib:
+    case Word8nFib0:
+    case Word8nFib2:
+        if (cfclcb != 0x005D) {
+            wvlog << "Warning: fibRgFcLcbBlob count:" << cfclcb << "| expected: 93" << std::endl;
+            valid = false;
+        }
+        break;
+    case Word2knFib:
+        if (cfclcb != 0x006C) {
+            wvlog << "Warning: fibRgFcLcbBlob count:" << cfclcb << "| expected: 108" << std::endl;
+            valid = false;
+        }
+        break;
+    case Word2k2nFib:
+        if (cfclcb != 0x0088) {
+            wvlog << "Warning: fibRgFcLcbBlob count:" << cfclcb << "| expected: 136" << std::endl;
+            valid = false;
+        }
+        break;
+    case Word2k3nFib:
+        if (cfclcb != 0x00A4) {
+            wvlog << "Warning: fibRgFcLcbBlob count:" << cfclcb << "| expected: 164" << std::endl;
+            valid = false;
+        }
+        break;
+    case Word2k7nFib:
+        if (cfclcb != 0x00B7) {
+            wvlog << "Warning: fibRgFcLcbBlob count:" << cfclcb << "| expected: 183" << std::endl;
+            valid = false;
+        }
+        break;
+    default:
+        wvlog << "Warning: A document < Word8, complete validation not supported!";
+        break;
+    }
+    if (cswNew) {
+        wvlog << "Warning: A document > Word8, Dop > Dop97 not supported!";
+    }
+    return valid;
 }
 
 bool FIB::write(OLEStreamWriter *stream, bool preservePos) const
@@ -5482,6 +5580,7 @@ void FIB::clear()
     lcbSttbListNames = 0;
     fcSttbfUssr = 0;
     lcbSttbfUssr = 0;
+    cswNew = 0;
 }
 
 bool operator==(const FIB &lhs, const FIB &rhs)
@@ -5742,7 +5841,8 @@ bool operator==(const FIB &lhs, const FIB &rhs)
            lhs.fcSttbListNames == rhs.fcSttbListNames &&
            lhs.lcbSttbListNames == rhs.lcbSttbListNames &&
            lhs.fcSttbfUssr == rhs.fcSttbfUssr &&
-           lhs.lcbSttbfUssr == rhs.lcbSttbfUssr;
+           lhs.lcbSttbfUssr == rhs.lcbSttbfUssr &&
+           lhs.cswNew == rhs.cswNew;
 }
 
 bool operator!=(const FIB &lhs, const FIB &rhs)
@@ -7098,6 +7198,8 @@ bool PAP::read(OLEStreamReader *stream, bool preservePos)
     unused17 = stream->readU8();
     fNoAutoHyph = stream->readU8();
     fWidowControl = stream->readU8();
+    dyaBeforeAuto = stream->readU8();
+    dyaAfterAuto = stream->readU8();
     dxaRight = stream->readS32();
     dxaLeft = stream->readS32();
     dxaLeft1 = stream->readS32();
@@ -7162,6 +7264,7 @@ bool PAP::read(OLEStreamReader *stream, bool preservePos)
     return true;
 }
 
+//TODO: update required!
 bool PAP::write(OLEStreamWriter *stream, bool preservePos) const
 {
 
@@ -7194,6 +7297,8 @@ bool PAP::write(OLEStreamWriter *stream, bool preservePos) const
     stream->write(unused17);
     stream->write(fNoAutoHyph);
     stream->write(fWidowControl);
+    stream->write(dyaBeforeAuto);
+    stream->write(dyaAfterAuto);
     stream->write(dxaRight);
     stream->write(dxaLeft);
     stream->write(dxaLeft1);
@@ -7254,6 +7359,7 @@ bool PAP::write(OLEStreamWriter *stream, bool preservePos) const
     return true;
 }
 
+//TODO: update required!
 void PAP::clear()
 {
     istd = 0;
@@ -7278,6 +7384,8 @@ void PAP::clear()
     unused17 = 0;
     fNoAutoHyph = 0;
     fWidowControl = 1;
+    dyaBeforeAuto = 0;
+    dyaAfterAuto = 0;
     dxaRight = 0;
     dxaLeft = 0;
     dxaLeft1 = 0;
@@ -7303,6 +7411,10 @@ void PAP::clear()
     unused70 = 0;
     fInTable = 0;
     fTtp = 0;
+    itap = 0;
+    dtap = 0;
+    fInnerTableCell = 0;
+    fInnerTtp = 0;
     wr = 0;
     fLocked = 0;
     ptap = 0;
@@ -7387,6 +7499,10 @@ std::string PAP::toString() const
     s += uint2string(fNoAutoHyph);
     s += "\nfWidowControl=";
     s += uint2string(fWidowControl);
+    s += "\ndyaBeforeAuto=";
+    s += uint2string(dyaBeforeAuto);
+    s += "\ndyaAfterAuto=";
+    s += uint2string(dyaAfterAuto);
     s += "\ndxaRight=";
     s += int2string(dxaRight);
     s += "\ndxaLeft=";
@@ -7433,10 +7549,6 @@ std::string PAP::toString() const
     s += uint2string(unused68_3);
     s += "\nunused70=";
     s += uint2string(unused70);
-    s += "\nfInTable=";
-    s += int2string(fInTable);
-    s += "\nfTtp=";
-    s += int2string(fTtp);
     s += "\nwr=";
     s += uint2string(wr);
     s += "\nfLocked=";
@@ -7491,8 +7603,23 @@ std::string PAP::toString() const
     s += "\n{" + numrm.toString() + "}\n";
     s += "\nitbdMac=";
     s += int2string(itbdMac);
-    s += "\nrgdxaTab=";
+    s += "\nrgdxaTab.size()=";
+    s += int2string(rgdxaTab.size());
     // skipping the std::vector rgdxaTab
+    s += "\n------------------------------";
+    s += "\nfInTable=";
+    s += int2string(fInTable);
+    s += "\nfTtp=";
+    s += int2string(fTtp);
+    s += "\nitap=";
+    s += int2string(itap);
+    s += "\ndtap=";
+    s += int2string(dtap);
+    s += "\nfInnerTableCell=";
+    s += int2string(fInnerTableCell);
+    s += "\nfInnerTtp=";
+    s += int2string(fInnerTtp);
+    s += "\n------------------------------";
     s += "\nPAP Done.";
     return s;
 }
@@ -7522,6 +7649,8 @@ bool operator==(const PAP &lhs, const PAP &rhs)
            lhs.unused17 == rhs.unused17 &&
            lhs.fNoAutoHyph == rhs.fNoAutoHyph &&
            lhs.fWidowControl == rhs.fWidowControl &&
+           lhs.dyaBeforeAuto == rhs.dyaBeforeAuto &&
+           lhs.dyaAfterAuto == rhs.dyaAfterAuto &&
            lhs.dxaRight == rhs.dxaRight &&
            lhs.dxaLeft == rhs.dxaLeft &&
            lhs.dxaLeft1 == rhs.dxaLeft1 &&
@@ -7545,8 +7674,6 @@ bool operator==(const PAP &lhs, const PAP &rhs)
            lhs.fRotateFont == rhs.fRotateFont &&
            lhs.unused68_3 == rhs.unused68_3 &&
            lhs.unused70 == rhs.unused70 &&
-           lhs.fInTable == rhs.fInTable &&
-           lhs.fTtp == rhs.fTtp &&
            lhs.wr == rhs.wr &&
            lhs.fLocked == rhs.fLocked &&
            lhs.ptap == rhs.ptap &&
@@ -7574,7 +7701,13 @@ bool operator==(const PAP &lhs, const PAP &rhs)
            lhs.dttmPropRMark == rhs.dttmPropRMark &&
            lhs.numrm == rhs.numrm &&
            lhs.itbdMac == rhs.itbdMac &&
-           lhs.rgdxaTab == rhs.rgdxaTab;
+           lhs.rgdxaTab == rhs.rgdxaTab &&
+           lhs.fInTable == rhs.fInTable &&
+           lhs.fTtp == rhs.fTtp &&
+           lhs.itap == rhs.itap &&
+           lhs.dtap == rhs.dtap &&
+           lhs.fInnerTableCell == rhs.fInnerTableCell &&
+           lhs.fInnerTtp == rhs.fInnerTtp;
 }
 
 bool operator!=(const PAP &lhs, const PAP &rhs)
@@ -8453,6 +8586,8 @@ bool SEP::read(OLEStreamReader *stream, bool preservePos)
     fLayout = stream->readU8();
     unused490 = stream->readU16();
     olstAnm.read(stream, false);
+    nfcFtnRef = stream->readU16();
+    nfcEdnRef = stream->readU16();
 
     if (preservePos)
         stream->pop();
@@ -8529,6 +8664,8 @@ bool SEP::write(OLEStreamWriter *stream, bool preservePos) const
     stream->write(fLayout);
     stream->write(unused490);
     olstAnm.write(stream, false);
+    stream->write(nfcFtnRef);
+    stream->write(nfcEdnRef);
 
     if (preservePos)
         stream->pop();
@@ -8598,6 +8735,8 @@ void SEP::clear()
     fLayout = 0;
     unused490 = 0;
     olstAnm.clear();
+    nfcFtnRef = 0;
+    nfcEdnRef = 0;
 }
 
 void SEP::dump() const
@@ -8732,6 +8871,10 @@ std::string SEP::toString() const
     s += uint2string(unused490);
     s += "\nolstAnm=";
     s += "\n{" + olstAnm.toString() + "}\n";
+    s += "\nnfcFtnRef=";
+    s += uint2string(nfcFtnRef);
+    s += "\nnfcEdnRef=";
+    s += uint2string(nfcEdnRef);
     s += "\nSEP Done.";
     return s;
 }
@@ -8799,7 +8942,9 @@ bool operator==(const SEP &lhs, const SEP &rhs)
            lhs.dmOrientFirst == rhs.dmOrientFirst &&
            lhs.fLayout == rhs.fLayout &&
            lhs.unused490 == rhs.unused490 &&
-           lhs.olstAnm == rhs.olstAnm;
+           lhs.olstAnm == rhs.olstAnm &&
+           lhs.nfcFtnRef == rhs.nfcFtnRef &&
+           lhs.nfcEdnRef == rhs.nfcEdnRef;
 }
 
 bool operator!=(const SEP &lhs, const SEP &rhs)
@@ -8982,6 +9127,19 @@ void STSHI::clear()
     nVerBuiltInNamesWhenSaved = 0;
     for (int _i = 0; _i < (3); ++_i)
         rgftcStandardChpStsh[_i] = 0;
+}
+
+void STSHI::dump() const
+{
+    wvlog << "Dumping STSHI:" <<
+    "\ncstd= 0x" << std::hex << cstd << std::dec << "(" << cstd << ")" <<
+    "\ncbSTDBaseInFile=" << cbSTDBaseInFile <<
+    "\nfStdStylenamesWritten=" << fStdStylenamesWritten <<
+    "\nstiMaxWhenSaved= 0x" << std::hex << stiMaxWhenSaved <<
+    std::dec << "(" << stiMaxWhenSaved  << ")" <<
+    "\nistdMaxFixedWhenSaved= 0x" << std::hex << istdMaxFixedWhenSaved <<
+    "\nnVerBuiltInNamesWhenSaved=" << std::dec << nVerBuiltInNamesWhenSaved <<
+    "\nDumping STSHI done:" << std::endl;
 }
 
 bool operator==(const STSHI &lhs, const STSHI &rhs)

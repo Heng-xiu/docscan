@@ -24,7 +24,6 @@
 
 #include <map>
 #include <vector>
-#include <iostream>
 #include <string.h>
 #include "wv2_export.h"
 
@@ -639,7 +638,7 @@ public:
         if (index < m_fkp.m_crun) m_index = index;
     }
 
-    bool atEnd() {
+    bool atEnd() const {
         return m_index >= m_fkp.m_crun;
     }
 

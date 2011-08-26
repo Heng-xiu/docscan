@@ -69,6 +69,7 @@ bool wvWare::isNaN(double d)
 #elif defined HAVE_FLOAT_H
     return _isnan(d) != 0;
 #else
+    // IEEE: NaN != NaN
     return !(d == d);
 #endif
 }
@@ -429,7 +430,7 @@ double UString::toDouble(bool tolerant) const
     if (*c == '\0')
         return tolerant ? NaN : 0.0;
 
-    // std::hex number ?
+    // hex number ?
     if (*c == '0' && (*(c + 1) == 'x' || *(c + 1) == 'X')) {
         c++;
         d = 0.0;

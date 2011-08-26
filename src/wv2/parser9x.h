@@ -21,25 +21,23 @@
 
 #include "parser.h"
 #include "word97_generated.h"
+#include "wv2_export.h"
 
 #include <string>
 #include <list>
 #include <stack>
-#include "wv2_export.h"
-
-#include "ms_odraw.h"
 
 namespace wvWare
 {
 
 // Word97 so far. Is that different in Word95?
 const unsigned char CELL_MARK = 7;
-const unsigned char ROW_MARK = 7;
+const unsigned char TTP_MARK = 7; //(ROW_MARK)
 const unsigned char TAB = 9;
 const unsigned char HARD_LINE_BREAK = 11;
 const unsigned char PAGE_BREAK = 12;
 const unsigned char SECTION_MARK = 12;
-const unsigned char PARAGRAPH_MARK = 13;
+const unsigned char PARAGRAPH_MARK = 13; //(0x000D)
 const unsigned char COLUMN_BREAK = 14;
 const unsigned char FIELD_BEGIN_MARK = 19;
 const unsigned char FIELD_SEPARATOR = 20;
@@ -110,7 +108,7 @@ public:
 
     virtual const StyleSheet& styleSheet() const;
 
-    virtual Drawings * getDrawings();
+    virtual const Drawings* getDrawings() const;
 
     virtual OLEStreamReader* getTable();
 
@@ -128,8 +126,9 @@ public:
     void parseAnnotation(const AnnotationData& data);
     void parseTableRow(const TableRowData& data);
     void parsePicture(const PictureData& data);
-    //I can't create Functor for textbox in advance because i don't know lid
-    virtual void parseTextBox(uint lid, bool bodyDrawing);
+
+    //Can't create Functor for textbox in advance.  Index into plcfTxbxTxt unknown.
+    virtual void parseTextBox(uint index, bool stylesxml);
 
 protected:
     // First all variables which don't change their state during
@@ -184,7 +183,7 @@ private:
 
     // We have to keep track of the current parsing mode (e.g. are we skimming tables
     // or are we parsing them?)
-    enum ParsingMode { Default, Table };
+    enum ParsingMode { Default, Table, NestedTable };
 
     // "Callbacks" for the 95/97 parsers
     // ##### TODO
@@ -256,18 +255,10 @@ private:
     void emitBookmark(U32 globalCP);
 
     void emitHeaderData(SharedPtr<const Word97::SEP> sep);
-    void emitPictureData(SharedPtr<const Word97::CHP> chp);
-    void emitDrawnObject(U32 globalCP);
+
+    void emitPictureData(const U32 globalCP, SharedPtr<const Word97::CHP> chp);
 
     void parseHeader(const HeaderData& data, unsigned char mask);
-
-    void parsePictureEscher(const PictureData& data, OLEStreamReader* stream,
-                            int totalPicfSize, int picfStartPos);
-    void parsePictureExternalHelper(const PictureData& data, OLEStreamReader* stream);
-    void parsePictureBitmapHelper(const PictureData& data, OLEStreamReader* stream);
-    void parsePictureWmfHelper(const PictureData& data, OLEStreamReader* stream);
-
-    void parseOfficeArtFOPT(OLEStreamReader* stream, int dataSize, OfficeArtProperties *artProperties, U32* pib);
 
     void saveState(U32 newRemainingChars, SubDocument newSubDocument, ParsingMode newParsingMode = Default);
     void restoreState();
@@ -280,9 +271,9 @@ private:
     // Helper method to use std::accumulate in the table handling code
     static int accumulativeLength(int len, const Chunk& chunk);
 
-    // Private variables, no access needed in 95/97 code
-    // First all variables which don't change their state during
-    // the parsing process. We don't have to save and restore those.
+    // Private variables, no access needed in 95/97 code.  First all
+    // variables which don't change their state during the parsing
+    // process.  We don't have to save and restore those.
     ListInfoProvider* m_lists;
     TextConverter* m_textconverter;
     Fields* m_fields;
@@ -294,17 +285,23 @@ private:
 
     PLCF<Word97::PCD>* m_plcfpcd;     // piece table
 
-    // From here on we have all variables which change their state depending
-    // on the parsed content. These variables have to be saved and restored
-    // to make the parsing code reentrant.
+    // From here on we have all variables which change their state
+    // depending on the parsed content.  These variables have to be saved
+    // and restored to make the parsing code reentrant.
     Position* m_tableRowStart;      // If != 0 this represents the start of a table row
     U32 m_tableRowLength;           // Lenght of the table row (in characters). Only valid
     bool m_cellMarkFound;           // if m_tableRowStart != 0
     int m_remainingCells;           // The number of remaining cells for the processed row
 
+    // Table skimming is a phase in which we try to locate the last
+    // paragraph of a table.  Using parseHelper to parse the table content.
+    bool m_table_skimming;
+
     Paragraph* m_currentParagraph;
 
     U32 m_remainingChars;
+
+    // The num. of the section being processed.
     U32 m_sectionNumber;
 
     // Keeps track of the current sub document
@@ -317,16 +314,17 @@ private:
     // Needed to have reentrant parsing methods (to make the functor approach work)
     struct ParsingState {
         ParsingState(Position* tableRowS, U32 tableRowL, bool cMarkFound,
-                     int remCells, Paragraph* parag, U32 remChars, U32 sectionNum,
+                     int remCells, bool ts, Paragraph* parag, U32 remChars, U32 sectionNum,
                      SubDocument subD, ParsingMode mode) :
                 tableRowStart(tableRowS), tableRowLength(tableRowL), cellMarkFound(cMarkFound),
-                remainingCells(remCells), paragraph(parag), remainingChars(remChars),
+                remainingCells(remCells), tableSkimming(ts), paragraph(parag), remainingChars(remChars),
                 sectionNumber(sectionNum), subDocument(subD), parsingMode(mode) {}
 
         Position* tableRowStart;
         U32 tableRowLength;
         bool cellMarkFound;
         int remainingCells;
+        bool tableSkimming;
         Paragraph* paragraph;
         U32 remainingChars;
         U32 sectionNumber;   // not strictly necessary, but doesn't hurt

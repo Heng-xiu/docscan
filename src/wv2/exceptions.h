@@ -1,6 +1,5 @@
-/* This file is part of the wvWare 2 project
-   Copyright (C) 2003 Calligra Team
-   Copyright (C) 2003 Werner Trobin <trobin@kde.org>
+/* This file is part of the Calligra Suite project
+   Copyright (C) 2011 Matus Uzak <matus.uzak@ixonos.com>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the Library GNU General Public
@@ -19,31 +18,19 @@
    Boston, MA 02110-1301, USA.
 */
 
-// NOTE: Obsolete
+#ifndef EXCEPTIONS_H
+#define EXCEPTIONS_H
 
-#include "wv2version.h"
+#include <exception>
+#include <QString>
 
-unsigned int wvWare::version()
+class InvalidFormatException : public std::exception
 {
-    return WV2_VERSION;
-}
+public:
+    const QString msg;
+    InvalidFormatException() {}
+    InvalidFormatException(const QString& m) : msg(m) {}
+    ~InvalidFormatException() throw() {}
+};
 
-unsigned int wvWare::versionMajor()
-{
-    return WV2_VERSION_MAJOR;
-}
-
-unsigned int wvWare::versionMinor()
-{
-    return WV2_VERSION_MINOR;
-}
-
-unsigned int wvWare::versionRelease()
-{
-    return WV2_VERSION_RELEASE;
-}
-
-const char *wvWare::versionString()
-{
-    return WV2_VERSION_STRING;
-}
+#endif

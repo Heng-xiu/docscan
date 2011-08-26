@@ -1,5 +1,5 @@
 /* This file is part of the wvWare 2 project
-   Copyright (C) 2003 KOffice Team
+   Copyright (C) 2003 Calligra Team
    Copyright (C) 2003 Werner Trobin <trobin@kde.org>
 
    This library is free software; you can redistribute it and/or
@@ -19,6 +19,8 @@
 
 #ifndef WV2_VERSION_H
 #define WV2_VERSION_H
+
+// NOTE: Obsolete
 
 #define WV2_VERSION_STRING "0.4.2"
 #define WV2_VERSION_MAJOR 0

@@ -42,16 +42,16 @@ public:
     Drawings(OLEStreamReader* table, const Word97::FIB &fib);
     ~Drawings();
 
-    PLCF<Word97::FSPA>* getSpaMom() {
+    const PLCF<Word97::FSPA>* getSpaMom() const {
         return m_plcfspaMom;
     };
-    PLCF<Word97::FSPA>* getSpaHdr() {
+    const PLCF<Word97::FSPA>* getSpaHdr() const {
         return m_plcfspaHdr;
     };
-    PLCF<Word97::FTXBXS>* getTxbxTxt() {
+    const PLCF<Word97::FTXBXS>* getTxbxTxt() const {
         return m_plcftxbxTxt;
     };
-    PLCF<Word97::FTXBXS>* getHdrTxbxTxt() {
+    const PLCF<Word97::FTXBXS>* getHdrTxbxTxt() const {
         return m_plcfHdrtxbxTxt;
     };
 private:

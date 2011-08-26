@@ -52,7 +52,7 @@ Word97::BRC toWord97(const Word95::BRC &s)
         ret.brcType = 7;
     }
     ret.fShadow = s.fShadow;
-    ret.cv = Word97::icoToRGB(s.ico);
+    ret.cv = Word97::icoToCOLORREF(s.ico);
     ret.dptSpace = s.dxpSpace;
     return ret;
 }
@@ -236,7 +236,7 @@ Word97::CHP toWord97(const Word95::CHP &s)
     ret.dxaSpace = s.dxaSpace;
     ret.iss = s.iss;
     ret.fSysVanish = s.fSysVanish;
-    ret.cv = Word97::icoToRGB(s.ico);
+    ret.cv = Word97::icoToCOLORREF(s.ico);
     ret.kul = s.kul;
     ret.hpsPos = s.hpsPos;
     ret.lid = s.lid;
@@ -905,8 +905,8 @@ Word97::SEP toWord97(const Word95::SEP &s)
     ret.yaPage = s.yaPage;
     ret.dxaLeft = s.dxaLeft;
     ret.dxaRight = s.dxaRight;
-    ret.dyaTop = s.dyaTop;
-    ret.dyaBottom = s.dyaBottom;
+    ret.dyaTop = qAbs(s.dyaTop);
+    ret.dyaBottom = qAbs(s.dyaBottom);
     ret.dzaGutter = s.dzaGutter;
     ret.dmBinFirst = s.dmBinFirst;
     ret.dmBinOther = s.dmBinOther;
@@ -935,8 +935,8 @@ Word97::SHD toWord97(const Word95::SHD &s)
 
     Word97::SHD ret;
 
-    ret.cvFore = Word97::icoToRGB(s.icoFore);
-    ret.cvBack = Word97::icoToRGB(s.icoBack);
+    ret.cvFore = Word97::icoToCOLORREF(s.icoFore);
+    ret.cvBack = Word97::icoToCOLORREF(s.icoBack);
     ret.ipat = s.ipat;
 
     return ret;

@@ -19,14 +19,14 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
-#include <vector>
 #include <QList>
+
+#include <vector>
 
 #include "global.h"
 #include "sharedptr.h"
 #include "functordata.h"
 #include "wv2_export.h"
-#include "ms_odraw.h"
 
 namespace wvWare
 {
@@ -80,9 +80,15 @@ public:
     virtual ~SubDocumentHandler();
 
     /**
-     * This method is called as soon as you call @ref Parser::parse. It indicates
-     * the start of the body text (the main document text-flow).
+     * Set the progress of WordDocument Stream processing.  All other
+     * streams (Table, Data) are refered from this one.
      */
+    virtual void setProgress(const int percent);
+
+    /**
+    * This method is called as soon as you call @ref Parser::parse. It indicates
+    * the start of the body text (the main document text-flow).
+    */
     virtual void bodyStart();
     /**
      * This method is called when all characters of the main body text
@@ -200,73 +206,6 @@ public:
     virtual void tableCellEnd();
 };
 
-
-class OLEImageReader;
-
-/**
- * The PictureHandler class is the interface for all image related
- * callbacks. All the image data is passed to the consumer via this
- * interface.
- */
-//NOTE: OBSOLETE, graphics are handled by the GraphicsHandler and we are
-//using msoscheme to parse Office Drawing Binary File Format structures.
-class WV2_EXPORT PictureHandler
-{
-public:
-    /**
-     * A small helper struct to express the dimensions of the passed
-     * .wmf. A dimension of 0 indicates an invalid dimension.
-     */
-    // ###### FIXME: Do we really need that?
-    /*
-    struct WMFDimensions
-    {
-        WMFDimensions( const U8* rcWinMF )
-        {
-            left = readS16( rcWinMF );
-            top = readS16( rcWinMF + 2 );
-            width = readU16( rcWinMF + 4 );
-            height = readU16( rcWinMF + 6 );
-        }
-        S16 left;
-        S16 top;
-        U16 width;
-        U16 height;
-    };
-    */
-
-    virtual ~PictureHandler();
-
-    /**
-     * This method is called when you invoke a PictureFunctor and the embedded
-     * image is a bitmap. The bitmap data can be accessed using the OLEImageReader.
-     * Note: The reader will only be valid until you return form that method, and
-     * don't forget that you're directly accessing little-endian image data!
-     */
-    virtual void bitmapData(OLEImageReader& reader, SharedPtr<const Word97::PICF> picf);
-    /**
-     * This method is called when the image is escher data.
-     */
-    virtual void escherData(OLEImageReader& reader, SharedPtr<const Word97::PICF> picf, int type, const U8* rgbUid);
-    virtual void escherData(std::vector<U8> data, SharedPtr<const Word97::PICF> picf, int type, const U8* rgbUid);
-    /**
-     * This method is called when you invoke a PictureFunctor and the embedded
-     * image is a .wmf file. The data can be accessed using the OLEImageReader.
-     * Note: The reader will only be valid until you return form that method, and
-     * don't forget that you're directly accessing little-endian data!
-     */
-    virtual void wmfData(OLEImageReader& reader, SharedPtr<const Word97::PICF> picf);
-    /**
-     * Word allows to store .tif, .bmp, or .gif images externally.
-     */
-    virtual void externalImage(const UString& name, SharedPtr<const Word97::PICF> picf);
-
-    /**
-     * For the output of officeArt.
-     */
-    virtual void officeArt(wvWare::OfficeArtProperties *artProperties);
-};
-
 /**
  * The GraphicsHandler class is the interface for MS-ODRAW objects related
  * callbacks.  Office Drawing Binary File Format structures are parsed by
@@ -333,9 +272,11 @@ public:
     // Paragraph related callbacks...
     /**
      * Denotes the start of a paragraph.
-     * The paragraph properties are passed in the @p paragraphProperties argument.
+         * @param paragraph properties of the paragraph.
+         * @param character properties of the paragraph provided for empty
+         * paragraphs to set correct font-size, line-height, etc.
      */
-    virtual void paragraphStart(SharedPtr<const ParagraphProperties> paragraphProperties);
+    virtual void paragraphStart(SharedPtr<const ParagraphProperties> paragraphProperties, SharedPtr<const Word97::CHP> characterProperties);
     virtual void paragraphEnd();
 
     /**
@@ -404,8 +345,10 @@ public:
      * runOfText (that it doesn't get lost if someone doesn't override this method) and
      * invokes the functor.
      */
-    virtual void footnoteFound(FootnoteData::Type type, UString characters,
-                               SharedPtr<const Word97::CHP> chp, const FootnoteFunctor& parseFootnote);
+    virtual void footnoteFound(FootnoteData data, UString characters,
+                               SharedPtr<const Word97::SEP> sep,
+                               SharedPtr<const Word97::CHP> chp,
+                               const FootnoteFunctor& parseFootnote);
 
     /**
      * The parser found an annotation. The passed functor will trigger the parsing of this
@@ -446,32 +389,38 @@ public:
     virtual void fieldEnd(const FLD* fld, SharedPtr<const Word97::CHP> chp);
 
     /**
-     * This method is called every time we find a table row. The default
-     * implementation invokes the functor, which triggers the parsing
-     * process for the given table row.
-     * @param tap the table row properties. Those are the same as the
-     * ones you'll get when invoking the functor, but by having them here,
-     * you can do some preprocessing on the whole table first.
-     */
-    virtual void tableRowFound(const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> tap);
-
-    /**
-     * This method is called every time we find an inline object.
-     * @param data the picture data as defined by functordata.
-     */
-    virtual void inlineObjectFound(const PictureData& data);
-
-    /**
-     * This method is called every time we find a floating object.
-    * @param cp of a drawing
-     */
-    virtual void floatingObjectFound(unsigned int globalCP);
+         * This method is called every time an inline or floating MS-ODRAW
+         * object is found.  If the @param data is ZERO, then it's a floating
+         * object.  Else it's an inline object.
+         *
+         * @param globalCP the CP to which the floating object is anchored
+         * @param data the inline object data as defined by functordata
+         */
+    virtual void msodrawObjectFound(const unsigned int globalCP, const PictureData* data);
 
     /**
      * Denotes the start of a bookmark.
      */
     virtual void bookmarkStart(const BookmarkData& data);
     virtual void bookmarkEnd(const BookmarkData& data);
+
+    //NOTE: those two belong into the TableHandler !!!!!
+
+    /**
+    * This method is called every time we find a table row. The default
+    * implementation invokes the functor, which triggers the parsing
+    * process for the given table row.
+    * @param tap the table row properties. Those are the same as the
+    * ones you'll get when invoking the functor, but by having them here,
+    * you can do some preprocessing on the whole table first.
+    */
+    virtual void tableRowFound(const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> tap);
+
+    /**
+         * This method is called every time we find a table end. No default
+         * implementation at the moment!
+     */
+    virtual void tableEndFound();
 };
 
 } // namespace wvWare
