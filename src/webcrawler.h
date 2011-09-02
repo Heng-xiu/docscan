@@ -45,7 +45,7 @@ public:
 
 private:
     QNetworkAccessManager *m_networkAccessManager;
-    const QUrl m_baseUrl;
+    const QString m_baseUrl;
     QRegExp m_filePattern;
     int m_runningDownloads;
     int m_numExpectedHits, m_numFoundHits, m_visitedPages;
@@ -58,7 +58,7 @@ private:
     QStringList m_knownUrls;
     QStringList m_queuedUrls;
 
-    void startDownload(const QUrl &url);
+    bool startNextDownload();
     QString completeUrl(const QString &partialUrl, const QUrl &baseUrl);
 
 private slots:
