@@ -156,7 +156,7 @@ void UrlDownloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
+        QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
         emit report(logText);
         ++m_countFaileDownloads;
     } else
@@ -177,7 +177,7 @@ void UrlDownloader::timeout(QObject *object)
         m_setRunningJobs->remove(reply);
         m_mutexRunningJobs->unlock();
         reply->close();
-        QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     } else
         m_mutexRunningJobs->unlock();

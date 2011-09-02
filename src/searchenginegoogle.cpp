@@ -46,7 +46,7 @@ void SearchEngineGoogle::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
+    emit report(QString("<searchengine type=\"google\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
@@ -68,7 +68,7 @@ void SearchEngineGoogle::finished()
         if (m_currentPage == 0) {
             const QRegExp countHitsRegExp("([0-9,. ]+) result[s]?");
             if (countHitsRegExp.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine type=\"google\" numresults=\"%1\"/>\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
+                emit report(QString("<searchengine type=\"google\" numresults=\"%1\" />\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
         }
 
         const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
@@ -78,7 +78,7 @@ void SearchEngineGoogle::finished()
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\"/>\n").arg(url.toString()));
+                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(url.toString()));
                 emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
@@ -89,13 +89,13 @@ void SearchEngineGoogle::finished()
             QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
             url.addQueryItem("q", m_searchTerm);
             url.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
-            emit report(QString("<searchengine type=\"google\" search=\"%1\"/>\n").arg(DocScan::xmlify(url.toString())));
+            emit report(QString("<searchengine type=\"google\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
             reply = m_networkAccessManager->get(QNetworkRequest(url));
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         }
     } else {
-        QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\"/>\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<searchengine type=\"google\" url=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
 

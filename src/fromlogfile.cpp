@@ -36,7 +36,7 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject
         const QString text = textStream.readAll();
         input.close();
 
-        QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder event=\"hit\" href=\"([^\"]+)\"/>"));
+        QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder event=\"hit\" href=\"([^\"]+)\" />"));
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
             qDebug() << "FromLogFileFileFinder  url=" << hitRegExp.cap(1);
@@ -47,7 +47,7 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject
 
 void FromLogFileFileFinder::startSearch(int numExpectedHits)
 {
-    emit report(QString("<filefinder type=\"fromlogfilefilefinder\" count=\"%1\"/>\n").arg(m_urlSet.count()));
+    emit report(QString("<filefinder type=\"fromlogfilefilefinder\" count=\"%1\" />\n").arg(m_urlSet.count()));
     int count = numExpectedHits;
     foreach(const QUrl &url, m_urlSet) {
         if (count <= 0) break;
@@ -86,13 +86,13 @@ void FromLogFileDownloader::startParsingAndEmitting()
                 emit downloaded(filename);
                 ++count;
             } else if (searchEngineNumResultsRegExp.indexIn(line) >= 0)
-                emit report(QString(QLatin1String("<searchengine numresults=\"%1\"/>")).arg(searchEngineNumResultsRegExp.cap(1)));
+                emit report(QString(QLatin1String("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
 
             line = textStream.readLine();
         }
         input.close();
 
-        const QString s = QString("<downloader type=\"fromlogfiledownloader\" count=\"%1\"/>\n").arg(count);
+        const QString s = QString("<downloader type=\"fromlogfiledownloader\" count=\"%1\" />\n").arg(count);
         emit report(s);
     }
 
