@@ -89,7 +89,7 @@ bool WebCrawler::startNextDownload()
     ++m_runningDownloads;
     const QString url = m_queuedUrls.first();
     m_queuedUrls.removeFirst();
-    qDebug() << "Starting download on " << url;
+    qDebug() << "Starting download on " << url << "(" << m_visitedPages << ")";
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(QUrl(url)));
     connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
@@ -110,10 +110,22 @@ bool WebCrawler::startNextDownload()
 
 void WebCrawler::finishedDownload()
 {
+    QRegExp fileExtRegExp = QRegExp(QLatin1String("[.].{1,4}$"), Qt::CaseInsensitive);
+    QRegExp validFileExtRegExp = QRegExp(QLatin1String("([.](htm[l]?|jsp|asp[x]?|php)|[^.]{5,})([?].+)?$"), Qt::CaseInsensitive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     m_mutexRunningJobs->lock();
     m_setRunningJobs->remove(reply);
     m_mutexRunningJobs->unlock();
+
+    /// check for redirections
+    QString redirUrlStr = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
+    if (!redirUrlStr.isEmpty()) {
+        QUrl redirUrl = reply->url().resolved(QUrl(redirUrlStr));
+        if (redirUrl.isValid() && !m_knownUrls.contains((redirUrlStr = redirUrl.toString()))) {
+            m_knownUrls << redirUrlStr;
+            m_queuedUrls << redirUrlStr;
+        }
+    }
 
     if (reply->error() == QNetworkReply::NoError) {
         QByteArray data(reply->readAll());
@@ -130,18 +142,24 @@ void WebCrawler::finishedDownload()
             QRegExp anchorRegExp("<a\\b[^>]*href=\"([^\" \t><]+)\"");
             int p = -1;
             while ((p = text.indexOf(anchorRegExp, p + 1)) >= 0) {
-                QString url = completeUrl(anchorRegExp.cap(1), reply->url());
-                if (url.isNull()) continue;
+                QString url = normalizeUrl(anchorRegExp.cap(1), reply->url());
+
+                if (url.isEmpty()) continue;
                 if (m_knownUrls.contains(url)) continue;
                 m_knownUrls << url;
                 if (m_numFoundHits >= m_numExpectedHits) continue;
 
                 if (m_filePattern.indexIn(url) >= 0) {
+                    /// link matches requested file type
                     ++m_numFoundHits;
                     hitCollection.insert(url);
-                } else if (url.startsWith(m_baseUrl) && (url.endsWith("/") || url.endsWith(".htm") || url.endsWith(".html"))) {
+                } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
+                    // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
+                } else if (!url.endsWith("/") && validFileExtRegExp.indexIn(url) == 0) {
+                    // qDebug() << "Path or extension is not wanted" << url;
+                } else
                     m_queuedUrls << url;
-                }
+
             }
 
             /// delay sending signals to ensure BFS on links
@@ -179,13 +197,23 @@ void WebCrawler::timeout(QObject *object)
         m_mutexRunningJobs->unlock();
 }
 
-QString WebCrawler::completeUrl(const QString &partialUrl, const QUrl &baseUrl)
+QString WebCrawler::normalizeUrl(const QString &partialUrl, const QUrl &baseUrl)
 {
-    static QRegExp invalidProtocol("^[^:]{2,10}:");
+    static QRegExp protocol("^([^:]{2,10}):");
     static QRegExp encodedCharHex("%([0-9a-fA-F]{2})");
-    QString result = partialUrl;
+
+    /// complete URL to absolute URL
+    QUrl urlObj = baseUrl.resolved(QUrl(partialUrl));
+    if (urlObj.path().isEmpty()) urlObj.setPath(QChar('/'));
+    QString result = urlObj.toString();
+
+    if (protocol.indexIn(result) >= 0 && !protocol.cap(1).startsWith(QLatin1String("http")))
+        return QString::null;
+
+    /// remove JavaScript links or links pointed in page-internal anchors
     result = result.replace(QRegExp("#.*$"), "");
 
+    /// resolve mime-encoded parts of the URL
     int p = -1;
     while ((p = encodedCharHex.indexIn(result, p + 1)) >= 0) {
         bool ok = false;
@@ -194,18 +222,22 @@ QString WebCrawler::completeUrl(const QString &partialUrl, const QUrl &baseUrl)
             result = result.replace(encodedCharHex.cap(0), c);
         }
     }
+    result = result.replace(QLatin1String("&amp;"), QChar('&'));
 
-    if (result.startsWith("http://") || result.startsWith("https://"))
-        return result;
-    else if (result.contains("://") || result.startsWith("#") || invalidProtocol.indexIn(result) >= 0)
-        return QString::null;
-    else if (result.startsWith("/"))
-        return "http://" + baseUrl.host() + result;
-    else {
-        QString dir = baseUrl.toString().replace(QRegExp("[^/]*$"), "");
-        return dir + result;
+    return result;
+}
+
+bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
+{
+    if (query.host() == baseUrl.host() || (baseUrl.path().length() <= 1 && query.host().contains(QChar('.') + baseUrl.host()))) {
+        bool test = query.path().startsWith(baseUrl.path());
+        // if (!test) qDebug() << "path mismatch" << query.path() << baseUrl.path();
+        return test;
+    } else {
+        // qDebug() << "host mismatch: " << query.host() << "!=" << baseUrl.host() << baseUrl.path().length() << (QChar('.') + baseUrl.host()) << query.host().contains(QChar('.') + baseUrl.host());
+        return false;
     }
 }
 
-const int WebCrawler::maxParallelDownloads = 4;
-const int WebCrawler::maxVisitedPages = 1024 * 4;
+const int WebCrawler::maxParallelDownloads = 8;
+const int WebCrawler::maxVisitedPages = 512;

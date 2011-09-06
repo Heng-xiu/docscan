@@ -45,7 +45,7 @@ public:
 
 private:
     QNetworkAccessManager *m_networkAccessManager;
-    const QString m_baseUrl;
+    QString m_baseUrl;
     QRegExp m_filePattern;
     int m_runningDownloads;
     int m_numExpectedHits, m_numFoundHits, m_visitedPages;
@@ -59,7 +59,8 @@ private:
     QStringList m_queuedUrls;
 
     bool startNextDownload();
-    QString completeUrl(const QString &partialUrl, const QUrl &baseUrl);
+    QString normalizeUrl(const QString &partialUrl, const QUrl &baseUrl);
+    bool isSubAddress(const QUrl &query, const QUrl &baseUrl);
 
 private slots:
     void finishedDownload();
