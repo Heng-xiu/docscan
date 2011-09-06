@@ -60,7 +60,7 @@ Headers::Headers(U32 ccpHdd, U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tab
             tableStream->readU32();
         }
     }
-
+#if 0
     QList<U32> strsCPs;
     //CPs of header/footer related stories
     for (; i < lcbPlcfhdd; i += sizeof(U32)) {
@@ -106,7 +106,11 @@ Headers::Headers(U32 ccpHdd, U32 fcPlcfhdd, U32 lcbPlcfhdd, OLEStreamReader* tab
     //append second-to-last and last CP
     m_headers.append(strsCPs[l]);
     m_headers.append(strsCPs[l + 1]);
-
+#else
+    for (; i < lcbPlcfhdd; i += sizeof(U32)) {
+        m_headers.push_back(tableStream->readU32());
+    }
+#endif
     tableStream->pop();
 }
 

@@ -376,7 +376,7 @@ bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamRea
         //Each name, whether primary or alternate, MUST NOT be empty and MUST
         //be unique within all names in the stylesheet.
 
-        if (((length * 2) > stdBytesLeft) || (length == 0)) {
+        if (((length * 2) > stdBytesLeft) /*|| (length == 0) *** see KDE bug report 281166 */) {
             wvlog << "xstzName length invalid";
             return false;
         }
