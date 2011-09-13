@@ -428,7 +428,7 @@ void apply(T* const t,
                 sprm = readU16(grpprl);
                 grpprl += 2;
 #ifdef WV2_DEBUG_SPRMS
-                wvlog << "Seems like that's a different SPRM (0x" << hex << sprm << dec << ")... skipping" << std::endl;
+                wvlog << "Seems like that's a different SPRM (0x" << std::hex << sprm << std::dec << ")... skipping" << std::endl;
 #endif
             } else {
                 sprm = *grpprl++;
@@ -761,7 +761,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
 #ifdef WV2_DEBUG_SPRMS
-    wvlog << "got a sprm: 0x" << hex << sprm << dec << std::endl;
+    wvlog << "got a sprm: 0x" << std::hex << sprm << std::dec << std::endl;
 #endif
 
     // Is it a PAP sprm?
@@ -1154,7 +1154,7 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
 #ifdef WV2_DEBUG_SPRMS
-    wvlog << "got a sprm: 0x" << hex << sprm << dec << std::endl;
+    wvlog << "got a sprm: 0x" << std::hex << sprm << std::dec << std::endl;
 #endif
 
     // Is it a CHP sprm?
@@ -1281,7 +1281,7 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
         break;
     case SPRM::sprmCFBold:
 #ifdef WV2_DEBUG_SPRMS
-        wvlog << "sprmCFBold operand: 0x" << hex << *ptr << "| istd: 0x" << hex << istd <<
+        wvlog << "sprmCFBold operand: 0x" << std::hex << *ptr << "| istd: 0x" << std::hex << istd <<
         "| paragraphStyle:" << paragraphStyle;
 #endif
         if (*ptr < 128) {
@@ -2021,7 +2021,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
 
 #ifdef WV2_DEBUG_SPRMS
-    wvlog << "sprm: 0x" << hex << sprm << dec << std::endl;
+    wvlog << "sprm: 0x" << std::hex << sprm << std::dec << std::endl;
     wvlog << "sprmLength: " << sprmLength << std::endl;
 #endif
     // Is it a TAP sprm? Not really an error if it's none, as all TAP sprms
@@ -2475,7 +2475,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
 //         if ( *ptr == 6 ) {
 //             const U8 itcFirst( *( ptr + 1 ) );
 //             for ( int i = 0; i < 6; ++i )
-//                 wvlog << "    byte " << i << ": " << hex << ( int )*( ptr + i ) << dec << std::endl;
+//                 wvlog << "    byte " << i << ": " << std::hex << ( int )*( ptr + i ) << std::dec << std::endl;
 //         }
 //         else {
 //             wvlog << "Warning: sprmTCellPadding with unusual length=" <<

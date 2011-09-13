@@ -19,9 +19,9 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
-#include <QList>
-
 #include <vector>
+
+#include <QList>
 
 #include "global.h"
 #include "sharedptr.h"

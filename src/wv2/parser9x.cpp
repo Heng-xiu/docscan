@@ -97,10 +97,10 @@ Parser9x::Parser9x(OLEStorage* storage, OLEStreamReader* wordDocument, const Wor
 #ifdef WV2_DUMP_FIB
     wvlog << "Dumping some parts of the FIB: " << std::endl;
     wvlog << "   wIdent=" << m_fib.wIdent << std::endl;
-    wvlog << "   nFib=0x" << hex << m_fib.nFib << dec << std::endl;
+    wvlog << "   nFib=0x" << std::hex << m_fib.nFib << std::dec << std::endl;
     wvlog << "   nFibBack=" << m_fib.nFibBack << std::endl;
-    wvlog << "   lid=0x" << hex << m_fib.lid << dec << std::endl;
-    wvlog << "   lidFE=0x" << hex << m_fib.lidFE << dec << std::endl;
+    wvlog << "   lid=0x" << std::hex << m_fib.lid << std::dec << std::endl;
+    wvlog << "   lidFE=0x" << std::hex << m_fib.lidFE << std::dec << std::endl;
     wvlog << "   fEncrypted=" << m_fib.fEncrypted << std::endl;
     wvlog << "   chs=" << m_fib.chs << std::endl;
     wvlog << "   fcMin=" << m_fib.fcMin << std::endl;
@@ -121,7 +121,7 @@ Parser9x::Parser9x(OLEStorage* storage, OLEStreamReader* wordDocument, const Wor
     wvlog << "   cpnBtePap=" << m_fib.cpnBtePap << std::endl;
     wvlog << "   fcPlcfandRef=" << m_fib.fcPlcfandRef << std::endl;
     wvlog << "   lcbPlcfandRef=" << m_fib.lcbPlcfandRef << std::endl;
-    wvlog << "   cswNew=" << hex << m_fib.cswNew << dec << std::endl;
+    wvlog << "   cswNew=" << std::hex << m_fib.cswNew << std::dec << std::endl;
 #endif
 
     // Initialize all the cached data structures like stylesheets, fonts,
@@ -132,8 +132,9 @@ Parser9x::Parser9x(OLEStorage* storage, OLEStreamReader* wordDocument, const Wor
 Parser9x::~Parser9x()
 {
     // Sanity check
-    if (!oldParsingStates.empty() || m_subDocument != None)
+    if (!oldParsingStates.empty() || m_subDocument != None) {
         wvlog << "Bug: Someone messed up the save/restore stack!" << std::endl;
+    }
 
     delete m_currentParagraph;
     delete m_tableRowStart;
@@ -722,14 +723,6 @@ void Parser9x::processParagraph(U32 fc)
             m_textHandler->tableEndFound();
         }
 
-        // Now that we have the complete PAP, let's see if this paragraph
-        // belongs to a list.
-        props->createListInfo(*m_lists);
-
-#ifdef WV2_DEBUG_LIST_PROCESSING
-        props->pap().dump();
-#endif
-
         // Get the appropriate style for this paragraph.
         const Style* style = m_properties->styleByIndex(props->pap().istd);
         if (!style) {
@@ -743,6 +736,14 @@ void Parser9x::processParagraph(U32 fc)
 
 #ifdef WV2_DEBUG_PARAGRAPHS
         paragraphChp->dump();
+#endif
+
+        // Now that we have the complete PAP and CHP, let's see if this
+        // paragraph belongs to a list.
+        props->createListInfo(*m_lists, *paragraphChp);
+
+#ifdef WV2_DEBUG_LIST_PROCESSING
+        props->pap().dump();
 #endif
 
         // keep it that way, else the variables get deleted!
@@ -857,8 +858,8 @@ void Parser9x::processChunk(const Chunk& chunk, SharedPtr<const Word97::CHP> chp
             disruption = nextBkf;
 
 #ifdef WV2_DEBUG_BOOKMARK
-            wvlog << "nextBkf=" << nextBkf << "(0x" << hex << nextBkf << ")" << dec <<
-            "nextBkl=" << nextBkl << "(0x" << hex << nextBkl << ")" << dec <<
+            wvlog << "nextBkf=" << nextBkf << "(0x" << std::hex << nextBkf << ")" << dec <<
+            "nextBkl=" << nextBkl << "(0x" << std::hex << nextBkl << ")" << dec <<
             "disruption=" << disruption << "length=" << length << std::endl;
 #endif
             Q_ASSERT(nextBkf <= nextBkl);
@@ -868,7 +869,7 @@ void Parser9x::processChunk(const Chunk& chunk, SharedPtr<const Word97::CHP> chp
 
 #if defined WV2_DEBUG_FOOTNOTES || defined WV2_DEBUG_BOOKMARK
             wvlog << "startCP=" << startCP << " disruption=" << disruption <<
-            " bkmk_length=" << bkmk_length << " length=" << length << std::endl;;
+            " bkmk_length=" << bkmk_length << " length=" << length << std::endl;
 #endif
             U32 disLen = disruption - startCP;
             //there's something to be processed before the bookmark
@@ -1043,7 +1044,7 @@ void Parser9x::emitFootnote(UString characters, U32 globalCP,
     FootnoteData data(m_footnotes->footnote(globalCP, ok));
     if (ok) {
 #ifdef WV2_DEBUG_FOOTNOTES
-        wvlog << "char: 0x" << hex << characters[0].unicode() <<
+        wvlog << "char: 0x" << std::hex << characters[0].unicode() <<
         "| fAuto:" << data.autoNumbered <<
         "| fSpec:" << chp->fSpec;
 #endif

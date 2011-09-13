@@ -64,7 +64,7 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
 #ifdef WV2_DEBUG_BOOKMARK
         name->dumpStrings();
 #endif
-        for (unsigned int i = 0; i < name->count(); i++) {
+        for (uint i = 0; i < name->count(); i++) {
             m_name.push_back(name->stringAt(i));
         }
     }

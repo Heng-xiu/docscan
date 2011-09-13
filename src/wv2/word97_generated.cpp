@@ -637,9 +637,9 @@ void SHD::readPtr(const U8 *ptr)
     ipat = shifterU16;
 
 #ifdef WV2_DEBUG_SHD
-    wvlog << "icoFore: 0x" << hex << icoFore << std::endl;
-    wvlog << "icoBack: 0x" << hex << icoBack << std::endl;
-    wvlog << "ipat: 0x" << hex << ipat << std::endl;
+    wvlog << "icoFore: 0x" << std::hex << icoFore << std::endl;
+    wvlog << "icoBack: 0x" << std::hex << icoBack << std::endl;
+    wvlog << "ipat: 0x" << std::hex << ipat << std::endl;
 #endif
 
     //check for Shd80Nil
@@ -715,9 +715,9 @@ void SHD::readSHDOperandPtr(const U8 *ptr)
     ipat = shifterU16;
 
 #ifdef WV2_DEBUG_SHD
-    wvlog << "cvFore: 0x" << hex << cvFore << std::endl;
-    wvlog << "cvBack: 0x" << hex << cvBack << std::endl;
-    wvlog << "ipat: 0x" << hex << ipat << std::endl;
+    wvlog << "cvFore: 0x" << std::hex << cvFore << std::endl;
+    wvlog << "cvBack: 0x" << std::hex << cvBack << std::endl;
+    wvlog << "ipat: 0x" << std::hex << ipat << std::endl;
 #endif
 
     // call just to set the member variable shdAutoOrNill

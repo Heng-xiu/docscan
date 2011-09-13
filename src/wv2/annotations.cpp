@@ -116,7 +116,7 @@ void Annotations::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamRe
         for (U32 i = 0; i < lcbTxt; i += sizeof(U32)) {
             txt.push_back(tableStream->readU32());
 #ifdef WV2_DEBUG_ANNOTATIONS
-            wvlog << "read: " << txt.back() << std::endl;
+            wvlog << "CP: " << txt.back() << std::endl;
 #endif
         }
         txtIt = txt.begin();
@@ -125,6 +125,6 @@ void Annotations::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamRe
     //TODO: ATRDPost10, ATRDPre10, XSTs at position fcGrpXstAtnOwners
 
 #ifdef WV2_DEBUG_ANNOTATIONS
-    wvlog << "Annotations::init() done" << std::endl;
+    wvlog << "Annotation init done" << std::endl;
 #endif
 }
