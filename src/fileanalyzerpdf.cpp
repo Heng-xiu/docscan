@@ -23,6 +23,7 @@
 
 #include <QFileInfo>
 #include <QDebug>
+#include <QDateTime>
 
 #include "fileanalyzerpdf.h"
 #include "watchdog.h"
@@ -42,12 +43,13 @@ bool FileAnalyzerPDF::isAlive()
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
     m_isAlive = true;
+    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
     Poppler::Document *doc = Poppler::Document::load(filename);
 
     if (doc != NULL) {
         QString guess;
 
-        QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+        QString logText;
         QString metaText = QLatin1String("<meta>\n");
         QString headerText = QLatin1String("<header>\n");
 
@@ -144,6 +146,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         logText.append(headerText);
         logText.append(bodyText);
         logText += QLatin1String("</fileanalysis>\n");
+
+        qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+        logText.prepend(QString("<fileanalysis status=\"ok\" filename=\"%1\" time=\"%2\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime));
 
         emit analysisReport(logText);
 
