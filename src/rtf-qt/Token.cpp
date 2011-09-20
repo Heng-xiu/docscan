@@ -21,32 +21,32 @@
 
 namespace RtfReader
 {
-    void Token::dump() const
-    {
-        switch ( type ) {
-	  case OpenGroup:
-	    qDebug() << "token type: OpenGroup";
-	    break;
-	  case CloseGroup:
-	    qDebug() << "token type: CloseGroup";
-	    break;
-	  case Control:
-	    qDebug() << "token type: Control";
-	    break;
-	  case Plain:
-	    qDebug() << "token type: Plain";
-	    break;
-	  case Binary:
-	    qDebug() << "token type: Binary";
-	    break;
-	  default:
-	    qDebug() << "unexpected token type: " << type;
-	}
-	if ( type > CloseGroup ) {
-	    qDebug() << "name: " << name;
-	    if ( hasParameter ) {
-		qDebug() << "parameter: " << parameter;
-	    }
-	}
+void Token::dump() const
+{
+    switch (type) {
+    case OpenGroup:
+        qDebug() << "token type: OpenGroup";
+        break;
+    case CloseGroup:
+        qDebug() << "token type: CloseGroup";
+        break;
+    case Control:
+        qDebug() << "token type: Control";
+        break;
+    case Plain:
+        qDebug() << "token type: Plain";
+        break;
+    case Binary:
+        qDebug() << "token type: Binary";
+        break;
+    default:
+        qDebug() << "unexpected token type: " << type;
     }
+    if (type > CloseGroup) {
+        qDebug() << "name: " << name;
+        if (hasParameter) {
+            qDebug() << "parameter: " << parameter;
+        }
+    }
+}
 }
