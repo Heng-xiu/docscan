@@ -24,6 +24,7 @@
 #include <QProcess>
 #include <QCoreApplication>
 #include <QDate>
+#include <QTextStream>
 
 #include "fileanalyzerabstract.h"
 #include "general.h"
@@ -40,11 +41,16 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
     QStringList args = QStringList() << "-d" << dictionary << "list";
     aspell.start("/usr/bin/aspell", args);
     if (aspell.waitForStarted(10000)) {
-        aspell.write(text.toUtf8());
+        qint64 bytesWritten = aspell.write(text.toUtf8());
+        if (bytesWritten < 0) return QStringList(); /// something went wrong
         aspell.closeWriteChannel();
+
+        QTextStream ts(&aspell);
+        ts.setCodec("UTF-8");
         while (aspell.waitForReadyRead(10000)) {
-            while (aspell.canReadLine()) {
-                wordList << aspell.readLine();
+            QString line;
+            while (!(line = ts.readLine()).isNull()) {
+                wordList << line;
             }
         }
         if (!aspell.waitForFinished(10000))
@@ -55,19 +61,16 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
 
 QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 {
-    Q_UNUSED(text);
-    //int count = std::numeric_limits<int>::max();
+    int count = std::numeric_limits<int>::max();
     QString best = QString::null;
 
-    /*
     foreach(QString lang, getAspellLanguages()) {
         int c = runAspell(text, lang).count();
-        if (c < count) {
+        if (c > 0 && c < count) { /// if c==0, no misspelled words where found, likely due to an error
             count = c;
             best = lang;
         }
     }
-    */
 
     return best;
 }
@@ -75,26 +78,27 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 QStringList FileAnalyzerAbstract::getAspellLanguages() const
 {
     if (aspellLanguages.isEmpty()) {
-        /*
-        QRegExp language("^[ ]+([a-z]{2})( |$)");
-        QProcess aspell(this);
-        QStringList args = QStringList() << "--help";
+        QRegExp language(QLatin1String("^[a-z]{2}(_[A-Z]{2})?$"));
+        QProcess aspell(qApp);
+        QStringList args = QStringList() << "dicts";
         aspell.start("/usr/bin/aspell", args);
         if (aspell.waitForStarted(10000)) {
             aspell.closeWriteChannel();
             while (aspell.waitForReadyRead(10000)) {
                 while (aspell.canReadLine()) {
-                    if (language.indexIn(aspell.readLine()) >= 0) {
-                        aspellLanguages << language.cap(1);
+                    const QString line = aspell.readLine().simplified();
+                    if (language.indexIn(line) >= 0) {
+                        aspellLanguages << language.cap(0);
                     }
                 }
             }
             if (!aspell.waitForFinished(10000))
                 aspell.kill();
         }
-        */
-        aspellLanguages << "de" << "en" << "sv" << "fi" << "fr";
+
+        //emit analysisReport(QString("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(aspellLanguages.join(",")));
     }
+
     return aspellLanguages;
 }
 
