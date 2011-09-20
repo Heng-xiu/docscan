@@ -334,7 +334,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
         QString version;
         if (programMap["manufacturer"] == "microsoft" && (programMap["product"] == "word" || programMap["product"] == "excel" || programMap["product"] == "powerpoint" || programMap["product"] == "outlook") && !(version = programMap["version"]).isEmpty()) {
-            if (text.contains("Macintosh") || version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
+            if (text.contains("acintosh") || version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
                 opSysMap["type"] = "mac";
             else if (version == "97" || version == "2000" || version == "9.0" || version == "2002" || version == "10.0" || version == "2003" || version == "11.0" || version == "2007" || version == "12.0" || version == "2010" || version == "14.0")
                 opSysMap["type"] = "windows";
@@ -401,7 +401,11 @@ QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
         formatName = "A4";
     else if (mmw >= 214 && mmw <= 218 && mmh >= 277 && mmh <= 281)
         formatName = "Letter";
+    else if (mmh >= 214 && mmh <= 218 && mmw >= 277 && mmw <= 281)
+        formatName = "Letter";
     else if (mmw >= 214 && mmw <= 218 && mmh >= 254 && mmh <= 258)
+        formatName = "Legal";
+    else if (mmh >= 214 && mmh <= 218 && mmw >= 254 && mmw <= 258)
         formatName = "Legal";
 
     return QString("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n").arg(mmh).arg(mmw).arg(formatName).arg(mmw > mmh ? "landscape" : "portrait");

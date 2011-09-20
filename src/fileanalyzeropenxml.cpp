@@ -46,7 +46,7 @@ private:
 public:
     OpenXMLDocumentHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
         : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false) {
-        // nothing
+        result.paperSizeWidth = result.paperSizeHeight = 0;
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
@@ -57,7 +57,7 @@ public:
             QString fontName = atts.value("w:ascii");
             if (!fontName.isEmpty() && !m_fontNames.contains(fontName))
                 m_fontNames.append(fontName);
-        } else if (qName == "w:pgSz") {
+        } else if (result.paperSizeWidth == 0 && qName == "w:pgSz") {
             bool ok = false;
             int mmw = atts.value("w:w").toInt(&ok) / 56.695238f;
             if (ok) {
