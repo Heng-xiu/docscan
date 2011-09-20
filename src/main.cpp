@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QNetworkAccessManager>
+#include <QDebug>
 
 #include "searchenginegoogle.h"
 #include "searchenginebing.h"
@@ -57,29 +58,32 @@ bool evaluateConfigfile(const QString &filename)
                 QString value = line.mid(i + 1).simplified();
 
                 if (key == "filter") {
+                    qDebug() << "filter =" << value;
                     filter.clear();
                     filter << value;
                 } else if (key == "webcrawler" && finder == NULL) {
+                    qDebug() << "webcrawler =" << value << "using filter" << filter;
                     finder = new WebCrawler(&netAccMan, filter, value);
                 } else if (key == "searchenginegoogle" && finder == NULL) {
+                    qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(&netAccMan, value);
                 } else if (key == "searchenginebing" && finder == NULL) {
+                    qDebug() << "searchenginebing =" << value;
                     finder = new SearchEngineBing(&netAccMan, value);
                 } else if (key == "filesystemscan" && finder == NULL) {
+                    qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
-                    /*
-                    } else if (key == "cachedfilefinder" && finder == NULL && downloader == NULL) {
-                    CachedFileFinder *cff = new CachedFileFinder(filter, value);
-                    downloader=cff;
-                    finder=cff;
-                    */
                 } else if (key == "fromlogfilefilefinder" && finder == NULL) {
+                    qDebug() << "fromlogfilefilefinder =" << value;
                     finder = new FromLogFileFileFinder(value);
                 } else if (key == "fromlogfiledownloader" && downloader == NULL) {
+                    qDebug() << "fromlogfiledownloader =" << value;
                     downloader = new FromLogFileDownloader(value);
                 } else if (key == "urldownloader" && downloader == NULL) {
+                    qDebug() << "urldownloader =" << value;
                     downloader = new UrlDownloader(&netAccMan, value);
                 } else if (key == "logcollector" && logCollector == NULL) {
+                    qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
                     logOutput->open(QFile::WriteOnly);
                     logCollector = new LogCollector(logOutput);
@@ -87,18 +91,24 @@ bool evaluateConfigfile(const QString &filename)
                     bool ok = false;
                     numHits = value.toInt(&ok);
                     if (!ok) numHits = 10;
+                    qDebug() << "finder:numhits =" << numHits;
                 } else if (key == "fileanalyzer") {
-                    if (value.contains("multiplexer"))
+                    if (value.contains("multiplexer")) {
                         fileAnalyzer = new FileAnalyzerMultiplexer();
-                    else if (value.contains("odf"))
+                        qDebug() << "fileanalyzer = FileAnalyzerMultiplexer";
+                    } else if (value.contains("odf")) {
                         fileAnalyzer = new FileAnalyzerODF();
-                    else if (value.contains("openxml"))
+                        qDebug() << "fileanalyzer = FileAnalyzerODF";
+                    } else if (value.contains("openxml")) {
                         fileAnalyzer = new FileAnalyzerOpenXML();
-                    else if (value.contains("pdf"))
+                        qDebug() << "fileanalyzer = FileAnalyzerOpenXML";
+                    } else if (value.contains("pdf")) {
                         fileAnalyzer = new FileAnalyzerPDF();
-                    else if (value.contains("compoundbinary"))
+                        qDebug() << "fileanalyzer = FileAnalyzerPDF";
+                    } else if (value.contains("compoundbinary")) {
                         fileAnalyzer = new FileAnalyzerCompoundBinary();
-                    else
+                        qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
+                    } else
                         fileAnalyzer = NULL;
                 }
             } else {
