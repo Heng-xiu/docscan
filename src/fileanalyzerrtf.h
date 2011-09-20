@@ -19,21 +19,17 @@
 
  */
 
-#ifndef FILEANALYZERMULTIPLEXER_H
-#define FILEANALYZERMULTIPLEXER_H
+#ifndef FILEANALYZERRTF_H
+#define FILEANALYZERRTF_H
 
 #include "fileanalyzerabstract.h"
-#include "fileanalyzerodf.h"
-#include "fileanalyzeropenxml.h"
-#include "fileanalyzerpdf.h"
-#include "fileanalyzercompoundbinary.h"
-#include "fileanalyzerrtf.h"
 
-class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
+
+class FileAnalyzerRTF : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerMultiplexer(QObject *parent = 0);
+    explicit FileAnalyzerRTF(QObject *parent = 0);
 
     virtual bool isAlive();
 
@@ -41,11 +37,7 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
-    FileAnalyzerODF m_fileAnalyzerODF;
-    FileAnalyzerPDF m_fileAnalyzerPDF;
-    FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
-    FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
-    FileAnalyzerRTF m_fileAnalyzerRTF;
+    bool m_isAlive;
 };
 
-#endif // FILEANALYZERMULTIPLEXER_H
+#endif // FILEANALYZERRTF_H

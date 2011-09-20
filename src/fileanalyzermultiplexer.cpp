@@ -31,6 +31,7 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(QObject *parent)
     connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerOpenXML, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerRTF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
 }
 
 bool FileAnalyzerMultiplexer::isAlive()
@@ -52,8 +53,13 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
         m_fileAnalyzerODF.analyzeFile(filename);
     else if (filename.indexOf(openXMLExtension) >= 0)
         m_fileAnalyzerOpenXML.analyzeFile(filename);
-    else if (filename.indexOf(compoundBinaryExtension) >= 0)
-        m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+    else if (filename.indexOf(compoundBinaryExtension) >= 0) {
+        if (FileAnalyzerCompoundBinary::isRTFfile(filename))
+            m_fileAnalyzerRTF.analyzeFile(filename);
+        else
+            m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+    } else if (filename.endsWith(".rtf"))
+        m_fileAnalyzerRTF.analyzeFile(filename);
     else
         qWarning() << "Could not analyze file " << filename;
 }

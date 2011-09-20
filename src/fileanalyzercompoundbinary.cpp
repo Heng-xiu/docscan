@@ -289,6 +289,12 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     result.paperSizeWidth = 0;
     result.paperSizeHeight = 0;
 
+    if (isRTFfile(filename)) {
+        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"RTF file disguising as DOC\" filename=\"%1\" />\n").arg(filename));
+        m_isAlive = false;
+        return;
+    }
+
     std::string cppFilename = std::string(filename.toUtf8().constData());
 
     /// perform various file checks before starting the analysis
@@ -383,4 +389,22 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     emit analysisReport(logText);
 
     m_isAlive = false;
+}
+
+/**
+ * Some .doc files are only disguised .rtf files, e.g. if the creating editor
+ * does not support .doc but wants the user to be able this file in Word with
+ * any inconvenience.
+ * This trick has been/is been use by Microsoft itself.
+ */
+bool FileAnalyzerCompoundBinary::isRTFfile(const QString &filename)
+{
+    const char *rtfHeader = "{\\rtf";
+    QFile file(filename);
+    if (file.open(QFile::ReadOnly)) {
+        QByteArray head = file.read(16);
+        file.close();
+        return head.contains(rtfHeader);
+    }
+    return false;
 }

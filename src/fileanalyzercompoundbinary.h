@@ -37,6 +37,8 @@ public:
 
     virtual bool isAlive();
 
+    static bool isRTFfile(const QString &filename);
+
 public slots:
     virtual void analyzeFile(const QString &filename);
 
