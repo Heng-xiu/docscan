@@ -36,11 +36,18 @@ class GeoIP : public QObject, public Watchable
 {
     Q_OBJECT
 public:
+    typedef struct {
+        QString countryCode;
+        QString countryName;
+        QString city;
+        float latitude, longitude;
+    } GeoInformation;
+
     explicit GeoIP(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
     ~GeoIP();
 
     void lookupHost(const QString &hostName);
-    QString getCountryCode(const QString &hostName) const;
+    GeoInformation getGeoInformation(const QString &hostName) const;
 
     bool isAlive();
 
@@ -52,7 +59,7 @@ private:
 
     QSet<QString> m_knownHostnames;
     QMap<QString, QString> m_hostnameToIPaddress;
-    QMap<QString, QString> m_ipAddressToCountryCode;
+    QMap<QString, GeoInformation> m_ipAddressToGeoInformation;
 
 private slots:
     void gotHostInfo(const QHostInfo &hostInfo);

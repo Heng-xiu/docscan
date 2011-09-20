@@ -139,11 +139,12 @@ void UrlDownloader::finished()
                 output.write(data);
                 output.close();
 
-                QString geoLocation = m_geoip->getCountryCode(reply->url().host());
-                if (!geoLocation.isEmpty())
-                    geoLocation = QString(QLatin1String(" countrycode=\"%1\"")).arg(geoLocation);
+                QString geoLocation = QLatin1String(" /");
+                GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
+                if (!geoInformation.countryCode.isEmpty())
+                    geoLocation = QString(QLatin1String("><geoinformation countrycode=\"%1\" countryname=\"%2\" city=\"%3\" latitude=\"%4\" longitude=\"%5\" /></download")).arg(geoInformation.countryCode).arg(geoInformation.countryName).arg(geoInformation.city).arg(geoInformation.latitude).arg(geoInformation.longitude);
 
-                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"%3/>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename)).arg(geoLocation);
+                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"%3>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename)).arg(geoLocation);
                 emit report(logText);
                 succeeded = true;
 
