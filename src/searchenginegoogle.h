@@ -44,7 +44,7 @@ private:
     int m_numExpectedHits, m_currentPage, m_numFoundHits;
     int m_runningSearches;
     int m_hitsPerPage;
-    static const int defaulthitsPerPage;
+    static const int defaultHitsPerPage;
 
 private slots:
     void finished();
