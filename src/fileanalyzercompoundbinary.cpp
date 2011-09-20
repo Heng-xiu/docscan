@@ -50,24 +50,44 @@ class FileAnalyzerCompoundBinary::DocScanTextHandler: public wvWare::TextHandler
 private:
     QString lidToLangCode(int lid) {
         switch (lid) {
-        case 0x0400: return QLatin1String("-none-");
-        case 0x0405: return QLatin1String("cs-CZ");
-        case 0x0406: return QLatin1String("da-DK");
-        case 0x0407: return QLatin1String("de-DE");
-        case 0x0409: return QLatin1String("en-US");
-        case 0x040b: return QLatin1String("fi-FI");
-        case 0x040c: return QLatin1String("fr-FR");
-        case 0x040d: return QLatin1String("iw-IL");
-        case 0x0410: return QLatin1String("it-IT");
-        case 0x0413: return QLatin1String("nl-NL");
-        case 0x0416: return QLatin1String("pt-BR");
-        case 0x0419: return QLatin1String("ru-RU");
-        case 0x041d: return QLatin1String("sv-SE");
+        case 0x0400: return QLatin1String("-none-"); /// == 1024
+        case 0x0401: return QLatin1String("-arabic-"); /// == 1025
+        case 0x0402: return QLatin1String("bg"); /// == 1026
+        case 0x0403: return QLatin1String("cat"); /// == 1027
+        case 0x0404: return QLatin1String("cn"); /// == 1028
+        case 0x0405: return QLatin1String("cs-CZ"); /// == 1029
+        case 0x0406: return QLatin1String("da-DK"); /// == 1030
+        case 0x0407: return QLatin1String("de-DE"); /// == 1031
+        case 0x0408: return QLatin1String("gr"); /// == 1032
+        case 0x0409: return QLatin1String("en-US"); /// == 1033
+        case 0x040a: return QLatin1String("es"); /// == 1034
+        case 0x040b: return QLatin1String("fi-FI"); /// == 1035
+        case 0x040c: return QLatin1String("fr-FR"); /// == 1036
+        case 0x040d: return QLatin1String("iw-IL"); /// == 1037
+        case 0x040e: return QLatin1String("hu"); /// == 1038
+        case 0x0410: return QLatin1String("it-IT"); /// == 1040
+        case 0x0411: return QLatin1String("jp"); /// == 1041
+        case 0x0412: return QLatin1String("kr"); /// == 1042
+        case 0x0413: return QLatin1String("nl-NL"); /// == 1043
+        case 0x0414: return QLatin1String("nb"); /// == 1044
+        case 0x0415: return QLatin1String("pl"); /// == 1045
+        case 0x0416: return QLatin1String("pt-BR"); /// == 1046
+        case 0x0418: return QLatin1String("ro"); /// == 1048
+        case 0x0419: return QLatin1String("ru-RU"); /// == 1049
+        case 0x041b: return QLatin1String("sk"); /// == 1051
+        case 0x041d: return QLatin1String("sv-SE"); /// == 1053
+        case 0x041e: return QLatin1String("th"); /// == 1054
+        case 0x041f: return QLatin1String("tr"); /// == 1055
+        case 0x0421: return QLatin1String("id"); /// == 1057
+        case 0x0424: return QLatin1String("sl"); /// == 1060
+        case 0x042d: return QLatin1String("-basque-"); /// == 1069
+        case 0x0804: return QLatin1String("cn");
         case 0x0809: return QLatin1String("en-GB");
         case 0x080a: return QLatin1String("es-ES"); ///< es-MX?
         case 0x0816: return QLatin1String("pt-PT");
         case 0x0c09: return QLatin1String("en-AU");
         case 0x0c0a: return QLatin1String("pt"); ///< ?
+        case 0x0c0c: return QLatin1String("fr-CA"); ///< ?
         default: {
             QString language;
             language.setNum(lid, 16);
@@ -120,53 +140,86 @@ void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, ResultCont
     default: result.opSys = QString("unknown=%1").arg(fib.envr);
     }
 
+    getVersion(fib.nFib, result.versionNumber, result.versionText);
+    getEditor(fib.wMagicCreated, result.creatorText);
+    getEditor(fib.wMagicRevised, result.revisorText);
+}
+
+bool FileAnalyzerCompoundBinary::getVersion(unsigned short nFib, int &versionNumber, QString &versionText)
+{
+    bool result = true;
+
     /// determine version format of this file
-    // FIXME this number guessing doesn't see correct
-    switch (fib.nFib) {
-    case 0x101:
-    case 0x0065:
-        result.versionNumber = 6;
-        result.versionText = QLatin1String("Word 6.0");
+    switch (nFib) {
+    case 0x0065: /// == 101
+    case 0x0066: /// == 102
+        versionNumber = 6;
+        versionText = QLatin1String("Word 6.0");
         break;
-    case 0x104:
-    case 0x0068:
-        result.versionNumber = 7;
-        result.versionText = QLatin1String("Word 95");
+    case 0x0067: /// == 103
+        versionNumber = 6;
+        versionText = QLatin1String("Word 6.0 for Macintosh");
         break;
-    case 0x105:
+    case 0x0068: /// == 104 FIXME other sources claim this is Word 6.0 for Macintosh
+    case 0x0069: /// == 105
+        versionNumber = 7;
+        versionText = QLatin1String("Word 95");
+        break;
+    case 0x00c0:
     case 0x00c1:
-        result.versionNumber = 8;
-        result.versionText = QLatin1String("Word 97");
+    case 0x00c2:
+        versionNumber = 8;
+        versionText = QLatin1String("Word 97");
         break;
-    case 0x00d9:
-        result.versionNumber = 9;
-        result.versionText = QLatin1String("Word 2000");
+    case 0x00d9: /// == 217
+        versionNumber = 9;
+        versionText = QLatin1String("Word 2000");
+        break;
+    case 0x0101: /// == 257
+        versionNumber = 10;
+        versionText = QLatin1String("Word 2002 (XP)");
+        break;
+    case 0x010c: /// == 268
+        versionNumber = 11;
+        versionText = QLatin1String("Word 2003");
         break;
     default:
-        result.versionNumber = 0;
-        result.versionText = QString::number(fib.nFib, 16);
+        versionNumber = 0;
+        versionText = nFib == 0 ? QString::null : QLatin1String("nFib=") + QString::number(nFib, 16);
+        result = false;
     }
 
+    return result;
+}
+
+bool FileAnalyzerCompoundBinary::getEditor(unsigned short wMagic, QString &editorText)
+{
+    bool result = true;
+
     /// determine used editor
-    switch (fib.wMagicCreated) {
+    switch (wMagic) {
     case 0x6a62:
-        result.editorText = QLatin1String("Microsoft Word 97");
+        editorText = QLatin1String("Microsoft Word 97");
         break;
     case 0x626a:
-        result.editorText = QLatin1String("Microsoft Word 98/Mac");
+        editorText = QLatin1String("Microsoft Word 98 for Macintosh");
         break;
     case 0x6143:
-        result.editorText = QLatin1String("unnamed (0x6143)");
+    case 0x6C6F: /// why two different numbers? Both are used in LibreOffice's and OpenOffice's source code
+        editorText = QLatin1String("OpenOffice or LibreOffice");
         break;
     case 0xa5dc:
-        result.editorText = QLatin1String("Microsoft Word 6.0/7.0");
+        editorText = QLatin1String("Microsoft Word 6.0/7.0");
         break;
     case 0xa5ec:
-        result.editorText = QLatin1String("Microsoft Word 8.0");
+        editorText = QLatin1String("Microsoft Word 8.0");
         break;
     default:
-        result.editorText = QString::number(fib.wMagicCreated, 16);
+        editorText = wMagic == 0 ? QString::null : QLatin1String("wMagic=") + QString::number(wMagic, 16);
+        result = false;
     }
+
+    return result;
 }
 
 void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, ResultContainer &result)
@@ -273,11 +326,11 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     QString headerText = QLatin1String("<header>\n");
 
     /// file format including mime type and file format version
-    metaText.append(QString("<fileformat>\n<mimetype>%3</mimetype>\n<version major=\"%1\" minor=\"0\">%2</version>\n</fileformat>").arg(result.versionNumber).arg(result.versionText).arg(mimetype));
+    metaText.append(QString(QLatin1String("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype).arg(result.versionNumber).arg(result.versionText));
 
     /// editor as stated in file format
-    QString guess = guessTool(result.editorText);
-    metaText.append(QString("<tool origin=\"document\" type=\"editor\">\n%1</tool>\n").arg(guess));
+    metaText.append(QString("<tool origin=\"document\" type=\"editor\" subtype=\"creator\">\n%1</tool>\n").arg(guessTool(result.creatorText)));
+    metaText.append(QString("<tool origin=\"document\" type=\"editor\" subtype=\"revisor\">\n%1</tool>\n").arg(guessTool(result.revisorText)));
 
     /// evaluate editor (a.k.a. creator)
     if (!result.authorInitial.isEmpty())

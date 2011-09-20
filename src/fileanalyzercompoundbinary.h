@@ -44,8 +44,9 @@ private:
     typedef struct {
         int versionNumber;
         QString versionText;
-        QString opSys;
+        QString creatorText, revisorText;
         QString editorText;
+        QString opSys;
         QString title, subject, keywords;
         QString authorInitial, authorLast;
         QString plainText, language;
@@ -59,6 +60,9 @@ private:
     void analyzeFiB(wvWare::Word97::FIB &fib, ResultContainer &result);
     void analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, ResultContainer &result);
     void analyzeWithParser(std::string &filename, ResultContainer &result);
+
+    bool getVersion(unsigned short nFib, int &versionNumber, QString &versionText);
+    bool getEditor(unsigned short wMagic, QString &editorText);
 
     class DocScanTextHandler;
 };
