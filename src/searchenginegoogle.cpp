@@ -39,6 +39,7 @@ SearchEngineGoogle::SearchEngineGoogle(QNetworkAccessManager *networkAccessManag
 void SearchEngineGoogle::startSearch(int num)
 {
     ++m_runningSearches;
+    m_hitsPerPage = qMin(num, m_hitsPerPage);
 
     QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
     url.addQueryItem("q", m_searchTerm);
@@ -104,4 +105,4 @@ void SearchEngineGoogle::finished()
     --m_runningSearches;
 }
 
-const int SearchEngineGoogle::m_hitsPerPage = 50;
+const int SearchEngineGoogle::defaulthitsPerPage = 50;
