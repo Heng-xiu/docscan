@@ -132,7 +132,7 @@ void GeoIP::finishedGeoInfo()
                 if (regExpCountryName.indexIn(xmlText) > 0 && !regExpCountryName.cap(1).isEmpty())
                     geoInformation.countryName = regExpCountryName.cap(1).toLower();
                 const QRegExp regExpCity(QLatin1String("<City>([^<]+)</City>"));
-                if (regExpCity.indexIn(xmlText) > 0 && !regExpCity.cap(1).isEmpty())
+                if (regExpCity.indexIn(xmlText) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
                     geoInformation.city = regExpCity.cap(1).toLower();
                 const QRegExp regExpLatitude(QLatin1String("<Latitude>([-0-9.]+)</Latitude>"));
                 bool ok = false;
@@ -152,7 +152,7 @@ void GeoIP::finishedGeoInfo()
                 geoInformation.countryName = regExpCountryName.cap(1).toLower();
             int p = xmlText.indexOf(QLatin1String("gml:featureMember"));
             const QRegExp regExpCity(QLatin1String("<gml:name>([^<]+)</gml:name>"));
-            if (p > 0 && regExpCity.indexIn(xmlText, p) > 0 && !regExpCity.cap(1).isEmpty())
+            if (p > 0 && regExpCity.indexIn(xmlText, p) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
                 geoInformation.city = regExpCity.cap(1).toLower();
             const QRegExp regExpCoordinates(QLatin1String("<gml:coordinates>([-0-9.]+),([-0-9.]+)</gml:coordinates>"));
             bool ok1 = false, ok2 = false;
