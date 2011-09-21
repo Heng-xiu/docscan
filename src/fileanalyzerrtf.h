@@ -38,6 +38,8 @@ public slots:
 
 private:
     bool m_isAlive;
+
+    int probeLanguage(const QString &filename);
 };
 
 #endif // FILEANALYZERRTF_H

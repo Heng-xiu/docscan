@@ -21,10 +21,12 @@
 
 #include <QFileInfo>
 
+#include <AbstractRtfOutput.h>
 #include <rtfreader.h>
-#include "TextDocumentRtfOutput.h"
+#include <TextDocumentRtfOutput.h>
 
 #include "general.h"
+#include "fileanalyzercompoundbinary.h"
 #include "fileanalyzerrtf.h"
 
 FileAnalyzerRTF::FileAnalyzerRTF(QObject *parent)
@@ -93,6 +95,32 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     if (!text.isEmpty())
         headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(text)));
 
+    QString guess;
+    switch (output.editingTool()) {
+    case RtfReader::AbstractRtfOutput::ToolMicrosoftOffice2003orLater:
+        guess = guessTool("Microsoft Word 2003 or later");
+    case RtfReader::AbstractRtfOutput::ToolLibreOffice:
+        guess = guessTool("LibreOffice");
+    case RtfReader::AbstractRtfOutput::ToolOpenOffice:
+        guess = guessTool("OpenOffice");
+    default:
+        guess = QString::null;
+    }
+    if (!guess.isEmpty())
+        metaText.append(QString("<tool type=\"generator\">\n%1</tool>\n").arg(guess));
+
+    /// evaluate number of pages
+    if (output.numberOfPages() > 0)
+        headerText.append(QString("<num-pages origin=\"document\">%1</num-pages>\n").arg(output.numberOfPages()));
+
+    // TODO number of words
+    // TODO plain text
+
+    /// evaluate language
+    headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(FileAnalyzerCompoundBinary::langCodeToISOCode(probeLanguage(filename))));
+// TODO   if (result.plainText.length() > 1024)
+//       headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+
     /// close all tags, merge text
     metaText += QLatin1String("</meta>\n");
     logText.append(metaText);
@@ -107,4 +135,25 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     delete reader;
 
     m_isAlive = false;
+}
+
+int FileAnalyzerRTF::probeLanguage(const QString &filename)
+{
+    QFile file(filename);
+    if (file.open(QFile::ReadOnly)) {
+        QByteArray fileData = file.readAll();
+        int langCode = 0;
+        int p = -1;
+        while ((p = fileData.indexOf("\\lang", p + 1)) >= 0) {
+            bool ok = false;
+            int num = 0;
+            if ((num = QString::fromAscii(fileData.mid(p + 5, 4).data()).toInt(&ok)) >= 0 && ok)
+                langCode = num;
+        }
+
+        file.close();
+        return langCode;
+    }
+
+    return 0;
 }
