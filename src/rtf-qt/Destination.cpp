@@ -41,6 +41,9 @@ QString Destination::name() const
 
 void Destination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(controlWord);
+    Q_UNUSED(hasValue);
+    Q_UNUSED(value);
 };
 
 void Destination::handlePlainText(const QString &plainText)

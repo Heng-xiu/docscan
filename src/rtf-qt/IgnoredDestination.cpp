@@ -32,10 +32,14 @@ IgnoredDestination::~IgnoredDestination()
 
 void IgnoredDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(controlWord);
+    Q_UNUSED(hasValue);
+    Q_UNUSED(value);
 }
 
 void IgnoredDestination::handlePlainText(const QString &plainText)
 {
+    Q_UNUSED(plainText);
 }
 
 void IgnoredDestination::aboutToEndDestination()

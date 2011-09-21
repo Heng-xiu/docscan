@@ -32,34 +32,35 @@ PictDestination::~PictDestination()
 
 void PictDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(hasValue);
     if (controlWord == "jpegblip") {
         // handle this later
     } else if (controlWord == "wmetafile") {
-        qDebug() << "todo: get WMF data";
+        // TF qDebug() << "todo: get WMF data";
     } else if (controlWord == "picw") {
-        qDebug() << "pict width: " << value;
+        // TF qDebug() << "pict width: " << value;
         m_imageFormat.setWidth(value);
     } else if (controlWord == "pich") {
-        qDebug() << "pict height: " << value;
+        // TF qDebug() << "pict height: " << value;
         m_imageFormat.setHeight(value);
     } else if (controlWord == "picscalex") {
-        qDebug() << "X scale: " << value;
+        // TF qDebug() << "X scale: " << value;
     } else if (controlWord == "picscaley") {
-        qDebug() << "Y scale: " << value;
+        // TF qDebug() << "Y scale: " << value;
     } else if (controlWord == "piccropl") {
-        qDebug() << "Left crop:" << value;
+        // TF qDebug() << "Left crop:" << value;
     } else if (controlWord == "piccropr") {
-        qDebug() << "Right crop:" << value;
+        // TF qDebug() << "Right crop:" << value;
     } else if (controlWord == "piccropt") {
-        qDebug() << "Top crop:" << value;
+        // TF qDebug() << "Top crop:" << value;
     } else if (controlWord == "piccropb") {
-        qDebug() << "Bottom crop:" << value;
+        // TF qDebug() << "Bottom crop:" << value;
     } else if (controlWord == "pichgoal") {
-        qDebug() << "Goal Height:" << value;
+        // TF qDebug() << "Goal Height:" << value;
     } else if (controlWord == "picwgoal") {
-        qDebug() << "Goal Width:" << value;
+        // TF qDebug() << "Goal Width:" << value;
     } else {
-        qDebug() << "unexpected control word in pict:" << controlWord;
+        // TF qDebug() << "unexpected control word in pict:" << controlWord;
     }
 }
 

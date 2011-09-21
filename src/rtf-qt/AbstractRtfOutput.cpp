@@ -23,6 +23,7 @@
 namespace RtfReader
 {
 AbstractRtfOutput::AbstractRtfOutput()
+        : m_editingTool(ToolUnknown)
 {}
 
 AbstractRtfOutput::~AbstractRtfOutput()
@@ -196,6 +197,16 @@ int AbstractRtfOutput::numberOfPages() const
 void AbstractRtfOutput::setNumberOfPages(const int numberOfPages)
 {
     m_numberOfPages = numberOfPages;
+}
+
+AbstractRtfOutput::EditingTool AbstractRtfOutput::editingTool() const
+{
+    return m_editingTool;
+}
+
+void AbstractRtfOutput::setEditingTool(const EditingTool editingTool)
+{
+    m_editingTool = editingTool;
 }
 
 int AbstractRtfOutput::numberOfWords() const

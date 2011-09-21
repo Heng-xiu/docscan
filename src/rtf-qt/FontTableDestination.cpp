@@ -32,6 +32,7 @@ FontTableDestination::~FontTableDestination()
 
 void FontTableDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(hasValue);
     if (controlWord == "f") {
         m_currentFontTableIndex = value;
     } else if (controlWord == "froman") {
@@ -55,7 +56,7 @@ void FontTableDestination::handleControlWord(const QString &controlWord, bool ha
     } else if (controlWord == "fcharset") {
         // TODO: need to figure out how to sanely handle this
     } else {
-        qDebug() << "unhandled fonttbl control word:" << controlWord << "(" << value << ")";
+        // TF qDebug() << "unhandled fonttbl control word:" << controlWord << "(" << value << ")";
     }
 }
 
@@ -73,7 +74,7 @@ void FontTableDestination::handlePlainText(const QString &plainText)
             m_output->insertFontTableEntry(m_fontTableEntry, m_currentFontTableIndex);
         } else {
             // we were not expecting a name with a delimiter other than at the end
-            qDebug() << "Font name with embedded delimiter: " << plainText;
+            // TF qDebug() << "Font name with embedded delimiter: " << plainText;
         }
     } else {
         // plain font name

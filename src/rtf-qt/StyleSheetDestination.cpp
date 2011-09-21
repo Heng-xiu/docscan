@@ -53,9 +53,9 @@ void StyleSheetDestination::handleControlWord(const QString &controlWord, bool h
         qDebug() << "space before default (0)";
     } else {
         if (ControlWord::isDestination(controlWord)) {
-            qDebug() << "unhandled **Destination** control word in StyleSheetDestination:" << controlWord;
+            // TF qDebug() << "unhandled **Destination** control word in StyleSheetDestination:" << controlWord;
         } else {
-            qDebug() << "unhandled control word in StyleSheetDestination:" << controlWord;
+            // TF qDebug() << "unhandled control word in StyleSheetDestination:" << controlWord;
         }
     }
 }
@@ -74,7 +74,7 @@ void StyleSheetDestination::handlePlainText(const QString &plainText)
             m_output->insertStyleSheetTableEntry(m_currentStyleHandleNumber, m_style);
         } else {
             // we were not expecting a name with a delimiter other than at the end
-            qDebug() << "Style name with embedded delimiter: " << plainText;
+            // TF qDebug() << "Style name with embedded delimiter: " << plainText;
         }
     } else {
         // plain font name

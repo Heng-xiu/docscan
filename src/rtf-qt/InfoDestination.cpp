@@ -48,12 +48,13 @@ void InfoDestination::handleControlWord(const QString &controlWord, bool hasValu
     } else if (controlWord == "*") {
         // handled elsewhere
     } else {
-        qDebug() << "unexpected control word in InfoDestination:" << controlWord;
+        // TF qDebug() << "unexpected control word in InfoDestination:" << controlWord;
     }
 }
 
 void InfoDestination::handlePlainText(const QString &plainText)
 {
-    qDebug() << "unexpected text in InfoDestination:" << plainText;
+    Q_UNUSED(plainText);
+    // TF qDebug() << "unexpected text in InfoDestination:" << plainText;
 }
 }

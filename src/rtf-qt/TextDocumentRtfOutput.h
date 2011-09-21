@@ -119,13 +119,13 @@ protected:
 
     QList<QColor> m_colourTable;
 
+    QTextDocument *m_document;
+
     QHash<int, FontTableEntry> m_fontTable;
     int m_defaultFontIndex;
     bool m_haveSetFont;
 
     QHash<int, StyleSheetTableEntry> m_stylesheetTable;
-
-    QTextDocument *m_document;
 
     /**
       Convenience routine to convert a size in twips into pixels

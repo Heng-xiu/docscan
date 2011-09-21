@@ -32,6 +32,7 @@ ColorTableDestination::~ColorTableDestination()
 
 void ColorTableDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(hasValue);
     if (controlWord == "red") {
         m_currentColor.setRed(value);
     } else if (controlWord == "green") {
@@ -39,7 +40,7 @@ void ColorTableDestination::handleControlWord(const QString &controlWord, bool h
     } else if (controlWord == "blue") {
         m_currentColor.setBlue(value);
     } else {
-        qDebug() << "unexpected control word in colortbl:" << controlWord;
+        // TF qDebug() << "unexpected control word in colortbl:" << controlWord;
     }
 }
 
@@ -49,7 +50,7 @@ void ColorTableDestination::handlePlainText(const QString &plainText)
         m_output->appendToColourTable(m_currentColor);
         resetCurrentColor();
     } else {
-        qDebug() << "unexpected text in ColorTableDestination:" << plainText;
+        // TF qDebug() << "unexpected text in ColorTableDestination:" << plainText;
     }
 }
 

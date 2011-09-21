@@ -15,6 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <typeinfo>
+
 #include "rtfreader.h"
 #include "controlword.h"
 #include "AbstractRtfOutput.h"
@@ -135,12 +137,12 @@ bool Reader::parseFileHeader()
 bool Reader::headerFormatIsKnown(const QString &tokenName, int tokenValue)
 {
     if (tokenName != QString("rtf")) {
-        qDebug() << "unknown / unexpected header token name:" << tokenName;
+        // TF qDebug() << "unknown / unexpected header token name:" << tokenName;
         return false;
     }
 
     if (tokenValue != 1) {
-        qDebug() << "unknown / unexpected header token value:" << tokenValue;
+        // TF qDebug() << "unknown / unexpected header token value:" << tokenValue;
         return false;
     }
 
@@ -196,7 +198,7 @@ Destination* Reader::makeDestination(const QString &destinationName)
     } else if (destinationName == "ignorable") {
         return new IgnoredDestination(this, m_output, destinationName);
     }
-    qDebug() << "creating plain old Destination for" << destinationName;
+    // TF qDebug() << "creating plain old Destination for" << destinationName;
     return new Destination(this, m_output, destinationName);
 }
 
@@ -216,7 +218,7 @@ void Reader::changeDestination(const QString &destinationName)
     for (int i = 0; i < m_destinationStack.size(); ++i) {
         destStackElementNames << m_destinationStack.at(i)->name();
     }
-    qDebug() << m_debugIndent << "destinationStack after changeDestination (" << destStackElementNames << ")";
+    // TF qDebug() << m_debugIndent << "destinationStack after changeDestination (" << destStackElementNames << ")";
 }
 
 void Reader::parseDocument()
@@ -284,7 +286,7 @@ void Reader::parseDocument()
         case Control:
             controlWord = ControlWord(token.name);
             if (! controlWord.isKnown()) {
-                qDebug() << "*** Unrecognised control word (not in spec 1.9.1): " << token.name;
+                // TF qDebug() << "*** Unrecognised control word (not in spec 1.9.1): " << token.name;
             }
             // qDebug() << m_debugIndent << "got controlWord: " << token.name;
             // qDebug() << m_debugIndent << "isDestination:" << controlWord.isDestination();
@@ -297,7 +299,7 @@ void Reader::parseDocument()
                 // This is a control word we don't understand
                 m_nextSymbolMightBeDestination = false;
                 m_nextSymbolIsIgnorable = false;
-                qDebug() << "ignorable destination word:" << token.name;
+                // TF qDebug() << "ignorable destination word:" << token.name;
                 changeDestination("ignorable");
             } else {
                 m_nextSymbolMightBeDestination = false;
@@ -309,12 +311,27 @@ void Reader::parseDocument()
             }
             break;
         case Plain:
+            if (token.name.contains(QLatin1String("http://schemas.microsoft.com/office/word/2003/wordml"))) {
+                m_output->setEditingTool(AbstractRtfOutput::ToolMicrosoftOffice2003orLater);
+                qDebug() << "found Microsoft Office 2003 tag";
+            } else if (token.name == QLatin1String("LibreOffice")) {
+                m_output->setEditingTool(AbstractRtfOutput::ToolLibreOffice);
+                qDebug() << "found LibreOffice tag";
+            } else if (token.name == QLatin1String("OpenOffice.org")) {
+                m_output->setEditingTool(AbstractRtfOutput::ToolLibreOffice);
+                qDebug() << "found LibreOffice tag";
+            }
+            if (token.name.contains(QLatin1String("ffice")) || token.name.toLower().contains(QLatin1String("word"))) {
+                qDebug() << "token.name =" << token.name << endl << "name =" << m_destinationStack.top()->name() << endl << "typeid =" << typeid(m_destinationStack.top()).name();
+            }
             m_destinationStack.top()->handlePlainText(token.name);
             break;
-        case Binary:
-            qDebug() << "binary data:" << token.name;
-        default:
-            qDebug() << "Unexpected token Type";
+        case Binary: {
+            // TF qDebug() << "binary data:" << token.name;
+        }
+        default: {
+            // TF qDebug() << "Unexpected token Type";
+        }
         }
     }
 }

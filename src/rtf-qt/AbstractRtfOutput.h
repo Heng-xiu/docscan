@@ -38,6 +38,8 @@ Abstract output strategy for RTF Parser
 class AbstractRtfOutput
 {
 public:
+    enum EditingTool {ToolUnknown = 0, ToolMicrosoftOffice2003orLater, ToolLibreOffice, ToolOpenOffice};
+
     AbstractRtfOutput();
     virtual ~AbstractRtfOutput();
 
@@ -205,6 +207,11 @@ public:
     virtual int numberOfPages() const;
     virtual void setNumberOfPages(const int numberOfPages);
 
+
+    virtual EditingTool editingTool() const;
+    virtual void setEditingTool(const EditingTool editingTool);
+
+
     /**
       The number of words in this document (from the document metadata)
 
@@ -353,6 +360,8 @@ private:
 
     // The number of pages in the document (from document meta-data, if any)
     int m_numberOfPages;
+
+    EditingTool m_editingTool;
 
     // The number of words in the document (from document meta-data, if any)
     int m_numberOfWords;

@@ -32,7 +32,10 @@ PcdataDestination::~PcdataDestination()
 
 void PcdataDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
-    qDebug() << "unexpected control word in" << m_name << ": " << controlWord;
+    Q_UNUSED(controlWord);
+    Q_UNUSED(hasValue);
+    Q_UNUSED(value);
+    // TF qDebug() << "unexpected control word in" << m_name << ": " << controlWord;
 }
 
 void PcdataDestination::handlePlainText(const QString &plainText)

@@ -24,8 +24,8 @@ class RtfGroupState
 {
 public:
     RtfGroupState() : endOfFile(false), didChangeDestination(false) {}
-    bool didChangeDestination;
     bool endOfFile;
+    bool didChangeDestination;
 };
 }
 

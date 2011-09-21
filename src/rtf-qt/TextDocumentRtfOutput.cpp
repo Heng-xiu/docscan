@@ -150,7 +150,7 @@ void TextDocumentRtfOutput::setForegroundColour(const int colourIndex)
         m_textCharFormatStack.top().setForeground(colour);
         m_cursor->setCharFormat(m_textCharFormatStack.top());
     } else {
-        qDebug() << "invalid colour at index:" << colourIndex;
+        // TF qDebug() << "invalid colour at index:" << colourIndex;
     }
 }
 
@@ -161,7 +161,7 @@ void TextDocumentRtfOutput::setHighlightColour(const int colourIndex)
         m_textCharFormatStack.top().setBackground(colour);
         m_cursor->setCharFormat(m_textCharFormatStack.top());
     } else {
-        qDebug() << "invalid colour at index:" << colourIndex;
+        // TF qDebug() << "invalid colour at index:" << colourIndex;
     }
 }
 
@@ -172,14 +172,14 @@ void TextDocumentRtfOutput::setParagraphPatternBackgroundColour(const int colour
         m_paragraphFormat.setBackground(colour);
         m_cursor->setBlockFormat(m_paragraphFormat);
     } else {
-        qDebug() << "invalid colour at index:" << colourIndex;
+        // TF qDebug() << "invalid colour at index:" << colourIndex;
     }
 }
 
 void TextDocumentRtfOutput::setFont(const int fontIndex)
 {
     if (! m_fontTable.contains(fontIndex)) {
-        qDebug() << "attempted to select fontIndex" << fontIndex << "not in the font table";
+        // TF qDebug() << "attempted to select fontIndex" << fontIndex << "not in the font table";
         return;
     }
     FontTableEntry fontEntry = m_fontTable.value(fontIndex);
@@ -207,7 +207,7 @@ void TextDocumentRtfOutput::insertFontTableEntry(FontTableEntry fontTableEntry, 
 
 void TextDocumentRtfOutput::insertStyleSheetTableEntry(quint32 stylesheetTableIndex, StyleSheetTableEntry stylesheetTableEntry)
 {
-    qDebug() << "inserting stylesheet entry:" << stylesheetTableIndex << "with name:" << stylesheetTableEntry.styleName();
+    // TF qDebug() << "inserting stylesheet entry:" << stylesheetTableIndex << "with name:" << stylesheetTableEntry.styleName();
     m_stylesheetTable.insert(stylesheetTableIndex, stylesheetTableEntry);
 }
 
@@ -309,24 +309,30 @@ void TextDocumentRtfOutput::setTextDirectionRightToLeft()
 
 void TextDocumentRtfOutput::createImage(const QImage &image, const QTextImageFormat &format)
 {
+
 #if 0
     QString imageUuid = QString("rtfparser://") + QUuid::createUuid().toString();
     m_document->addResource(QTextDocument::ImageResource, QUrl(imageUuid), QVariant(image));
     format.setName(imageUuid);
     m_cursor->insertImage(format);
 #else
-    m_cursor->insertImage(image.scaled(format.width(), format.height()));
+    if (image.isNull()) {
+        // TF qDebug()<<"image is NULL";
+    } else
+        m_cursor->insertImage(image.scaled(format.width(), format.height()));
 #endif
 }
 
 void TextDocumentRtfOutput::setPageHeight(const int pageHeight)
 {
-    qDebug() << "setPageHeight: " << pageHeight << " (" << pageHeight / 1440.0 << ")";
+    Q_UNUSED(pageHeight);
+    // TF qDebug() << "setPageHeight: " << pageHeight << " (" << pageHeight / 1440.0 << ")";
 }
 
 void TextDocumentRtfOutput::setPageWidth(const int pageWidth)
 {
-    qDebug() << "setPageWidth: " << pageWidth << " (" << pageWidth / 1440.0 << ")";
+    Q_UNUSED(pageWidth);
+    // TF qDebug() << "setPageWidth: " << pageWidth << " (" << pageWidth / 1440.0 << ")";
 }
 
 qreal TextDocumentRtfOutput::pixelsFromTwips(const int twips)

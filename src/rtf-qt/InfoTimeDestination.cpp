@@ -32,6 +32,7 @@ InfoTimeDestination::~InfoTimeDestination()
 
 void InfoTimeDestination::handleControlWord(const QString &controlWord, bool hasValue, const int value)
 {
+    Q_UNUSED(hasValue);
     if (controlWord == "yr") {
         m_year = value;
     } else if (controlWord == "mo") {
@@ -43,13 +44,14 @@ void InfoTimeDestination::handleControlWord(const QString &controlWord, bool has
     } else if (controlWord == "min") {
         m_minute = value;
     } else {
-        qDebug() << "unexpected control word in" << m_name << ": " << controlWord;
+        // TF qDebug() << "unexpected control word in" << m_name << ": " << controlWord;
     }
 }
 
 void InfoTimeDestination::handlePlainText(const QString &plainText)
 {
-    qDebug() << "unexpected text in InfoTimeDestination:" << plainText;
+    Q_UNUSED(plainText);
+    // TF qDebug() << "unexpected text in InfoTimeDestination:" << plainText;
 }
 
 QDateTime InfoTimeDestination::dateTime() const

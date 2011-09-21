@@ -53,9 +53,9 @@ public:
     QTextCharFormat m_textCharFormat;
 
 protected:
-    QString m_name;
     Reader *m_reader;
     AbstractRtfOutput *m_output;
+    QString m_name;
 };
 
 QDebug operator<<(QDebug dbg, const Destination &dest);
