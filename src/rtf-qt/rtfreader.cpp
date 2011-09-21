@@ -311,19 +311,19 @@ void Reader::parseDocument()
             }
             break;
         case Plain:
-            if (token.name.contains(QLatin1String("http://schemas.microsoft.com/office/word/2003/wordml"))) {
+            if (token.name.contains(QLatin1String("schemas.microsoft.com/office/word/2003/wordml"))) {
                 m_output->setEditingTool(AbstractRtfOutput::ToolMicrosoftOffice2003orLater);
-                qDebug() << "found Microsoft Office 2003 tag";
+                // TF qDebug() << "found Microsoft Office 2003 tag";
             } else if (token.name == QLatin1String("LibreOffice")) {
                 m_output->setEditingTool(AbstractRtfOutput::ToolLibreOffice);
-                qDebug() << "found LibreOffice tag";
+                // TF qDebug() << "found LibreOffice tag";
             } else if (token.name == QLatin1String("OpenOffice.org")) {
                 m_output->setEditingTool(AbstractRtfOutput::ToolLibreOffice);
-                qDebug() << "found LibreOffice tag";
+                // TF qDebug() << "found LibreOffice tag";
             }
-            if (token.name.contains(QLatin1String("ffice")) || token.name.toLower().contains(QLatin1String("word"))) {
-                qDebug() << "token.name =" << token.name << endl << "name =" << m_destinationStack.top()->name() << endl << "typeid =" << typeid(m_destinationStack.top()).name();
-            }
+            // if (token.name.contains(QLatin1String("ffice")) || token.name.toLower().contains(QLatin1String("word"))) {
+            //     qDebug() << "token.name =" << token.name << endl << "name =" << m_destinationStack.top()->name() << endl << "typeid =" << typeid(m_destinationStack.top()).name();
+            // }
             m_destinationStack.top()->handlePlainText(token.name);
             break;
         case Binary: {

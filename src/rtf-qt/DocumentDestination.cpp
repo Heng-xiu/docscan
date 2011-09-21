@@ -135,7 +135,7 @@ void DocumentDestination::handleControlWord(const QString &controlWord, bool has
 void DocumentDestination::handlePlainText(const QString &plainText)
 {
     if (m_charactersToSkip > 0) {
-        qDebug() << "skipping" << m_charactersToSkip << "of" << plainText;
+        // TF qDebug() << "skipping" << m_charactersToSkip << "of" << plainText;
         if (m_charactersToSkip >= plainText.size()) {
             m_charactersToSkip -= plainText.size();
             return;
