@@ -70,6 +70,7 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     QFileInfo fi = QFileInfo(filename);
     metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
 
+    /// evaluate dates
     QDateTime dateTime = output.created();
     if (dateTime.isValid())
         headerText.append(DocScan::formatDate(dateTime.date(), "creation"));
@@ -95,14 +96,23 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     if (!text.isEmpty())
         headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(text)));
 
+    /// evaluate comment
+    text = output.comment();
+    if (!text.isEmpty())
+        headerText.append(QString("<comment>%1</comment>\n").arg(DocScan::xmlify(text)));
+
+    /// evaluate and guess editing tool (generator)
     QString guess;
     switch (output.editingTool()) {
     case RtfReader::AbstractRtfOutput::ToolMicrosoftOffice2003orLater:
         guess = guessTool("Microsoft Word 2003 or later");
+        break;
     case RtfReader::AbstractRtfOutput::ToolLibreOffice:
         guess = guessTool("LibreOffice");
+        break;
     case RtfReader::AbstractRtfOutput::ToolOpenOffice:
         guess = guessTool("OpenOffice");
+        break;
     default:
         guess = QString::null;
     }
@@ -113,20 +123,30 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     if (output.numberOfPages() > 0)
         headerText.append(QString("<num-pages origin=\"document\">%1</num-pages>\n").arg(output.numberOfPages()));
 
-    // TODO number of words
-    // TODO plain text
+    /// evaluate number of words and characters
+    int numChars = output.numberOfCharacters();
+    //if (numChars<=0 || numChars>=0xfffff) numChars=output.numberOfCharactersWithoutSpaces();
+    int numWords = output.numberOfWords();
+    QString bodyText = QString("<body length=\"%1\" words=\"%2\" />\n").arg(numChars > 0 && numChars < 0xfffff ? QString::number(numChars) : QLatin1String("unreliable")).arg(numWords > 0 && numWords < 0xfffff ? QString::number(numWords) : QLatin1String("unreliable"));
 
     /// evaluate language
     headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(FileAnalyzerCompoundBinary::langCodeToISOCode(probeLanguage(filename))));
-// TODO   if (result.plainText.length() > 1024)
-//       headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+    const QString plainText = doc.toPlainText();
+    if (plainText.length() > 1024)
+        headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(plainText)));
+
+    /// evaluate paper size
+    if (output.pageHeight() > 0 && output.pageWidth() > 0)
+        headerText.append(evaluatePaperSize(output.pageWidth() / 56.694, output.pageHeight() / 56.694));
+
+    // TODO fonts
 
     /// close all tags, merge text
     metaText += QLatin1String("</meta>\n");
     logText.append(metaText);
     headerText += QLatin1String("</header>\n");
     logText.append(headerText);
-    // logText.append(bodyText);
+    logText.append(bodyText);
     logText += QLatin1String("</fileanalysis>\n");
 
     emit analysisReport(logText);
