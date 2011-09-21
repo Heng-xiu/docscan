@@ -323,18 +323,6 @@ void TextDocumentRtfOutput::createImage(const QImage &image, const QTextImageFor
 #endif
 }
 
-void TextDocumentRtfOutput::setPageHeight(const int pageHeight)
-{
-    Q_UNUSED(pageHeight);
-    // TF qDebug() << "setPageHeight: " << pageHeight << " (" << pageHeight / 1440.0 << ")";
-}
-
-void TextDocumentRtfOutput::setPageWidth(const int pageWidth)
-{
-    Q_UNUSED(pageWidth);
-    // TF qDebug() << "setPageWidth: " << pageWidth << " (" << pageWidth / 1440.0 << ")";
-}
-
 qreal TextDocumentRtfOutput::pixelsFromTwips(const int twips)
 {
     qreal inches = twips / 1440.0;

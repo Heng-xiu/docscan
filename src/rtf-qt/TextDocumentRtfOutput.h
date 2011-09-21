@@ -103,9 +103,6 @@ public:
 
     virtual void createImage(const QImage &image, const QTextImageFormat &format);
 
-    virtual void setPageHeight(const int pageHeight);
-    virtual void setPageWidth(const int pageWidth);
-
     virtual void setSpaceBefore(const int twips);
     virtual void setSpaceAfter(const int twips);
 
@@ -131,7 +128,6 @@ protected:
       Convenience routine to convert a size in twips into pixels
     */
     qreal pixelsFromTwips(const int twips);
-
 };
 }
 
