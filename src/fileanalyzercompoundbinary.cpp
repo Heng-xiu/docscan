@@ -48,54 +48,6 @@ inline QString string(const wvWare::UString &str)
 class FileAnalyzerCompoundBinary::DocScanTextHandler: public wvWare::TextHandler
 {
 private:
-    QString lidToLangCode(int lid) {
-        switch (lid) {
-        case 0x0400: return QLatin1String("-none-"); /// == 1024
-        case 0x0401: return QLatin1String("-arabic-"); /// == 1025
-        case 0x0402: return QLatin1String("bg"); /// == 1026
-        case 0x0403: return QLatin1String("cat"); /// == 1027
-        case 0x0404: return QLatin1String("cn"); /// == 1028
-        case 0x0405: return QLatin1String("cs-CZ"); /// == 1029
-        case 0x0406: return QLatin1String("da-DK"); /// == 1030
-        case 0x0407: return QLatin1String("de-DE"); /// == 1031
-        case 0x0408: return QLatin1String("gr"); /// == 1032
-        case 0x0409: return QLatin1String("en-US"); /// == 1033
-        case 0x040a: return QLatin1String("es"); /// == 1034
-        case 0x040b: return QLatin1String("fi-FI"); /// == 1035
-        case 0x040c: return QLatin1String("fr-FR"); /// == 1036
-        case 0x040d: return QLatin1String("iw-IL"); /// == 1037
-        case 0x040e: return QLatin1String("hu"); /// == 1038
-        case 0x0410: return QLatin1String("it-IT"); /// == 1040
-        case 0x0411: return QLatin1String("jp"); /// == 1041
-        case 0x0412: return QLatin1String("kr"); /// == 1042
-        case 0x0413: return QLatin1String("nl-NL"); /// == 1043
-        case 0x0414: return QLatin1String("nb"); /// == 1044
-        case 0x0415: return QLatin1String("pl"); /// == 1045
-        case 0x0416: return QLatin1String("pt-BR"); /// == 1046
-        case 0x0418: return QLatin1String("ro"); /// == 1048
-        case 0x0419: return QLatin1String("ru-RU"); /// == 1049
-        case 0x041b: return QLatin1String("sk"); /// == 1051
-        case 0x041d: return QLatin1String("sv-SE"); /// == 1053
-        case 0x041e: return QLatin1String("th"); /// == 1054
-        case 0x041f: return QLatin1String("tr"); /// == 1055
-        case 0x0421: return QLatin1String("id"); /// == 1057
-        case 0x0424: return QLatin1String("sl"); /// == 1060
-        case 0x042d: return QLatin1String("-basque-"); /// == 1069
-        case 0x0804: return QLatin1String("cn");
-        case 0x0809: return QLatin1String("en-GB");
-        case 0x080a: return QLatin1String("es-ES"); ///< es-MX?
-        case 0x0816: return QLatin1String("pt-PT");
-        case 0x0c09: return QLatin1String("en-AU");
-        case 0x0c0a: return QLatin1String("pt"); ///< ?
-        case 0x0c0c: return QLatin1String("fr-CA"); ///< ?
-        default: {
-            QString language;
-            language.setNum(lid, 16);
-            return "0x" + language;
-        }
-        }
-    }
-
     ResultContainer &resultContainer;
 
 public:
@@ -108,7 +60,7 @@ public:
         QString qString = string(text);
         resultContainer.plainText += qString;
         if (resultContainer.language.isEmpty())
-            resultContainer.language = lidToLangCode(chp->lidDefault);
+            resultContainer.language = FileAnalyzerCompoundBinary::langCodeToISOCode(chp->lidDefault);
     }
 
     void sectionStart(wvWare::SharedPtr<const wvWare::Word97::SEP> sep) {
@@ -407,4 +359,52 @@ bool FileAnalyzerCompoundBinary::isRTFfile(const QString &filename)
         return head.contains(rtfHeader);
     }
     return false;
+}
+
+QString FileAnalyzerCompoundBinary::langCodeToISOCode(int lid)
+{
+    switch (lid) {
+    case 0x0400: return QLatin1String("-none-"); /// == 1024
+    case 0x0401: return QLatin1String("-arabic-"); /// == 1025
+    case 0x0402: return QLatin1String("bg"); /// == 1026
+    case 0x0403: return QLatin1String("cat"); /// == 1027
+    case 0x0404: return QLatin1String("cn"); /// == 1028
+    case 0x0405: return QLatin1String("cs-CZ"); /// == 1029
+    case 0x0406: return QLatin1String("da-DK"); /// == 1030
+    case 0x0407: return QLatin1String("de-DE"); /// == 1031
+    case 0x0408: return QLatin1String("gr"); /// == 1032
+    case 0x0409: return QLatin1String("en-US"); /// == 1033
+    case 0x040a: return QLatin1String("es"); /// == 1034
+    case 0x040b: return QLatin1String("fi-FI"); /// == 1035
+    case 0x040c: return QLatin1String("fr-FR"); /// == 1036
+    case 0x040d: return QLatin1String("iw-IL"); /// == 1037
+    case 0x040e: return QLatin1String("hu"); /// == 1038
+    case 0x0410: return QLatin1String("it-IT"); /// == 1040
+    case 0x0411: return QLatin1String("jp"); /// == 1041
+    case 0x0412: return QLatin1String("kr"); /// == 1042
+    case 0x0413: return QLatin1String("nl-NL"); /// == 1043
+    case 0x0414: return QLatin1String("nb"); /// == 1044
+    case 0x0415: return QLatin1String("pl"); /// == 1045
+    case 0x0416: return QLatin1String("pt-BR"); /// == 1046
+    case 0x0418: return QLatin1String("ro"); /// == 1048
+    case 0x0419: return QLatin1String("ru-RU"); /// == 1049
+    case 0x041b: return QLatin1String("sk"); /// == 1051
+    case 0x041d: return QLatin1String("sv-SE"); /// == 1053
+    case 0x041e: return QLatin1String("th"); /// == 1054
+    case 0x041f: return QLatin1String("tr"); /// == 1055
+    case 0x0421: return QLatin1String("id"); /// == 1057
+    case 0x0424: return QLatin1String("sl"); /// == 1060
+    case 0x042d: return QLatin1String("-basque-"); /// == 1069
+    case 0x0452: return QLatin1String("-welsh-");
+    case 0x0804: return QLatin1String("cn");
+    case 0x0809: return QLatin1String("en-GB");
+    case 0x080a: return QLatin1String("es-ES"); ///< es-MX?
+    case 0x0816: return QLatin1String("pt-PT");
+    case 0x0c09: return QLatin1String("en-AU");
+    case 0x0c0a: return QLatin1String("pt"); ///< ?
+    case 0x0c0c: return QLatin1String("fr-CA"); ///< ?
+    default: {
+        return QString(QLatin1String("0x%1 = %2")).arg(QString::number(lid, 16)).arg(QString::number(lid, 10));
+    }
+    }
 }

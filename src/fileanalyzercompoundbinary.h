@@ -38,6 +38,7 @@ public:
     virtual bool isAlive();
 
     static bool isRTFfile(const QString &filename);
+    static QString langCodeToISOCode(int lid);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
