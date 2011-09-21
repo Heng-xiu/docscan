@@ -43,6 +43,7 @@ public slots:
 private:
     typedef struct {
         QString toolGenerator;
+        QString formatVersion;
         QString authorInitial, authorLast;
         QString title, subject;
         QString languageAspell, languageDocument;

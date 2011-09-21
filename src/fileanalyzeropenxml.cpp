@@ -47,27 +47,28 @@ public:
     OpenXMLDocumentHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
         : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false) {
         result.paperSizeWidth = result.paperSizeHeight = 0;
+        result.formatVersion = QLatin1String(""); // TODO
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
         m_insideText |= qName == "w:t";
 
-        if (qName == "w:rFonts") {
-            QString fontName = atts.value("w:ascii");
+        if (qName == QLatin1String("w:rFonts")) {
+            QString fontName = atts.value(QLatin1String("w:ascii"));
             if (!fontName.isEmpty() && !m_fontNames.contains(fontName))
                 m_fontNames.append(fontName);
-        } else if (result.paperSizeWidth == 0 && qName == "w:pgSz") {
+        } else if (result.paperSizeWidth == 0 && qName == QLatin1String("w:pgSz")) {
             bool ok = false;
-            int mmw = atts.value("w:w").toInt(&ok) / 56.695238f;
+            int mmw = atts.value(QLatin1String("w:w")).toInt(&ok) / 56.695238f;
             if (ok) {
                 result.paperSizeWidth = mmw;
                 int mmh = atts.value("w:h").toInt(&ok) / 56.695238f;
                 if (ok)
                     result.paperSizeHeight = mmh;
             }
-        } else if (qName == "w:lang")
-            result.languageDocument = atts.value("w:eastAsia");
+        } else if (qName == QLatin1String("w:lang"))
+            result.languageDocument = atts.value(QLatin1String("w:eastAsia"));
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
@@ -311,11 +312,6 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
             }
         }
 
-        if (mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-            if (!processWordFile(zipFile, result))
-                emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-document\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
-        }
-
         if (!processCore(zipFile, result)) {
             emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-corefile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
             return;
@@ -337,11 +333,11 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
         QString metaText = QLatin1String("<meta>\n");
         QString headerText = QLatin1String("<header>\n");
 
-
         /// file format including mime type and file format version
-        // TODO document version
-        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n</fileformat>").arg(mimetype));
-
+        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
+        if (!result.formatVersion.isEmpty())
+            metaText.append(QString("<version>%1</version>\n").arg(result.formatVersion));
+        metaText.append(QLatin1String("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
