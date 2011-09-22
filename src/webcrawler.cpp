@@ -146,6 +146,16 @@ void WebCrawler::finishedDownload()
 
                 if (url.isEmpty()) continue;
                 if (m_knownUrls.contains(url)) continue;
+
+                /// simplification: extension (with or without dot) is four chars long
+                QString extension = url.right(4).toLower();
+                /// exclude images
+                if (extension == QLatin1String(".jpg") || extension == QLatin1String("jpeg") || extension == QLatin1String(".png") || extension == QLatin1String(".gif"))
+                    continue;
+                /// exclude multimedia files
+                if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3"))
+                    continue;
+
                 m_knownUrls << url;
                 if (m_numFoundHits >= m_numExpectedHits) continue;
 
@@ -157,14 +167,15 @@ void WebCrawler::finishedDownload()
                     // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
                 } else if (!url.endsWith("/") && validFileExtRegExp.indexIn(url) == 0) {
                     // qDebug() << "Path or extension is not wanted" << url;
+                } else if (extension == QLatin1String(".doc") || extension == QLatin1String("docx") || extension == QLatin1String(".rtf") || extension == QLatin1String(".pdf") || extension == QLatin1String(".odt")) {
+                    // qDebug() << "Filename is an office document where is not considered for now" << url;
                 } else
                     m_queuedUrls << url;
-
             }
 
             /// delay sending signals to ensure BFS on links
             foreach(const QString &url, hitCollection) {
-                emit report(QString(QLatin1String("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(url));
+                emit report(QString(QLatin1String("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url)));
                 emit foundUrl(QUrl(url));
             }
         } else
@@ -240,4 +251,4 @@ bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
 }
 
 const int WebCrawler::maxParallelDownloads = 8;
-const int WebCrawler::maxVisitedPages = 512;
+const int WebCrawler::maxVisitedPages = 512 * 16;
