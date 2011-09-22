@@ -27,7 +27,12 @@ namespace DocScan
 {
 QString xmlify(QString text)
 {
-    return text.replace(QRegExp("[^'a-z0-9,;.:-_+\\}{@|* !\"#%&/()=?åäöü]", Qt::CaseInsensitive), "").replace(QChar('&'), "&amp;").replace(QChar('<'), "&lt;").replace(QChar('>'), "&gt;").replace(QChar('"'), "&quot;").replace(QChar('\''), "&apos;").simplified();
+    return text.replace(QRegExp(QLatin1String("[^'a-z0-9,;.:-_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), "").replace(QChar('&'), QLatin1String("&amp;")).replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;")).replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;")).simplified();
+}
+
+QString dexmlify(QString xml)
+{
+    return xml.replace(QLatin1String("&lt;"), QChar('<')).replace(QLatin1String("&gt;"), QChar('>')).replace(QLatin1String("&quot;"), QChar('"')).replace(QLatin1String("&apos;"), QChar('\'')).replace(QLatin1String("&amp;"), QChar('&'));
 }
 
 QString formatDate(const QDate &date, const QString &base)

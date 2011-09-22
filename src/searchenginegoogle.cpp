@@ -79,7 +79,7 @@ void SearchEngineGoogle::finished()
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(url.toString()));
+                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
                 emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }

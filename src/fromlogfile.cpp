@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QTimer>
 
+#include "general.h"
 #include "fromlogfile.h"
 
 FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject *parent)
@@ -39,8 +40,9 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject
         QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder event=\"hit\" href=\"([^\"]+)\" />"));
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
-            qDebug() << "FromLogFileFileFinder  url=" << hitRegExp.cap(1);
-            m_urlSet.insert(QUrl(hitRegExp.cap(1)));
+            QUrl url(DocScan::dexmlify(hitRegExp.cap(1)));
+            qDebug() << "FromLogFileFileFinder  url=" << url.toString();
+            m_urlSet.insert(url);
         }
     }
 }

@@ -28,6 +28,7 @@
 namespace DocScan
 {
 QString xmlify(QString text);
+QString dexmlify(QString xml);
 QString formatDate(const QDate &date, const QString &base);
 }
 
