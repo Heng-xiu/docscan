@@ -109,7 +109,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessLicense(const QString &license
 
     if (text.contains("primopdf") || text.contains("freeware") || text.contains("freepdf")) {
         result["type"] = "beer";
-    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("omnipage") || text.contains("scansoft") || text.contains("crystal") || text.contains("pdffactory")) {
+    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("omnipage") || text.contains("scansoft") || text.contains("crystal") || text.contains("pdffactory") || text.contains("windows")) {
         result["type"] = "proprietary";
     } else if (text.contains("neooffice") || text.contains("broffice") || text.contains("koffice") || text.contains("calligra")) {
         result["type"] = "open";
@@ -300,6 +300,11 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "words";
         if (asposewordsVersion.indexIn(text) >= 0)
             result["version"] = asposewordsVersion.cap(0);
+    } else if (text.contains("canon")) {
+        static const QRegExp canonVersion("\\b([a-zA-Z]+[ ])?[A-Za-z0-9]+\\b");
+        result["manufacturer"] = "canon";
+        if (canonVersion.indexIn(text) >= 0)
+            result["version"] = canonVersion.cap(0);
     } else if (!text.contains("words")) {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
         static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
