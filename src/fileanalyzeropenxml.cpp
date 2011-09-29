@@ -40,7 +40,6 @@ private:
     ResultContainer &result;
     QStack<QString> m_nodeName;
     bool m_insideText;
-    QStringList m_fontNames;
     QString c;
 
 public:
@@ -54,11 +53,7 @@ public:
         m_nodeName.push(qName);
         m_insideText |= qName == "w:t";
 
-        if (qName == QLatin1String("w:rFonts")) {
-            QString fontName = atts.value(QLatin1String("w:ascii"));
-            if (!fontName.isEmpty() && !m_fontNames.contains(fontName))
-                m_fontNames.append(fontName);
-        } else if (result.paperSizeWidth == 0 && qName == QLatin1String("w:pgSz")) {
+        if (result.paperSizeWidth == 0 && qName == QLatin1String("w:pgSz")) {
             bool ok = false;
             int mmw = atts.value(QLatin1String("w:w")).toInt(&ok) / 56.695238f;
             if (ok) {
@@ -77,17 +72,7 @@ public:
         m_nodeName.pop();
         if (qName == "w:t") m_insideText = false;
         if (qName == "w:p") result.plainText += "\n";
-        if (qName == "w:document") {
-            if (!m_fontNames.isEmpty()) {
-                /* FIXME
-                m_logText += QString("<statistics type=\"fonts\" origin=\"document\" count=\"%1\">\n").arg(m_fontNames.count());
-                foreach(QString fontName, m_fontNames) {
-                    m_logText += QString("<font name=\"%1\" />\n").arg(DocScan::xmlify(fontName));
-                }
-                m_logText += "</statistics>\n";
-                */
-            }
-        }
+
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 

@@ -78,12 +78,15 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             metaText.append(QString("<tool type=\"producer\">\n%1</tool>\n").arg(guess));
 
         /// retrieve font information
+        // TODO fonts
+        /*
         QList<Poppler::FontInfo> fontList = doc->fonts();
         static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
         foreach(Poppler::FontInfo fi, fontList) {
             QString fontName = fi.name().replace(fontNameNormalizer, "");
             metaText.append(QString("<font>\n%1</font>").arg(guessFont(fontName, fi.typeName())));
         }
+        */
 
         /// format creation date
         QDate date = doc->date("CreationDate").toUTC().date();
