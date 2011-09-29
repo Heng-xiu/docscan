@@ -93,7 +93,7 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "finder:numhits =" << numHits;
                 } else if (key == "fileanalyzer") {
                     if (value.contains("multiplexer")) {
-                        fileAnalyzer = new FileAnalyzerMultiplexer();
+                        fileAnalyzer = new FileAnalyzerMultiplexer(filter);
                         qDebug() << "fileanalyzer = FileAnalyzerMultiplexer";
                     } else if (value.contains("odf")) {
                         fileAnalyzer = new FileAnalyzerODF();

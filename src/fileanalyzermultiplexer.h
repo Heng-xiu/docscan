@@ -33,7 +33,7 @@ class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerMultiplexer(QObject *parent = 0);
+    explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = 0);
 
     virtual bool isAlive();
 
@@ -46,6 +46,7 @@ private:
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
     FileAnalyzerRTF m_fileAnalyzerRTF;
+    const QStringList m_filters;
 };
 
 #endif // FILEANALYZERMULTIPLEXER_H

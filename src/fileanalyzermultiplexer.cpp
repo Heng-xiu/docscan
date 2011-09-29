@@ -24,8 +24,8 @@
 
 #include "fileanalyzermultiplexer.h"
 
-FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(QObject *parent)
-    : FileAnalyzerAbstract(parent)
+FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent)
+    : FileAnalyzerAbstract(parent), m_filters(filters)
 {
     connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
@@ -47,19 +47,34 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 
     qDebug() << "Analyzing file" << filename;
 
-    if (filename.endsWith(".pdf"))
-        m_fileAnalyzerPDF.analyzeFile(filename);
-    else if (filename.indexOf(odfExtension) >= 0)
-        m_fileAnalyzerODF.analyzeFile(filename);
-    else if (filename.indexOf(openXMLExtension) >= 0)
-        m_fileAnalyzerOpenXML.analyzeFile(filename);
-    else if (filename.indexOf(compoundBinaryExtension) >= 0) {
-        if (FileAnalyzerCompoundBinary::isRTFfile(filename))
+    if (filename.endsWith(".pdf")) {
+        if (m_filters.contains(QLatin1String("*.pdf")))
+            m_fileAnalyzerPDF.analyzeFile(filename);
+        else
+            qDebug() << "Skipping unmatched extension \".pdf\"";
+    } else if (odfExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + odfExtension.cap(0)))
+            m_fileAnalyzerODF.analyzeFile(filename);
+        else
+            qDebug() << "Skipping unmatched extension" << odfExtension.cap(0);
+    } else if (openXMLExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + openXMLExtension.cap(0)))
+            m_fileAnalyzerOpenXML.analyzeFile(filename);
+        else
+            qDebug() << "Skipping unmatched extension" << openXMLExtension.cap(0);
+    } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + compoundBinaryExtension.cap(0))) {
+            if (FileAnalyzerCompoundBinary::isRTFfile(filename))
+                m_fileAnalyzerRTF.analyzeFile(filename);
+            else
+                m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+        } else
+            qDebug() << "Skipping unmatched extension" << compoundBinaryExtension.cap(0);
+    } else if (filename.endsWith(".rtf")) {
+        if (m_filters.contains(QLatin1String("*.rtf")))
             m_fileAnalyzerRTF.analyzeFile(filename);
         else
-            m_fileAnalyzerCompoundBinary.analyzeFile(filename);
-    } else if (filename.endsWith(".rtf"))
-        m_fileAnalyzerRTF.analyzeFile(filename);
-    else
+            qDebug() << "Skipping unmatched extension \".rtf\"";
+    } else
         qWarning() << "Could not analyze file " << filename;
 }
