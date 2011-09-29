@@ -59,11 +59,10 @@ bool evaluateConfigfile(const QString &filename)
 
                 if (key == "filter") {
                     qDebug() << "filter =" << value;
-                    filter.clear();
-                    filter << value;
+                    filter = value.split(QChar('|'), QString::SkipEmptyParts);
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
-                    finder = new WebCrawler(&netAccMan, filter, value);
+                    finder = new WebCrawler(&netAccMan, filter, value, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
                 } else if (key == "searchenginegoogle" && finder == NULL) {
                     qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(&netAccMan, value);

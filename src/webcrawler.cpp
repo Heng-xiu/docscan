@@ -31,22 +31,24 @@
 #include "webcrawler.h"
 #include "general.h"
 
-WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, QObject *parent)
+WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, int maxVisitedPages, QObject *parent)
     : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(QUrl(baseUrl).toString()), m_runningDownloads(0)
 {
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
     m_setRunningJobs = new QSet<QNetworkReply *>();
     m_mutexRunningJobs = new QMutex();
+    m_maxVisitedPages = qMin(maxVisitedPages, WebCrawler::maxVisitedPages);
 
-    QString reText = QLatin1String("(^|/)(");
-    bool first = true;
-    foreach(QString filter, filters) {
-        if (!first) reText += QChar('|'); first = false;
-        reText += filter.replace(".", "\\.").replace("?", ".").replace("*", "[^ \"]*");
+    foreach(const QString &label, filters) {
+        Filter filter;
+        filter.label = label;
+        filter.foundHits = 0;
+        QString rpl = label;
+        rpl = rpl.replace(".", "\\.").replace("?", ".").replace("*", "[^/ \"]*");
+        filter.regExp = QRegExp(QString(QLatin1String("(^|/)(%1)$")).arg(rpl));
+        m_filterSet.append(filter);
     }
-    reText += QLatin1String(")$");
-    m_filePattern = QRegExp(reText);
 }
 
 WebCrawler::~WebCrawler()
@@ -59,15 +61,19 @@ WebCrawler::~WebCrawler()
 void WebCrawler::startSearch(int numExpectedHits)
 {
     m_numExpectedHits = numExpectedHits;
-    m_numFoundHits = 0;
     m_visitedPages = 0;
+    QStringList regExpList;
+    for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
+        it->foundHits = 0;
+        regExpList << it->regExp.pattern();
+    }
 
     m_queuedUrls.clear();
     m_queuedUrls << m_baseUrl;
     m_knownUrls.clear();
     m_knownUrls << m_baseUrl;
 
-    emit report(QString("<webcrawler><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(m_filePattern.pattern())));
+    emit report(QString("<webcrawler><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(regExpList.join(QChar('|')))));
 
     startNextDownload();
 }
@@ -79,17 +85,23 @@ bool WebCrawler::isAlive()
 
 bool WebCrawler::startNextDownload()
 {
-    if (m_runningDownloads >= maxParallelDownloads || m_queuedUrls.isEmpty() || m_numFoundHits >= m_numExpectedHits)
+    if (m_runningDownloads >= maxParallelDownloads || m_queuedUrls.isEmpty())
+        return false;
+    bool numExpectedHitsReached = true;
+    for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
+        numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
+    }
+    if (numExpectedHitsReached)
         return false;
 
     ++m_visitedPages;
-    if (m_visitedPages > maxVisitedPages)
+    if (m_visitedPages > m_maxVisitedPages)
         return false;
 
     ++m_runningDownloads;
     const QString url = m_queuedUrls.first();
     m_queuedUrls.removeFirst();
-    qDebug() << "Starting download on " << url << "(" << m_visitedPages << ")";
+    qDebug() << "Crawling page on " << url << "(" << m_visitedPages << ")";
 
     QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(QUrl(url)));
     connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
@@ -157,11 +169,18 @@ void WebCrawler::finishedDownload()
                     continue;
 
                 m_knownUrls << url;
-                if (m_numFoundHits >= m_numExpectedHits) continue;
 
-                if (m_filePattern.indexIn(url) >= 0) {
-                    /// link matches requested file type
-                    ++m_numFoundHits;
+                bool regExpMatches = false;
+                for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
+                    if (it->regExp.indexIn(url) >= 0) {
+                        /// link matches requested file type
+                        it->foundHits += 1;
+                        regExpMatches = true;
+                        break;
+                    }
+                }
+
+                if (regExpMatches) {
                     hitCollection.insert(url);
                 } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                     // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
@@ -169,8 +188,10 @@ void WebCrawler::finishedDownload()
                     // qDebug() << "Path or extension is not wanted" << url;
                 } else if (extension == QLatin1String(".doc") || extension == QLatin1String("docx") || extension == QLatin1String(".rtf") || extension == QLatin1String(".pdf") || extension == QLatin1String(".odt")) {
                     // qDebug() << "Filename is an office document where is not considered for now" << url;
-                } else
+                } else {
+
                     m_queuedUrls << url;
+                }
             }
 
             /// delay sending signals to ensure BFS on links
@@ -189,8 +210,13 @@ void WebCrawler::finishedDownload()
     bool downloadStarted = startNextDownload();
 
     if (!downloadStarted && m_runningDownloads == 0) {
-        /// web crawler has started as there are no downloads active
-        emit report(QString(QLatin1String("<webcrawler numfoundhits=\"%1\" numexpectedhits=\"%2\" numknownurls=\"%3\" numvisitedpages=\"%4\" />\n")).arg(m_numFoundHits).arg(m_numExpectedHits).arg(m_knownUrls.count()).arg(m_visitedPages));
+        /// web crawler has stopped as there are no downloads active
+        QString reportStr = QString(QLatin1String("<webcrawler numexpectedhits=\"%1\" numknownurls=\"%2\" numvisitedpages=\"%3\" maxvisitedpages=\"%4\">\n")).arg(m_numExpectedHits).arg(m_knownUrls.count()).arg(m_visitedPages).arg(m_maxVisitedPages);
+        for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
+            reportStr += QString(QLatin1String("<filter numfoundhits=\"%1\" pattern=\"%2\" />\n")).arg(it->foundHits).arg(DocScan::xmlify(it->label));
+        }
+        reportStr += QLatin1String("</webcrawler>\n");
+        emit report(reportStr);
     }
 }
 
@@ -251,4 +277,4 @@ bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
 }
 
 const int WebCrawler::maxParallelDownloads = 8;
-const int WebCrawler::maxVisitedPages = 512 * 16;
+const int WebCrawler::maxVisitedPages = 32768;

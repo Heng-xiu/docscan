@@ -22,6 +22,7 @@
 #ifndef WEBCRAWLER_H
 #define WEBCRAWLER_H
 
+#include <QList>
 #include <QSet>
 #include <QStringList>
 
@@ -37,19 +38,27 @@ class WebCrawler : public FileFinder
 {
     Q_OBJECT
 public:
-    explicit WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, QObject *parent = 0);
+    static const int maxVisitedPages;
+
+    explicit WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, int maxVisitedPages = WebCrawler::maxVisitedPages, QObject *parent = 0);
     ~WebCrawler();
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
 
 private:
+    typedef struct Filter {
+        QString label;
+        QRegExp regExp;
+        int foundHits;
+    } Filter;
+
     QNetworkAccessManager *m_networkAccessManager;
     QString m_baseUrl;
-    QRegExp m_filePattern;
+    QList<Filter> m_filterSet;
     int m_runningDownloads;
-    int m_numExpectedHits, m_numFoundHits, m_visitedPages;
-    static const int maxParallelDownloads, maxVisitedPages;
+    int m_numExpectedHits, m_visitedPages, m_maxVisitedPages;
+    static const int maxParallelDownloads;
 
     QSet<QNetworkReply *> *m_setRunningJobs;
     QMutex *m_mutexRunningJobs;
