@@ -74,6 +74,7 @@ private:
 private slots:
     void finishedDownload();
     void timeout(QObject *object);
+    void singleShotNextDownload();
 };
 
 #endif // WEBCRAWLER_H

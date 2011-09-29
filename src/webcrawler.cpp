@@ -170,18 +170,19 @@ void WebCrawler::finishedDownload()
 
                 m_knownUrls << url;
 
-                bool regExpMatches = false;
+                bool regExpMatches = false, forwardHit = false;
                 for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
                     if (it->regExp.indexIn(url) >= 0) {
                         /// link matches requested file type
-                        it->foundHits += 1;
                         regExpMatches = true;
+                        forwardHit = it->foundHits < m_numExpectedHits;
+                        it->foundHits += 1;
                         break;
                     }
                 }
 
                 if (regExpMatches) {
-                    hitCollection.insert(url);
+                    if (forwardHit) hitCollection.insert(url);
                 } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                     // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
                 } else if (!url.endsWith("/") && validFileExtRegExp.indexIn(url) == 0) {
@@ -189,7 +190,6 @@ void WebCrawler::finishedDownload()
                 } else if (extension == QLatin1String(".doc") || extension == QLatin1String("docx") || extension == QLatin1String(".rtf") || extension == QLatin1String(".pdf") || extension == QLatin1String(".odt")) {
                     // qDebug() << "Filename is an office document where is not considered for now" << url;
                 } else {
-
                     m_queuedUrls << url;
                 }
             }
@@ -207,6 +207,13 @@ void WebCrawler::finishedDownload()
     qApp->processEvents();
     --m_runningDownloads;
 
+    QTimer::singleShot(10, this, SLOT(singleShotNextDownload()));
+
+    reply->deleteLater();
+}
+
+void WebCrawler::singleShotNextDownload()
+{
     bool downloadStarted = startNextDownload();
 
     if (!downloadStarted && m_runningDownloads == 0) {
@@ -276,5 +283,5 @@ bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
     }
 }
 
-const int WebCrawler::maxParallelDownloads = 8;
+const int WebCrawler::maxParallelDownloads = 16;
 const int WebCrawler::maxVisitedPages = 32768;
