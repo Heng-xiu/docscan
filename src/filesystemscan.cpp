@@ -56,7 +56,7 @@ void FileSystemScan::startSearch(int numExpectedHits)
         }
     }
 
-    emit report(QString("<filesystemscan directory=\"%2\" numresults=\"%1\" />\n").arg(QString::number(hits)).arg(DocScan::xmlify(QDir(m_baseDir).absolutePath())));
+    emit report(QString("<filesystemscan filter=\"%3\" directory=\"%2\" numresults=\"%1\" />\n").arg(QString::number(hits)).arg(DocScan::xmlify(QDir(m_baseDir).absolutePath())).arg(DocScan::xmlify(m_filters.join(QChar('|')))));
     m_alive = false;
 }
 
