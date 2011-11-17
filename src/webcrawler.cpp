@@ -31,8 +31,8 @@
 #include "webcrawler.h"
 #include "general.h"
 
-WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, int maxVisitedPages, QObject *parent)
-    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(QUrl(baseUrl).toString()), m_runningDownloads(0)
+WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
+    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_runningDownloads(0)
 {
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
@@ -69,9 +69,9 @@ void WebCrawler::startSearch(int numExpectedHits)
     }
 
     m_queuedUrls.clear();
-    m_queuedUrls << m_baseUrl;
+    m_queuedUrls << m_startUrl;
     m_knownUrls.clear();
-    m_knownUrls << m_baseUrl;
+    m_knownUrls << m_startUrl;
 
     emit report(QString("<webcrawler><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(regExpList.join(QChar('|')))));
 
@@ -144,7 +144,7 @@ void WebCrawler::finishedDownload()
         QString text(data);
 
         /// check if HTML page ...
-        if (text.left(256).toLower().contains("<html")) {
+        if (text.left(256).toLower().contains("<html") && (m_requiredContent.isEmpty() || text.indexOf(m_requiredContent) >= 0)) {
             emit report(QString(QLatin1String("<webcrawler url=\"%1\" status=\"success\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
 
             /// collect hits
@@ -170,25 +170,22 @@ void WebCrawler::finishedDownload()
 
                 m_knownUrls << url;
 
-                bool regExpMatches = false, forwardHit = false;
+                bool regExpMatches = false;
                 for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
                     if (it->regExp.indexIn(url) >= 0) {
                         /// link matches requested file type
                         regExpMatches = true;
-                        forwardHit = it->foundHits < m_numExpectedHits;
                         it->foundHits += 1;
                         break;
                     }
                 }
 
                 if (regExpMatches) {
-                    if (forwardHit) hitCollection.insert(url);
+                    hitCollection.insert(url);
                 } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                     // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
                 } else if (!url.endsWith("/") && validFileExtRegExp.indexIn(url) == 0) {
                     // qDebug() << "Path or extension is not wanted" << url;
-                } else if (extension == QLatin1String(".doc") || extension == QLatin1String("docx") || extension == QLatin1String(".rtf") || extension == QLatin1String(".pdf") || extension == QLatin1String(".odt")) {
-                    // qDebug() << "Filename is an office document where is not considered for now" << url;
                 } else {
                     m_queuedUrls << url;
                 }
