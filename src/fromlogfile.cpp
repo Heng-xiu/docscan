@@ -28,7 +28,7 @@
 #include "general.h"
 #include "fromlogfile.h"
 
-FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject *parent)
+FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent)
     : FileFinder(parent), m_isAlive(true)
 {
     QFile input(logfilename);
@@ -38,11 +38,16 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, QObject
         input.close();
 
         QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder event=\"hit\" href=\"([^\"]+)\" />"));
+        QRegExp filenameRegExp = QRegExp(QString(QLatin1String("(^|/)%1$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
+
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
             QUrl url(DocScan::dexmlify(hitRegExp.cap(1)));
-            qDebug() << "FromLogFileFileFinder  url=" << url.toString();
-            m_urlSet.insert(url);
+            const QString name = url.toString();
+            if (filenameRegExp.indexIn(name) >= 0) {
+                qDebug() << "FromLogFileFileFinder  url=" << name;
+                m_urlSet.insert(url);
+            }
         }
     }
 }
@@ -64,8 +69,8 @@ bool FromLogFileFileFinder::isAlive()
     return m_isAlive;
 }
 
-FromLogFileDownloader::FromLogFileDownloader(const QString &logfilename, QObject *parent)
-    : Downloader(parent), m_logfilename(logfilename), m_isAlive(true)
+FromLogFileDownloader::FromLogFileDownloader(const QString &logfilename, const QStringList &filters, QObject *parent)
+    : Downloader(parent), m_logfilename(logfilename), m_isAlive(true), m_filters(filters)
 {
     QTimer::singleShot(500, this, SLOT(startParsingAndEmitting()));
 }
@@ -74,6 +79,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
 {
     QFile input(m_logfilename);
     if (input.open(QFile::ReadOnly)) {
+        QRegExp filenameRegExp = QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
         QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\""));
         QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
         int count = 0;
@@ -83,10 +89,12 @@ void FromLogFileDownloader::startParsingAndEmitting()
         while (!line.isNull()) {
             if (hitRegExp.indexIn(line) >= 0) {
                 const QString filename(hitRegExp.cap(2));
-                const QUrl url(hitRegExp.cap(1));
-                emit downloaded(url, filename);
-                emit downloaded(filename);
-                ++count;
+                if (filenameRegExp.indexIn(filename) >= 0) {
+                    const QUrl url(hitRegExp.cap(1));
+                    emit downloaded(url, filename);
+                    emit downloaded(filename);
+                    ++count;
+                }
             } else if (searchEngineNumResultsRegExp.indexIn(line) >= 0)
                 emit report(QString(QLatin1String("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
 

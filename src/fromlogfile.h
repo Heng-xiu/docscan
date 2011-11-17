@@ -34,7 +34,7 @@ class FromLogFileFileFinder : public FileFinder
 {
     Q_OBJECT
 public:
-    explicit FromLogFileFileFinder(const QString &logfilename, QObject *parent = 0);
+    explicit FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
@@ -51,7 +51,7 @@ class FromLogFileDownloader: public Downloader
 {
     Q_OBJECT
 public:
-    explicit FromLogFileDownloader(const QString &logfilename, QObject *parent = 0);
+    explicit FromLogFileDownloader(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
 
     virtual bool isAlive();
 
@@ -70,6 +70,7 @@ private slots:
 private:
     QString m_logfilename;
     bool m_isAlive;
+    const QStringList &m_filters;
 };
 
 #endif // FROMLOGFILEFILEFINDER_H
