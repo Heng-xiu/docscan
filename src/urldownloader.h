@@ -25,6 +25,7 @@
 #include <QUrl>
 #include <QTimer>
 #include <QSet>
+#include <QMap>
 
 #include "downloader.h"
 
@@ -78,6 +79,9 @@ private:
     int m_countSuccessfulDownloads, m_countFaileDownloads;
     GeoIP *m_geoip;
     QString m_userAgent;
+    QMap<QString, int> m_domainCount;
+
+    QString domainFromHostname(const QString &hostname);
 
 private slots:
     void finished();
