@@ -46,7 +46,7 @@ private:
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
     FileAnalyzerRTF m_fileAnalyzerRTF;
-    const QStringList m_filters;
+    const QStringList &m_filters;
 };
 
 #endif // FILEANALYZERMULTIPLEXER_H
