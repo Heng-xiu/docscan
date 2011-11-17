@@ -66,6 +66,7 @@ private:
     static const QRegExp domainRegExp;
     int m_countSuccessfulDownloads, m_countFaileDownloads;
     GeoIP *m_geoip;
+    QString m_userAgent;
 
 private slots:
     void finished();
