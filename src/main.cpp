@@ -24,6 +24,7 @@
 #include <QTextStream>
 #include <QNetworkAccessManager>
 #include <QDebug>
+#include <QThreadPool>
 
 #include "searchenginegoogle.h"
 #include "searchenginebing.h"
@@ -50,6 +51,9 @@ bool evaluateConfigfile(const QString &filename)
     if (configFile.open(QFile::ReadOnly)) {
         QTextStream ts(&configFile);
         QString line(QString::null);
+        QUrl startUrl;
+        QRegExp requiredContent;
+
         while (!(line = ts.readLine()).isNull()) {
             if (line.length() == 0 || line[0] == '#') continue;
             int i = line.indexOf('=');
@@ -57,12 +61,18 @@ bool evaluateConfigfile(const QString &filename)
                 QString key = line.left(i).simplified().toLower();
                 QString value = line.mid(i + 1).simplified();
 
-                if (key == "filter") {
+                if (key == "requiredcontent") {
+                    requiredContent = QRegExp(value);
+                    qDebug() << "requiredContent =" << requiredContent.pattern();
+                } else if (key == "starturl") {
+                    startUrl = QUrl(value);
+                    qDebug() << "startUrl =" << startUrl.toString();
+                } else if (key == "filter") {
                     qDebug() << "filter =" << value;
                     filter = value.split(QChar('|'), QString::SkipEmptyParts);
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
-                    finder = new WebCrawler(&netAccMan, filter, value, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
+                    finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
                 } else if (key == "searchenginegoogle" && finder == NULL) {
                     qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(&netAccMan, value);
@@ -74,10 +84,10 @@ bool evaluateConfigfile(const QString &filename)
                     finder = new FileSystemScan(filter, value);
                 } else if (key == "fromlogfilefilefinder" && finder == NULL) {
                     qDebug() << "fromlogfilefilefinder =" << value;
-                    finder = new FromLogFileFileFinder(value);
+                    finder = new FromLogFileFileFinder(value, filter);
                 } else if (key == "fromlogfiledownloader" && downloader == NULL) {
                     qDebug() << "fromlogfiledownloader =" << value;
-                    downloader = new FromLogFileDownloader(value);
+                    downloader = new FromLogFileDownloader(value, filter);
                 } else if (key == "urldownloader" && downloader == NULL) {
                     qDebug() << "urldownloader =" << value;
                     downloader = new UrlDownloader(&netAccMan, value);
@@ -152,6 +162,8 @@ int main(int argc, char *argv[])
         QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
 
         if (finder != NULL) finder->startSearch(numHits);
+
+        qDebug() << "activeThreadCount" << QThreadPool::globalInstance()->activeThreadCount() << "   maxThreadCount" << QThreadPool::globalInstance()->maxThreadCount();
 
         return a.exec();
     } else {
