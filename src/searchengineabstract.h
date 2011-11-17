@@ -26,17 +26,13 @@
 
 #include "filefinder.h"
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class SearchEngineAbstract : public FileFinder
 {
-    Q_OBJECT
 public:
     explicit SearchEngineAbstract(QObject *parent = 0);
-
-    QString encodeURL(QString rawText);
-
-private:
-    static const char *httpUnsafeChars;
-
 };
 
 #endif // SEARCHENGINEABSTRACT_H

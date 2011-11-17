@@ -30,10 +30,21 @@
 #include "filefinder.h"
 #include "downloader.h"
 
+/**
+ * Extract downloaded files as reported successfully downloaded in an older log file.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FromLogFileFileFinder : public FileFinder
 {
     Q_OBJECT
 public:
+    /**
+     * Create an instance and specify which old log file to search for urls ready to get downloaded.
+     *
+     * @param logfilename old log file to parse
+     * @param filters list of filters, i.e. which filenames to extract. May contain strings like "*.doc" or "*.pdf". If empty, all downloaded files will get "found".
+     */
     explicit FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
@@ -47,10 +58,20 @@ private:
     bool m_isAlive;
 };
 
+/**
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FromLogFileDownloader: public Downloader
 {
     Q_OBJECT
 public:
+    /**
+     * Create an instance and specify which old log file to search for successful downloads and which filter to apply.
+     *
+     * @param logfilename old log file to parse
+     * @param filters list of filters, i.e. which filenames to extract. May contain strings like "*.doc" or "*.pdf". If empty, all downloaded files will get "found".
+     */
     explicit FromLogFileDownloader(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
 
     virtual bool isAlive();

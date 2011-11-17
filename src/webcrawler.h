@@ -34,6 +34,9 @@ class QNetworkReply;
 class QSignalMapper;
 class QMutex;
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class WebCrawler : public FileFinder
 {
     Q_OBJECT

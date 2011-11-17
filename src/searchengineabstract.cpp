@@ -25,15 +25,3 @@ SearchEngineAbstract::SearchEngineAbstract(QObject *parent)
     : FileFinder(parent)
 {
 }
-
-QString SearchEngineAbstract::encodeURL(QString rawText)
-{
-    const char *cur = httpUnsafeChars;
-    while (*cur != '\0') {
-        rawText = rawText.replace(QChar(*cur), '%' + QString::number(*cur, 16));
-        ++cur;
-    }
-    return rawText;
-}
-
-const char *SearchEngineAbstract::httpUnsafeChars = "%:/=+$?& \0";

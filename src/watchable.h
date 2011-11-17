@@ -22,9 +22,23 @@
 #ifndef WATCHABLE_H
 #define WATCHABLE_H
 
+/**
+ * An interface to monitor if an object is still active,
+ * e.g. waiting for another thread or network activity to finish.
+ * Watchable objects are usually monitored by a WatchDog instance.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ * @see WatchDog
+ */
 class Watchable
 {
 public:
+    /**
+     * Test if an object is still active.
+     * Has to be implemented by every class to be instanciated
+     * and inheriting from this class.
+     * @return 'true' if the object is still active, otherwise 'false'
+     */
     virtual bool isAlive() = 0;
 };
 

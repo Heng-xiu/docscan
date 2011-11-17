@@ -32,6 +32,11 @@
 class QMutex;
 class QNetworkAccessManager;
 
+/**
+ * Retrieve geographical information of hosts by using geolocation services.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class GeoIP : public QObject, public Watchable
 {
     Q_OBJECT
@@ -43,10 +48,29 @@ public:
         float latitude, longitude;
     } GeoInformation;
 
+    /**
+     * Create instance and use the supplied network access manager for network connections.
+     */
     explicit GeoIP(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
     ~GeoIP();
 
+    /**
+     * Start a search for the specified host. Search is asynchronous and will set this object alive.
+     * Retrieve the found information later via getGeoInformation.
+     * @see getGeoInformation(const QString &hostName) const
+     *
+     * @param hostName host's name
+     */
     void lookupHost(const QString &hostName);
+
+    /**
+     * Retrieve geographical information about host name. This requires that
+     * lookupHost has been issued before for this host. This function is blocking.
+     * @see lookupHost(const QString &hostName)
+     *
+     * @param hostName host's name
+     * @return geographical information for this host if known, otherwise an empty GeoInformation object
+     */
     GeoInformation getGeoInformation(const QString &hostName) const;
 
     bool isAlive();

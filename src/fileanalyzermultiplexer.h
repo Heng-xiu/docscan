@@ -29,6 +29,9 @@
 #include "fileanalyzercompoundbinary.h"
 #include "fileanalyzerrtf.h"
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
 {
     Q_OBJECT

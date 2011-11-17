@@ -29,6 +29,9 @@
 
 class QDate;
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerAbstract : public QObject, public Watchable
 {
     Q_OBJECT

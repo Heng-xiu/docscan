@@ -35,10 +35,21 @@ class QNetworkReply;
 
 class GeoIP;
 
+/**
+ * Download files from a remote location (specified by an URL) to a local storage.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class UrlDownloader : public Downloader
 {
     Q_OBJECT
 public:
+    /**
+     * Create an instance of this class.
+     * @param networkAccessManager network access manager to use to establish network connections
+     * @param filePattern pattern used to rename downloaded files to make it easier to store and categorize them
+     * @param parent parent object
+     */
     explicit UrlDownloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
     ~UrlDownloader();
 
@@ -47,7 +58,7 @@ public:
     friend class DownloadJob;
 
 public slots:
-    void download(const QUrl &);
+    void download(const QUrl &url);
     void finalReport();
 
 signals:

@@ -36,7 +36,7 @@ bool LogCollector::isAlive()
     return false;
 }
 
-void LogCollector::receiveLog(QString message)
+void LogCollector::receiveLog(const QString &message)
 {
     QString key = QString(typeid(*(sender())).name()).toLower().replace(QRegExp("[0-9]+"), "");
 

@@ -26,6 +26,9 @@
 
 #include "filefinder.h"
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileSystemScan : public FileFinder
 {
     Q_OBJECT

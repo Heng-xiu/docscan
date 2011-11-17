@@ -28,6 +28,9 @@
 
 class QIODevice;
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerODF : public FileAnalyzerAbstract
 {
     Q_OBJECT

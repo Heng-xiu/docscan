@@ -29,6 +29,9 @@
 
 #include "fileanalyzerabstract.h"
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
 {
     Q_OBJECT

@@ -24,7 +24,9 @@
 
 #include "fileanalyzerabstract.h"
 
-
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerRTF : public FileAnalyzerAbstract
 {
     Q_OBJECT

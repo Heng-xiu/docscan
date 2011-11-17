@@ -31,6 +31,9 @@ namespace Poppler
 class Document;
 }
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerPDF : public FileAnalyzerAbstract
 {
     Q_OBJECT

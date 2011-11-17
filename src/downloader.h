@@ -27,6 +27,9 @@
 
 #include "watchable.h"
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class Downloader : public QObject, public Watchable
 {
     Q_OBJECT
@@ -34,7 +37,16 @@ public:
     explicit Downloader(QObject *parent = 0);
 
 public slots:
+    /**
+     * Download file as specified by the url.
+     *
+     * @param url download from url
+     */
     virtual void download(const QUrl &) = 0;
+
+    /**
+     * Request to log a summary of all download requests (e.g. success/failure rate).
+     */
     virtual void finalReport() = 0;
 };
 

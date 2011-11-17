@@ -29,6 +29,11 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
+/**
+ * Search engine using Microsoft's Bing to search for files.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class SearchEngineBing : public SearchEngineAbstract
 {
     Q_OBJECT

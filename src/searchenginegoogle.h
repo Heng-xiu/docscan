@@ -29,6 +29,11 @@
 class QNetworkAccessManager;
 class QNetworkReply;
 
+/**
+ * Search engine using Google to search for files.
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class SearchEngineGoogle : public SearchEngineAbstract
 {
     Q_OBJECT

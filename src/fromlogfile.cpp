@@ -38,13 +38,13 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
         input.close();
 
         QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder event=\"hit\" href=\"([^\"]+)\" />"));
-        QRegExp filenameRegExp = QRegExp(QString(QLatin1String("(^|/)%1$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
+        QRegExp filenameRegExp = filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
 
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
             QUrl url(DocScan::dexmlify(hitRegExp.cap(1)));
             const QString name = url.toString();
-            if (filenameRegExp.indexIn(name) >= 0) {
+            if (filenameRegExp.isEmpty() || filenameRegExp.indexIn(name) >= 0) {
                 qDebug() << "FromLogFileFileFinder  url=" << name;
                 m_urlSet.insert(url);
             }
@@ -79,7 +79,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
 {
     QFile input(m_logfilename);
     if (input.open(QFile::ReadOnly)) {
-        QRegExp filenameRegExp = QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
+        QRegExp filenameRegExp = m_filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
         QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\""));
         QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
         int count = 0;
@@ -89,7 +89,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
         while (!line.isNull()) {
             if (hitRegExp.indexIn(line) >= 0) {
                 const QString filename(hitRegExp.cap(2));
-                if (filenameRegExp.indexIn(filename) >= 0) {
+                if (filenameRegExp.isEmpty() || filenameRegExp.indexIn(filename) >= 0) {
                     const QUrl url(hitRegExp.cap(1));
                     emit downloaded(url, filename);
                     emit downloaded(filename);

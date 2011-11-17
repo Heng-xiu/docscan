@@ -25,7 +25,7 @@
 #include "watchdog.h"
 #include "watchable.h"
 
-static const int countDownInit = 9;
+static const int countDownInit = 6;
 
 WatchDog::WatchDog(QObject *parent)
     : QObject(parent), m_countDown(countDownInit)

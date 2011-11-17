@@ -31,16 +31,38 @@
 
 class QIODevice;
 
+/**
+ * Collecting log messages from various sources and
+ * storing them in an IO device (e.g. file).
+ *
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class LogCollector : public QObject, public Watchable
 {
     Q_OBJECT
 public:
+    /**
+     * Create instance by specifying in which output device log messages
+     * have to be stored.
+     *
+     * @param output device to log messages to
+     */
     explicit LogCollector(QIODevice *output, QObject *parent = 0);
 
     virtual bool isAlive();
 
 public slots:
-    void receiveLog(QString);
+    /**
+     * Receive incomming log messages and store them in the output device
+     * as specified in the constructor.
+     *
+     * @param message message to log
+     */
+    void receiveLog(const QString &message);
+
+    /**
+     * Flush and close output device once logging is finished at process exit.
+     */
     void close();
 
 private:

@@ -29,6 +29,9 @@
 class QuaZip;
 class QIODevice;
 
+/**
+ * @author Thomas Fischer <thomas.fischer@his.se>
+ */
 class FileAnalyzerOpenXML : public FileAnalyzerAbstract
 {
     Q_OBJECT
