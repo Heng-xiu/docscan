@@ -67,9 +67,11 @@ void SearchEngineGoogle::finished()
         QString htmlText = tsAll.readAll();
 
         if (m_currentPage == 0) {
-            const QRegExp countHitsRegExp("([0-9,. ]+) result[s]?");
+            const QRegExp countHitsRegExp("of (about )?<b>([0-9,. ]+)</b> for");
             if (countHitsRegExp.indexIn(htmlText) >= 0)
                 emit report(QString("<searchengine type=\"google\" numresults=\"%1\" />\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
+            else
+                emit report(QLatin1String("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
         }
 
         const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");

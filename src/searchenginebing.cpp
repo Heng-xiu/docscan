@@ -69,6 +69,8 @@ void SearchEngineBing::finished()
             const QRegExp countHitsRegExp("of.{,10} ([0-9 ]+) result");
             if (countHitsRegExp.indexIn(htmlText) >= 0)
                 emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
+            else
+                emit report(QLatin1String("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));
         }
 
         const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");
