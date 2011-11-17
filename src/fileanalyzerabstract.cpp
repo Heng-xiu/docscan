@@ -109,11 +109,11 @@ QMap<QString, QString> FileAnalyzerAbstract::guessLicense(const QString &license
 
     if (text.contains("primopdf") || text.contains("freeware") || text.contains("freepdf")) {
         result["type"] = "beer";
-    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("omnipage") || text.contains("scansoft") || text.contains("crystal") || text.contains("pdffactory") || text.contains("windows")) {
+    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("omnipage") || text.contains("scansoft") || text.contains("crystal") || text.contains("easypdf") || text.contains("pdffactory") || text.contains("windows") || text.contains("arcmap") || text.contains("ocad")) {
         result["type"] = "proprietary";
     } else if (text.contains("neooffice") || text.contains("broffice") || text.contains("koffice") || text.contains("calligra")) {
         result["type"] = "open";
-    } else if (text.contains("openoffice") || text.contains("libreoffice") || text == "writer") {
+    } else if (text.contains("openoffice") || text.contains("libreoffice")) {
         result["type"] = "open";
     } else if (text.contains("pdftex") || text.contains("latex") || text.contains("luatex") || text.contains("xetex") || text.contains("context") || text.contains("ghostscript") || text.contains("dvips") || text.contains("dvipdf") || text.contains("tex output") || text.contains("pdfcreator")) {
         result["type"] = "open";
@@ -246,6 +246,12 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "pdfwriter";
         if (pdfwriterVersion.indexIn(text) >= 0)
             result["version"] = pdfwriterVersion.cap(0);
+    } else if (text.indexOf("easypdf") >= 0) {
+        static const QRegExp easypdfVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "bcl";
+        result["product"] = "easypdf";
+        if (easypdfVersion.indexIn(text) >= 0)
+            result["version"] = easypdfVersion.cap(0);
     } else if (text.indexOf("pdfmaker") >= 0) {
         static const QRegExp pdfmakerVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
@@ -300,6 +306,18 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "words";
         if (asposewordsVersion.indexIn(text) >= 0)
             result["version"] = asposewordsVersion.cap(0);
+    } else if (text.contains("arcmap")) {
+        static const QRegExp arcmapVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "esri";
+        result["product"] = "arcmap";
+        if (arcmapVersion.indexIn(text) >= 0)
+            result["version"] = arcmapVersion.cap(0);
+    } else if (text.contains("ocad")) {
+        static const QRegExp ocadVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "ocad";
+        result["product"] = "ocad";
+        if (ocadVersion.indexIn(text) >= 0)
+            result["version"] = ocadVersion.cap(0);
     } else if (text.contains("canon")) {
         static const QRegExp canonVersion("\\b([a-zA-Z]+[ ])?[A-Za-z0-9]+\\b");
         result["manufacturer"] = "canon";
