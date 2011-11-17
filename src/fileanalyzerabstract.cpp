@@ -203,9 +203,12 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "libreoffice";
         result["based-on"] = "openoffice";
     }  else if (text.indexOf("lotus symphony") >= 0) {
+        static const QRegExp lotusSymphonyVersion("Symphony (\\d+(\\.\\d+)*)");
         result["manufacturer"] = "ibm";
         result["product"] = "lotus-symphony";
         result["based-on"] = "openoffice";
+        if (lotusSymphonyVersion.indexIn(text) >= 0)
+            result["version"] = lotusSymphonyVersion.cap(1);
     } else if (text.indexOf("openoffice") >= 0) {
         checkOOoVersion = true;
         if (text.indexOf("staroffice") >= 0) {
@@ -216,6 +219,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["product"] = "broffice";
             result["based-on"] = "openoffice";
         } else if (text.indexOf("neooffice") >= 0) {
+            result["manufacturer"] = "planamesa";
             result["product"] = "neooffice";
             result["based-on"] = "openoffice";
         } else {
@@ -303,7 +307,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     } else if (text.contains("aspose") && text.contains("words")) {
         static const QRegExp asposewordsVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "aspose";
-        result["product"] = "words";
+        result["product"] = "aspose.words";
         if (asposewordsVersion.indexIn(text) >= 0)
             result["version"] = asposewordsVersion.cap(0);
     } else if (text.contains("arcmap")) {
@@ -335,7 +339,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     }
 
     if (checkOOoVersion) {
-        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)[$a-z]", Qt::CaseInsensitive);
+        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_Beta)?[$a-z]", Qt::CaseInsensitive);
         if (OOoVersion.indexIn(text) >= 0)
             result["version"] = OOoVersion.cap(1);
     }
