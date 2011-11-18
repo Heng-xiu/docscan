@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QSet>
 #include <QMap>
+#include <QQueue>
 
 #include "downloader.h"
 
@@ -68,18 +69,22 @@ signals:
     void report(QString);
 
 private:
+    QQueue<QUrl> m_urlQueue;
     QSet<QNetworkReply *> *m_setRunningJobs;
-    QMutex *m_mutexRunningJobs;
+    QMutex *m_internalMutex;
     QSignalMapper *m_signalMapperTimeout;
     QNetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
     int m_runningDownloads;
+    static const int maxParallelDownloads;
     QSet<QString> m_knownUrls;
     static const QRegExp domainRegExp;
     int m_countSuccessfulDownloads, m_countFaileDownloads;
     GeoIP *m_geoip;
     QString m_userAgent;
     QMap<QString, int> m_domainCount;
+
+    void startNextDownload();
 
     QString domainFromHostname(const QString &hostname);
 
