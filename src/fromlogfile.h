@@ -31,7 +31,7 @@
 #include "downloader.h"
 
 /**
- * Extract downloaded files as reported successfully downloaded in an older log file.
+ * Extract URLs as reported in an older log file.
  *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
@@ -50,15 +50,13 @@ public:
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
 
-signals:
-    void foundUrl(QUrl);
-
 private:
     QSet<QUrl> m_urlSet;
     bool m_isAlive;
 };
 
 /**
+ * Extract downloaded files as reported successfully downloaded in an older log file.
  *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */

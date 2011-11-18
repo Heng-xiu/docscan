@@ -49,7 +49,8 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
                 m_urlSet.insert(url);
             }
         }
-    }
+    } else
+        qWarning() << "Could not find or open old log file" << logfilename;
 }
 
 void FromLogFileFileFinder::startSearch(int numExpectedHits)
@@ -79,9 +80,9 @@ void FromLogFileDownloader::startParsingAndEmitting()
 {
     QFile input(m_logfilename);
     if (input.open(QFile::ReadOnly)) {
-        QRegExp filenameRegExp = m_filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
-        QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\""));
-        QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
+        static QRegExp filenameRegExp = m_filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
+        static QRegExp hitRegExp = QRegExp(QLatin1String("<download url=\"([^\"]+)\" filename=\"([^\"]+)\" status=\"success\""));
+        static QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
         int count = 0;
 
         QTextStream textStream(&input);
@@ -104,7 +105,8 @@ void FromLogFileDownloader::startParsingAndEmitting()
 
         const QString s = QString("<downloader type=\"fromlogfiledownloader\" count=\"%1\" />\n").arg(count);
         emit report(s);
-    }
+    } else
+        qWarning() << "Could not find or open old log file" << m_logfilename;
 
     m_isAlive = false;
 }
