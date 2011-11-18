@@ -102,60 +102,6 @@ QStringList FileAnalyzerAbstract::getAspellLanguages() const
     return aspellLanguages;
 }
 
-QMap<QString, QString> FileAnalyzerAbstract::guessLicense(const QString &license) const
-{
-    const QString text = license.toLower();
-    QMap<QString, QString> result;
-
-    if (text.contains("primopdf") || text.contains("freeware") || text.contains("freepdf")) {
-        result["type"] = "beer";
-    } else if (text.contains("microsoft") || text.contains("framemaker") || text.contains("adobe") || text.contains("acrobat") || text.contains("excel") || text.contains("powerpoint") || text.contains("quartz") || text.contains("pdfxchange") || text.contains("freehand") || text.contains("quarkxpress") || text.contains("illustrator") || text.contains("hp pdf") || text.contains("pscript5") || text.contains("s.a.") || text.contains("KDK") || text.contains("omnipage") || text.contains("scansoft") || text.contains("crystal") || text.contains("easypdf") || text.contains("pdffactory") || text.contains("windows") || text.contains("arcmap") || text.contains("ocad")) {
-        result["type"] = "proprietary";
-    } else if (text.contains("neooffice") || text.contains("broffice") || text.contains("koffice") || text.contains("calligra")) {
-        result["type"] = "open";
-    } else if (text.contains("openoffice") || text.contains("libreoffice")) {
-        result["type"] = "open";
-    } else if (text.contains("pdftex") || text.contains("latex") || text.contains("luatex") || text.contains("xetex") || text.contains("context") || text.contains("ghostscript") || text.contains("dvips") || text.contains("dvipdf") || text.contains("tex output") || text.contains("pdfcreator")) {
-        result["type"] = "open";
-    } else if (text.contains("gnu") || text.contains("gpl") || text.contains("bsd") || text.contains("apache")) {
-        result["type"] = "open";
-    }
-
-    return result;
-}
-
-QMap<QString, QString> FileAnalyzerAbstract::guessOpSys(const QString &opsys) const
-{
-    const QString text = opsys.toLower();
-    QMap<QString, QString> result;
-
-    if (text.indexOf("neooffice") >= 0 || text.indexOf("quartz pdfcontext") >= 0 || text.indexOf("mac os x") >= 0 || text.indexOf("macintosh") >= 0) {
-        result["type"] = "mac";
-        result["license"] = "proprietary";
-    } else if (text.indexOf("win32") >= 0) {
-        result["type"] = "windows";
-        result["arch"] = "win32";
-        result["license"] = "proprietary";
-    } else if (text.indexOf("win64") >= 0) {
-        result["type"] = "windows";
-        result["arch"] = "win64";
-        result["license"] = "proprietary";
-    } else if (text.indexOf("microsoftoffice") >= 0 || text.indexOf("windows") >= 0 || text.indexOf(".dll") >= 0 || text.indexOf("pdf complete") >= 0 || text.indexOf("nitro pdf") >= 0 || text.indexOf("primopdf") >= 0) {
-        result["type"] = "windows";
-        result["license"] = "proprietary";
-    } else if (text.indexOf("linux") >= 0) {
-        result["type"] = "linux";
-        result["license"] = "open";
-    } else if (text.indexOf("unix") >= 0) {
-        result["type"] = "unix";
-    } else if (text.indexOf("solaris") >= 0) {
-        result["type"] = "unix";
-        result["brand"] = "solaris";
-    }
-
-    return result;
-}
-
 QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program) const
 {
     const QString text = program.toLower();
@@ -339,7 +285,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     }
 
     if (checkOOoVersion) {
-        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_Beta)?[$a-z]", Qt::CaseInsensitive);
+        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_Beta|pre)?[$a-z]", Qt::CaseInsensitive);
         if (OOoVersion.indexIn(text) >= 0)
             result["version"] = OOoVersion.cap(1);
     }
@@ -361,21 +307,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
     if (!text.isEmpty()) {
         QMap<QString, QString> programMap = guessProgram(text);
-        QMap<QString, QString> opSysMap = guessOpSys(text);
-
-        QString version;
-        if (programMap["manufacturer"] == "microsoft" && (programMap["product"] == "word" || programMap["product"] == "excel" || programMap["product"] == "powerpoint" || programMap["product"] == "outlook") && !(version = programMap["version"]).isEmpty()) {
-            if (text.contains("acintosh") || version == "98" || version == "2001" || version == "2004" || version == "2008" || version == "2011")
-                opSysMap["type"] = "mac";
-            else if (version == "97" || version == "2000" || version == "9.0" || version == "2002" || version == "10.0" || version == "2003" || version == "11.0" || version == "2007" || version == "12.0" || version == "2010" || version == "14.0")
-                opSysMap["type"] = "windows";
-            else
-                opSysMap["remark"] = "unknown version: " + version;
-        }
-
         result += formatMap("name", programMap);
-        result += formatMap("license", guessLicense(text));
-        result += formatMap("opsys", opSysMap);
     }
 
     return result;

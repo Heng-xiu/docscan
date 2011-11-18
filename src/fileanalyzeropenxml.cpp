@@ -190,28 +190,6 @@ private:
     QStack<QString> m_nodeName;
     QString application, appVersion;
 
-    QString interpeteGenerator(const QString &generatorString) {
-        QString arguments;
-
-        if (generatorString.indexOf("Macintosh") >= 0)
-            arguments += " opsys=\"unix|macos\"";
-        else
-            arguments += " opsys=\"windows\"";
-
-        if (generatorString.indexOf("PowerPoint") >= 0)
-            arguments += " program=\"microsoftoffice|powerpoint\"";
-        else if (generatorString.indexOf("Excel") >= 0)
-            arguments += " program=\"microsoftoffice|excel\"";
-        else if (generatorString.indexOf("Word") >= 0)
-            arguments += " program=\"microsoftoffice|word\"";
-
-        QRegExp versionRegExp("(\\d+(\\.\\d+(\\.\\d+)?)?)");
-        if (versionRegExp.indexIn(generatorString) >= 0)
-            arguments += QString(" version=\"%1\"").arg(versionRegExp.cap(1));
-
-        return QString("<generator%2 license=\"%3\">%1</generator>\n").arg(DocScan::xmlify(generatorString)).arg(arguments).arg("" /*p->guessLicenseFromProduct(generatorString)*/);
-    }
-
 public:
     OpenXMLAppHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
         : QXmlDefaultHandler(), p(parent), result(resultContainer) {
@@ -227,7 +205,10 @@ public:
         m_nodeName.pop();
 
         if (qName == "Properties") {
-            QString guess = p->guessTool(application + " " + appVersion);
+            QString toolString = application;
+            if (!toolString.contains(QRegExp("\\d\\.\\d")))
+                toolString.append(" " + appVersion); /// avoid duplicate version numbers
+            QString guess = p->guessTool(toolString);
             if (!guess.isEmpty())
                 result.toolGenerator = QString("<tool type=\"generator\">\n%1</tool>\n").arg(guess);
         }

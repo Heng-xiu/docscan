@@ -30,6 +30,8 @@
 class QDate;
 
 /**
+ * Common class for file analyzing classes.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerAbstract : public QObject, public Watchable
@@ -41,9 +43,20 @@ public:
     explicit FileAnalyzerAbstract(QObject *parent = 0);
 
 signals:
+    /**
+     * Reporting findings of analysis
+     */
     void analysisReport(QString);
 
 public slots:
+    /**
+     * Requests analyzer object to analyze file.
+     * Analysis may be asynchronous and will set this object alive.
+     * Has to be implemented by every class to be instanciated
+     * and inheriting from this class.
+     *
+     * @param filename file to analyze
+     */
     virtual void analyzeFile(const QString &filename) = 0;
 
 protected:
@@ -52,12 +65,9 @@ protected:
 
     QString guessLanguage(const QString &text) const;
     QStringList runAspell(const QString &text, const QString &dictionary) const;
-    QMap<QString, QString> guessLicense(const QString &license) const;
-    QMap<QString, QString> guessOpSys(const QString &opsys) const;
     QMap<QString, QString> guessProgram(const QString &program) const;
     QString guessTool(const QString &toolString, const QString &altToolString = QString::null) const;
     QString guessFont(const QString &fontString, const QString &typeName = QString::null) const;
-    QStringList guessLicenseFromFont(const QString &fontName) const;
     QString formatDate(const QDate &date, const QString &base = QString::null) const;
     QString evaluatePaperSize(int mmw, int mmh) const;
 
