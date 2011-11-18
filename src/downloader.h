@@ -28,6 +28,9 @@
 #include "watchable.h"
 
 /**
+ * Common class for classes that download files based on URLs
+ * or at least pretend to do so.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class Downloader : public QObject, public Watchable

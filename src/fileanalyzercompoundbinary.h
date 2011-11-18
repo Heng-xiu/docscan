@@ -30,6 +30,8 @@
 #include "fileanalyzerabstract.h"
 
 /**
+ * Analyzing code for old-fashioned (pre-XML) Microsoft Word documents.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
@@ -40,7 +42,16 @@ public:
 
     virtual bool isAlive();
 
+    /**
+     * Test if the supplied file is an RTF file.
+     * Necessary as sometimes .rtf files are disguised as .doc files
+     * for file exchange reasons.
+     *
+     * @param filename file to check if .rtf file
+     * @return 'true' if the file is an RTF file, otherwise 'false'
+     */
     static bool isRTFfile(const QString &filename);
+
     static QString langCodeToISOCode(int lid);
 
 public slots:

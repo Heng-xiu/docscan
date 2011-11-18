@@ -27,8 +27,31 @@
 
 namespace DocScan
 {
+/**
+ * Make a text XML-safe by rewriting critical symbols such as <, & or, >.
+ *
+ * @param text plain text
+ * @return text encoded as XML
+ */
 QString xmlify(QString text);
+
+/**
+ * Rewrite XML encodings like &aml; back to plain text like &.
+ *
+ * @param xml text encoded as XML
+ * @return decoded plain text
+ */
 QString dexmlify(QString xml);
+
+/**
+ * Create an XML representation like
+ * '<date epoch="1317333600" base="creation" year="2011" month="9" day="30">2011-09-30</date>'
+ * for a given date.
+ *
+ * @param date date to encode
+ * @param base value for the 'base' attribte
+ * @return XML representation
+ */
 QString formatDate(const QDate &date, const QString &base);
 }
 

@@ -25,6 +25,8 @@
 #include "fileanalyzerabstract.h"
 
 /**
+ * Analyzing code for Rich Text Format documents.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerRTF : public FileAnalyzerAbstract

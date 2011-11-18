@@ -30,6 +30,8 @@ class QuaZip;
 class QIODevice;
 
 /**
+ * Analyzing code for XML-based Microsoft Word documents.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerOpenXML : public FileAnalyzerAbstract

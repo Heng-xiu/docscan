@@ -27,12 +27,21 @@
 #include "filefinder.h"
 
 /**
+ * Scan a file system tree starting from a base directory
+ * and signal found files as if they were found URLs.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileSystemScan : public FileFinder
 {
     Q_OBJECT
 public:
+    /**
+     * Start searching from a base directory, but only report files matching a given filter.
+     *
+     * @param filters list of filters following for format specified in QDir
+     * @param baseDir local directory to start searching from
+     */
     explicit FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);

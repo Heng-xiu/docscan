@@ -30,6 +30,9 @@
 #include "fileanalyzerrtf.h"
 
 /**
+ * Automatically redirects a file to be analyzed
+ * to the right specialized file analysis object.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerMultiplexer : public FileAnalyzerAbstract

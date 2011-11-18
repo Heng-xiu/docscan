@@ -32,6 +32,8 @@ class Document;
 }
 
 /**
+ * Analyzing code for Portable Document File documents.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerPDF : public FileAnalyzerAbstract
@@ -47,7 +49,6 @@ public slots:
 
 private:
     bool m_isAlive;
-
 
     QString plainText(Poppler::Document *doc);
 };

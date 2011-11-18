@@ -29,6 +29,8 @@
 class QIODevice;
 
 /**
+ * Analyzing code for XML-based OpenDocument Text documents.
+ *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
 class FileAnalyzerODF : public FileAnalyzerAbstract
