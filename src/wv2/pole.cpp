@@ -248,7 +248,7 @@ static inline unsigned long readU16(const unsigned char* ptr)
 
 static inline unsigned long readU32(const unsigned char* ptr)
 {
-    return unsigned(ptr[0]) + (unsigned(ptr[1]) << 8 ) + (unsigned(ptr[2]) << 16) + (unsigned(ptr[3]) << 24);
+    return unsigned(ptr[0]) + (unsigned(ptr[1]) << 8) + (unsigned(ptr[2]) << 16) + (unsigned(ptr[3]) << 24);
 }
 
 static inline void writeU16(unsigned char* ptr, unsigned long data)
@@ -305,9 +305,8 @@ bool Header::valid(const unsigned max_sbat_block, const unsigned max_bbat_block)
     const unsigned FREESECT = 0xffffffff;
 
     if (num_sbat == 0 &&
-        sbat_start != ENDOFCHAIN &&
-        sbat_start != FREESECT)
-    {
+            sbat_start != ENDOFCHAIN &&
+            sbat_start != FREESECT) {
         std::cerr << "There aren't any minifat sectors, but there are links to some!";
     }
 
@@ -509,7 +508,7 @@ std::vector<unsigned long> AllocTable::follow(unsigned long start, bool& fail)
     }
     if (p != (unsigned long)AllocTable::Eof) {
         std::cerr << "AllocTable::follow Last chain entry MUST be 0x" << std::hex <<
-                      AllocTable::Eof << ", detected: 0x" << std::hex << p << std::endl;
+                  AllocTable::Eof << ", detected: 0x" << std::hex << p << std::endl;
         fail = true;
     }
 
@@ -644,14 +643,13 @@ bool DirTree::valid() const
             return false;
         }
 
-	//A root storage: size = size of the mini stream, start = first sector
-	//of the mini stream, if the mini stream exists
-	//
-	//A storage object MAY have e->child set - [MS-CFB].
+        //A root storage: size = size of the mini stream, start = first sector
+        //of the mini stream, if the mini stream exists
+        //
+        //A storage object MAY have e->child set - [MS-CFB].
 #ifdef POLE_CHECK_STORAGE_OBJS
         if ((e->valid && e->dir) && (i > 0) &&
-            ((e->start != 0) || (e->size != 0)))
-        {
+                ((e->start != 0) || (e->size != 0))) {
             std::cerr << "DirTree::valid Invalid storage object detected!" << std::endl;
             return false;
         }
@@ -936,9 +934,8 @@ void DirTree::load(unsigned char* buffer, unsigned size, const unsigned threshol
         // storage objects
         if (type == 1) {
             if (((e.prev != End) && (e.prev >= n)) ||
-                ((e.next != End) && (e.next >= n)) ||
-                ((e.child != End) && (e.child >= n)))
-            {
+                    ((e.next != End) && (e.next >= n)) ||
+                    ((e.child != End) && (e.child >= n))) {
                 std::cerr << "[FAILED] reference to prev/next/child > object num. (" << n << ")\n";
                 e.valid = false;
             }
@@ -949,8 +946,7 @@ void DirTree::load(unsigned char* buffer, unsigned size, const unsigned threshol
             if ((e.size >= threshold) && (e.start >= max_bbat)) {
                 std::cerr << "[FAILED] (e.start >= max_bbat)\n";
                 e.valid = false;
-            }
-            else if (e.start >= max_sbat) {
+            } else if (e.start >= max_sbat) {
                 std::cerr << "[FAILED] (e.start >= max_sbat)\n";
                 e.valid = false;
             }
@@ -1347,7 +1343,7 @@ unsigned long StorageIO::loadSmallBlocks(const std::vector<unsigned long>& block
 }
 
 unsigned long StorageIO::loadSmallBlocks(const unsigned long *blocks, unsigned blockCount,
-                                         unsigned char *data, unsigned long maxlen)
+        unsigned char *data, unsigned long maxlen)
 {
     // sentinel
     if (!data) return 0;
