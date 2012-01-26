@@ -307,8 +307,8 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// evaluate language
     if (!result.language.isEmpty())
         headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(result.language));
-    if (result.plainText.length() > 1024)
-        headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+    //if (result.plainText.length() > 1024)
+    //    headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
 
     /// evaluate dates
     if (result.dateCreation.isValid())
