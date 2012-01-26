@@ -70,7 +70,7 @@ void SearchEngineGoogle::finished()
             /// Google has different layouts for web result pages, so different regular expressions are necessary
             const QRegExp countHitsRegExp1("of (about )?<b>([0-9][0-9,. ]*)</b> for");
             if (countHitsRegExp1.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine type=\"google\" numresults=\"%1\" />\n").arg(countHitsRegExp1.cap(1).replace(QRegExp("[, .]"), "")));
+                emit report(QString("<searchengine type=\"google\" numresults=\"%1\" />\n").arg(countHitsRegExp1.cap(2).replace(QRegExp("[, .]"), "")));
             else {
                 const QRegExp countHitsRegExp2("\\b([0-9][0-9,. ]*) results");
                 if (countHitsRegExp2.indexIn(htmlText) >= 0)
