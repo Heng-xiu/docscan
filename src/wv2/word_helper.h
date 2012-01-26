@@ -532,7 +532,7 @@ FKP<Offset>::FKP(OLEStreamReader* reader, bool preservePos)
     if (preservePos)
         reader->push();
     reader->push();
-    reader->seek(511, G_SEEK_CUR);
+    reader->seek(511, WV2_SEEK_CUR);
     m_crun = reader->readU8();
     reader->pop();
 

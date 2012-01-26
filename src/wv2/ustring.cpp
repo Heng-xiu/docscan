@@ -76,7 +76,6 @@ bool wvWare::isNaN(double d)
 
 bool wvWare::isPosInf(double d)
 {
-    Q_UNUSED(d);
 #if defined(HAVE_FUNC_ISINF)
     return (isinf(d) == 1);
 #elif defined(HAVE_FUNC_FINITE)
@@ -84,13 +83,13 @@ bool wvWare::isPosInf(double d)
 #elif defined(HAVE_FUNC__FINITE)
     return _finite(d) == 0 && d == d; // ###
 #else
+    Q_UNUSED(d);
     return false;
 #endif
 }
 
 bool wvWare::isNegInf(double d)
 {
-    Q_UNUSED(d);
 #if defined(HAVE_FUNC_ISINF)
     return (isinf(d) == -1);
 #elif defined(HAVE_FUNC_FINITE)
@@ -98,6 +97,7 @@ bool wvWare::isNegInf(double d)
 #elif defined(HAVE_FUNC__FINITE)
     return _finite(d) == 0 && d == d; // ###
 #else
+    Q_UNUSED(d);
     return false;
 #endif
 }

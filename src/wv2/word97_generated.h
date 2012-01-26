@@ -51,7 +51,7 @@ namespace Word97 {
 const U32 cvAuto = 0xff000000;
 
 /**
-     * Helper function to convert ico color codes to 24bit COLORREF
+ * Helper function to convert ico color codes to 24bit COLORREF
  */
 U32 icoToCOLORREF(U16 ico);
 

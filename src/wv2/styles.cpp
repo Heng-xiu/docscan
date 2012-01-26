@@ -178,7 +178,7 @@ throw(InvalidFormatException)
 
     if (stdfSize == StdfPost2000) {
         wvlog << "Warning: StdfPost2000OrNone present - skipping";
-        stream->seek(8, G_SEEK_CUR);
+        stream->seek(8, WV2_SEEK_CUR);
     }
 
     // read the name of the style.
@@ -192,7 +192,7 @@ throw(InvalidFormatException)
     // next even address
     U16 stdfSize_new = stdfSize;
     stdfSize_new += (stdfSize & 0x0001) ? 1 : 0;
-    stream->seek(startOffset + stdfSize, G_SEEK_SET);
+    stream->seek(startOffset + stdfSize, WV2_SEEK_SET);
 #ifdef WV2_DEBUG_STYLESHEET
     wvlog << "new position: " << stream->tell() << std::endl;
     wvlog << "new stdfSize: " << stdfSize_new << std::endl;
@@ -209,7 +209,7 @@ throw(InvalidFormatException)
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "Adjusting the position... from " << stream->tell() - startOffset;
 #endif
-        stream->seek(1, G_SEEK_CUR);
+        stream->seek(1, WV2_SEEK_CUR);
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << " to " << stream->tell() - startOffset << std::endl;
 #endif
@@ -242,7 +242,7 @@ throw(InvalidFormatException)
     int offset = 0;
     for (U8 i = 0; i < cupx; ++i) {
         U16 cbUPX = stream->readU16();  // size of the next UPX
-        stream->seek(-2, G_SEEK_CUR);   // rewind the "lookahead"
+        stream->seek(-2, WV2_SEEK_CUR);   // rewind the "lookahead"
         cbUPX += 2;                     // ...and correct the size
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "cbUPX: " << cbUPX << std::endl;
@@ -259,7 +259,7 @@ throw(InvalidFormatException)
 #ifdef WV2_DEBUG_STYLESHEET
             wvlog << "Adjusting the UPX position... from " << stream->tell() - startOffset;
 #endif
-            stream->seek(1, G_SEEK_CUR);
+            stream->seek(1, WV2_SEEK_CUR);
 #ifdef WV2_DEBUG_STYLESHEET
             wvlog << " to " << stream->tell() - startOffset << std::endl;
 #endif
@@ -523,7 +523,7 @@ Style::Style(const U16 stdfSize, OLEStreamReader* tableStream, U16* ftc)
     if (tableStream->tell() != offset + cbStd) {
         wvlog << "Warning: Found a \"hole\"" << std::endl;
         // correct the offset
-        tableStream->seek(cbStd, G_SEEK_CUR);
+        tableStream->seek(cbStd, WV2_SEEK_CUR);
     }
 
     switch (m_std->sgc) {
@@ -928,7 +928,7 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
     WordVersion version = Word8;
 
     tableStream->push();
-    tableStream->seek(fcStshf, G_SEEK_SET);
+    tableStream->seek(fcStshf, WV2_SEEK_SET);
 
     const U16 cbStshi = tableStream->readU16();
 
@@ -972,7 +972,7 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
     if (tableStream->tell() != static_cast<int>(fcStshf + cbStshi + 2)) {
         wvlog << "Warning: STSHI too big? New version?"
         << " Expected: " << cbStshi + 2 << " Read: " << tableStream->tell() - fcStshf << std::endl;
-        tableStream->seek(fcStshf + 2 + cbStshi, G_SEEK_SET);
+        tableStream->seek(fcStshf + 2 + cbStshi, WV2_SEEK_SET);
     }
     // ------------------------------------------------------------
     // STDs - read the array of LPStd structures containing STDs

@@ -27,6 +27,7 @@
 #include "sharedptr.h"
 #include "functordata.h"
 #include "wv2_export.h"
+#include "word97_generated.h"
 
 namespace wvWare
 {
@@ -80,15 +81,15 @@ public:
     virtual ~SubDocumentHandler();
 
     /**
-     * Set the progress of WordDocument Stream processing.  All other
-     * streams (Table, Data) are refered from this one.
-     */
+    * Set the progress of WordDocument Stream processing.  All other
+    * streams (Table, Data) are refered from this one.
+    */
     virtual void setProgress(const int percent);
 
     /**
-    * This method is called as soon as you call @ref Parser::parse. It indicates
-    * the start of the body text (the main document text-flow).
-    */
+     * This method is called as soon as you call @ref Parser::parse. It indicates
+     * the start of the body text (the main document text-flow).
+     */
     virtual void bodyStart();
     /**
      * This method is called when all characters of the main body text
@@ -225,7 +226,7 @@ public:
 
     /**
      * This method gets called when an inline object is found.  @param data
-            * the picture properties and offset into data stream.
+         * the picture properties and offset into data stream.
      */
     virtual void handleInlineObject(const PictureData& data);
 };
@@ -272,9 +273,9 @@ public:
     // Paragraph related callbacks...
     /**
      * Denotes the start of a paragraph.
-         * @param paragraph properties of the paragraph.
-         * @param character properties of the paragraph provided for empty
-         * paragraphs to set correct font-size, line-height, etc.
+     * @param paragraph properties of the paragraph.
+     * @param character properties of the paragraph provided for empty
+     * paragraphs to set correct font-size, line-height, etc.
      */
     virtual void paragraphStart(SharedPtr<const ParagraphProperties> paragraphProperties, SharedPtr<const Word97::CHP> characterProperties);
     virtual void paragraphEnd();
@@ -313,7 +314,7 @@ public:
                             DateM = 29, DateShort = 30, MonthShort = 33,
                             YearLong = 34, YearShort = 35,
                             AbbreviatedMonth = 36, MonthLong = 37,
-                            CurrentTimeHMS = 38, DateLong = 39
+                            CurrentTimeHMS = 38, DateLong = 39, Symbol = 40
                           };
 
     /**
@@ -389,13 +390,13 @@ public:
     virtual void fieldEnd(const FLD* fld, SharedPtr<const Word97::CHP> chp);
 
     /**
-         * This method is called every time an inline or floating MS-ODRAW
-         * object is found.  If the @param data is ZERO, then it's a floating
-         * object.  Else it's an inline object.
-         *
-         * @param globalCP the CP to which the floating object is anchored
-         * @param data the inline object data as defined by functordata
-         */
+     * This method is called every time an inline or floating MS-ODRAW
+     * object is found.  If the @param data is ZERO, then it's a floating
+     * object.  Else it's an inline object.
+     *
+     * @param globalCP the CP to which the floating object is anchored
+     * @param data the inline object data as defined by functordata
+     */
     virtual void msodrawObjectFound(const unsigned int globalCP, const PictureData* data);
 
     /**
@@ -407,18 +408,18 @@ public:
     //NOTE: those two belong into the TableHandler !!!!!
 
     /**
-    * This method is called every time we find a table row. The default
-    * implementation invokes the functor, which triggers the parsing
-    * process for the given table row.
-    * @param tap the table row properties. Those are the same as the
-    * ones you'll get when invoking the functor, but by having them here,
-    * you can do some preprocessing on the whole table first.
-    */
+     * This method is called every time we find a table row. The default
+     * implementation invokes the functor, which triggers the parsing
+     * process for the given table row.
+     * @param tap the table row properties. Those are the same as the
+     * ones you'll get when invoking the functor, but by having them here,
+     * you can do some preprocessing on the whole table first.
+     */
     virtual void tableRowFound(const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> tap);
 
     /**
-         * This method is called every time we find a table end. No default
-         * implementation at the moment!
+     * This method is called every time we find a table end. No default
+     * implementation at the moment!
      */
     virtual void tableEndFound();
 };

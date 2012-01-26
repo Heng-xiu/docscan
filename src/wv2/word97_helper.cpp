@@ -1,5 +1,6 @@
 /* This file is part of the wvWare 2 project
    Copyright (C) 2001-2003 Werner Trobin <trobin@kde.org>
+   Copyright (C) 2010-2011 Matus Uzak <matus.uzak@ixonos.com>
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the Library GNU General Public
@@ -697,7 +698,7 @@ U8 addTabs(const U8* ptr, TabDescVector& rgdxaTab)
     }
     if (oldSize != 0 && itbdAddMax) {
         TabDescVector::iterator middle = rgdxaTab.begin();
-        middle += oldSize + 1u;
+        middle += oldSize;
         std::inplace_merge(rgdxaTab.begin(), middle, rgdxaTab.end());
     }
     TabDescVector::iterator uend = std::unique(rgdxaTab.begin(), rgdxaTab.end());
@@ -752,7 +753,7 @@ void readBRC(BRC& brc, const U8* ptr, WordVersion version)
     else
         brc = toWord97(Word95::BRC(ptr));
 }
-}
+} //anonymous namespace
 
 // Returns -1 if this wasn't a PAP sprm and it returns the length
 // of the applied sprm if it was successful
@@ -842,19 +843,21 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             tabIt = std::find(tabIt, rgdxaTab.end(), testDescr);
             if (tabIt != rgdxaTab.end()) {
                 tabIt = rgdxaTab.erase(tabIt);
-                itbdMac--;
             }
         }
         U8 itbdAddMax = addTabs(myPtr, rgdxaTab);
-        itbdMac += itbdAddMax;
+        itbdMac = rgdxaTab.size();
 
-//             wvlog << "After applying sprmPChgTabsPapx : " << (int)rgdxaTab.size() << std::endl;
-//             for (uint i = 0; i < rgdxaTab.size(); i++) {
-//                 wvlog << "rgdxaTab[" << i << "].dxaTab" << rgdxaTab[i].dxaTab;
-//             }
-
-        if (cch != 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax)
-            wvlog << "Offset problem in sprmPChgTabsPapx. cch=" << static_cast<int>(cch) << " data size=" << 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
+        if (cch != 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax) {
+            wvlog << "Offset problem in sprmPChgTabsPapx. cch=" << static_cast<int>(cch) <<
+            "data size=" << 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
+        }
+#ifdef WV2_DEBUG_SPRMS
+        wvlog << "After applying sprmPChgTabsPapx : " << (int)rgdxaTab.size() << std::endl;
+        for (uint i = 0; i < rgdxaTab.size(); i++) {
+            wvlog << "rgdxaTab[" << i << "].dxaTab" << rgdxaTab[i].dxaTab;
+        }
+#endif
         break;
     }
     case SPRM::sprmPDxaRight:
@@ -864,6 +867,9 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     case SPRM::sprmPDxaLeft:
     case SPRM::sprmPDxaLeftFE: // asian version, according to OOo (fall-through intended)
         dxaLeft = readS16(ptr);
+#ifdef WV2_DEBUG_SPRMS
+        wvlog << "dxaLeft:" << dxaLeft;
+#endif
         break;
     case SPRM::sprmPNest:
         dxaLeft += readS16(ptr);
@@ -872,6 +878,9 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     case SPRM::sprmPDxaLeft1:
     case SPRM::sprmPDxaLeft1FE: // asian version, according to OOo (fall-through intended)
         dxaLeft1 = readS16(ptr);
+#ifdef WV2_DEBUG_SPRMS
+        wvlog << "dxaLeft1:" << dxaLeft1;
+#endif
         break;
     case SPRM::sprmPDyaLine:
         lspd.dyaLine = readS16(ptr);
@@ -892,20 +901,21 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         for (U8 i = 0; i < itbdDelMax; ++i)
             newEnd = std::remove_if(rgdxaTab.begin(), newEnd, std::bind2nd(InZone(), Zone(myPtr, i, itbdDelMax)));
         rgdxaTab.erase(newEnd, rgdxaTab.end());   // really get rid of them
+        myPtr += itbdDelMax * 4;
+
+        U8 itbdAddMax = addTabs(myPtr, rgdxaTab);
         itbdMac = rgdxaTab.size();
 
-        // Add the new tabs
-        myPtr += itbdDelMax * 4;
-        U8 itbdAddMax = addTabs(myPtr, rgdxaTab);
-        itbdMac += itbdAddMax;
-
-//             for (uint i = 0; i < rgdxaTab.size(); i++) {
-//                 wvlog << "rgdxaTab[" << i << "].dxaTab" << rgdxaTab[i].dxaTab;
-//             }
-
-        if (cch != 255 && cch != 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax)
-            wvlog << "Offset problem in sprmPChgTabs. cch=" << static_cast<int>(cch) << " data size=" << 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
-        //wvlog << "SPRM::sprmPChgTabs done ### " << rgdxaTab.size() << std::endl;
+        if (cch != 255 && cch != 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax) {
+            wvlog << "Offset problem in sprmPChgTabs. cch=" << static_cast<int>(cch) <<
+            "data size=" << 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
+        }
+#ifdef WV2_DEBUG_SPRMS
+        wvlog << "After applying sprmPChgTabs : " << (int)rgdxaTab.size() << std::endl;
+        for (uint i = 0; i < rgdxaTab.size(); i++) {
+            wvlog << "rgdxaTab[" << i << "].dxaTab" << rgdxaTab[i].dxaTab;
+        }
+#endif
         break;
     }
     case SPRM::sprmPDxaAbs:
@@ -1053,7 +1063,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     case SPRM::sprmPHugePapx2: {
         if (dataStream) {
             dataStream->push();
-            dataStream->seek(readU32(ptr), G_SEEK_SET);
+            dataStream->seek(readU32(ptr), WV2_SEEK_SET);
             const U16 count(dataStream->readU16());
             U8* grpprl = new U8[ count ];
             dataStream->read(grpprl, count);
@@ -1199,11 +1209,12 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
         chse = readU16(ptr + 1);
         break;
     case SPRM::sprmCSymbol:
-        // First the length byte...
-        ftcSym = readS16(ptr + 1);
         if (version == Word8) {
-            xchSym = readS16(ptr + 3);
+            ftcSym = readS16(ptr);
+            xchSym = readS16(ptr + 2);
         } else {
+            // First the length byte...
+            ftcSym = readS16(ptr + 1);
             xchSym = *(ptr + 3);
         }
 #ifdef WV2_DEBUG_SPRMS
@@ -2561,7 +2572,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         wvlog << "--> Parsing PrcData" << std::endl;
         if (dataStream) {
             dataStream->push();
-            dataStream->seek(readU32(ptr), G_SEEK_SET);
+            dataStream->seek(readU32(ptr), WV2_SEEK_SET);
 
             const U16 count(dataStream->readU16());
             U8* grpprl = new U8[ count ];

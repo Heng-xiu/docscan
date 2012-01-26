@@ -40,13 +40,7 @@
 #include "functordata.h"
 #include "word95_generated.h"
 #include "convert.h"
-#include "zcodec.hxx"
 #include "wvlog.h"
-
-#include <gsf/gsf-input.h>
-#include <gsf/gsf-output.h>
-#include <gsf/gsf-input-memory.h>
-#include <gsf/gsf-output-memory.h>
 
 #include <numeric>
 #include <string.h>
@@ -138,12 +132,12 @@ Parser9x::~Parser9x()
 
     delete m_currentParagraph;
     delete m_tableRowStart;
-    delete m_bookmarks;
     delete m_drawings;
     delete m_fonts;
     delete m_plcfpcd;
     delete m_headers;
     delete m_footnotes;
+    delete m_bookmarks;
     delete m_annotations;
     delete m_fields;
     delete m_textconverter;
@@ -380,7 +374,7 @@ bool Parser9x::readPieceTable()
 #if WV2_DUMP_PIECE_TABLE > 0
         wvlog << "Found a clxtGrpprl (size=" << size << ")" << std::endl;
 #endif
-        m_table->seek(size, G_SEEK_CUR);
+        m_table->seek(size, WV2_SEEK_CUR);
         blockType = m_table->readU8();
     }
     if (blockType == wvWare::clxtPlcfpcd) {
@@ -988,8 +982,7 @@ void Parser9x::emitSpecialCharacter(UChar character, U32 globalCP, SharedPtr<con
         if (fld) {
             m_textHandler->fieldStart(fld, chp);
         } else {
-            FLD dummy;
-            m_textHandler->fieldStart(&dummy, chp);
+            wvlog << "FieldStart: Plcfld does not contain this CP, ignoring!";
         }
         break;
     }
@@ -998,8 +991,7 @@ void Parser9x::emitSpecialCharacter(UChar character, U32 globalCP, SharedPtr<con
         if (fld) {
             m_textHandler->fieldSeparator(fld, chp);
         } else {
-            FLD dummy;
-            m_textHandler->fieldSeparator(&dummy, chp);
+            wvlog << "FieldSeparator: Plcfld does not contain this CP, ignoring!";
         }
         break;
     }
@@ -1008,8 +1000,7 @@ void Parser9x::emitSpecialCharacter(UChar character, U32 globalCP, SharedPtr<con
         if (fld) {
             m_textHandler->fieldEnd(fld, chp);
         } else {
-            FLD dummy;
-            m_textHandler->fieldEnd(&dummy, chp);
+            wvlog << "FieldEnd: Plcfld does not contain this CP, ignoring!";
         }
         break;
     }
@@ -1022,6 +1013,11 @@ void Parser9x::emitSpecialCharacter(UChar character, U32 globalCP, SharedPtr<con
     case TextHandler::FieldEscapeChar:
         wvlog << "Found an escape character ++++++++++++++++++++?" << std::endl;
         break;
+    case TextHandler::Symbol: {
+        //NOTE: MS Word 2k/2k3/2k7 ignores chp->ftcSym (font for the symbol).
+        m_textHandler->runOfText(UString(reinterpret_cast<const wvWare::UChar*>(&chp->xchSym), 1), chp);
+        break;
+    }
     default:
         wvlog << "Parser9x::processSpecialCharacter(): Support for character " << character.unicode()
         << " not implemented yet." << std::endl;
@@ -1136,7 +1132,7 @@ void Parser9x::emitPictureData(const U32 globalCP, SharedPtr<const Word97::CHP> 
         return;
     }
     stream->push();
-    stream->seek(chp->fcPic_fcObj_lTagObj, G_SEEK_SET);
+    stream->seek(chp->fcPic_fcObj_lTagObj, WV2_SEEK_SET);
 
     Word97::PICF* picf(0);
     if (m_fib.nFib < Word8nFib) {
@@ -1221,8 +1217,10 @@ void Parser9x::parseHeader(const HeaderData& data, unsigned char mask)
 //         m_textHandler->paragraphEnd();
 //         m_subDocumentHandler->headerEnd();
         return;
-    } else if (length > 1)
-        --length; // get rid of the trailing "end of header/footer" character
+    } else if (length > 1) {
+        // get rid of the trailing "end of header/footer" character
+        --length;
+    }
 
     saveState(length, Header);
 

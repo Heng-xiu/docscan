@@ -41,7 +41,7 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
     tableStream->push();
 
     if (fib.lcbPlcfbkf != 0) {
-        tableStream->seek(fib.fcPlcfbkf, G_SEEK_SET);
+        tableStream->seek(fib.fcPlcfbkf, WV2_SEEK_SET);
 
         m_start = new PLCF<Word97::BKF>(fib.lcbPlcfbkf, tableStream);
         m_startIt = new PLCFIterator<Word97::BKF>(*m_start);
@@ -55,7 +55,7 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
 
     if (fib.lcbSttbfbkmk != 0) {
         if (static_cast<U32>(tableStream->tell()) != fib.fcSttbfbkmk) {
-            tableStream->seek(fib.fcSttbfbkmk, G_SEEK_SET);
+            tableStream->seek(fib.fcSttbfbkmk, WV2_SEEK_SET);
         }
         // The bookmark names in the STTBF are always Unicode, the lid doesn't matter
         U16 usLid = 0x409;
@@ -67,6 +67,8 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
         for (uint i = 0; i < name->count(); i++) {
             m_name.push_back(name->stringAt(i));
         }
+
+        delete name;
     }
 
     //The BKL is no longer stored in the plcfbkl or plcfatnbkl, and is instead
@@ -77,7 +79,7 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
 
     if (fib.lcbPlcfbkl != 0) {
         int count = 0;
-        tableStream->seek(fib.fcPlcfbkl, G_SEEK_SET);
+        tableStream->seek(fib.fcPlcfbkl, WV2_SEEK_SET);
 
         //Word Version 6,7
         if (fib.nFib < Word8nFib) {

@@ -68,13 +68,13 @@ public:
     ListInfo(Word97::PAP& pap, const Word97::CHP& chp, ListInfoProvider& listInfoProvider);
 
     /**
-         * The istd linked to the current list/level, istdNil (4095) if none (LSTF::rgistd)
+     * The istd linked to the current list/level, istdNil (4095) if none (LSTF::rgistd)
      */
     U16 linkedIstd() const {
         return m_linkedIstd;
     }
     /**
-         * Returns whether the list counter should be restarted in new sections. (LSTF::fRestartHdn)
+     * Returns whether the list counter should be restarted in new sections. (LSTF::fRestartHdn)
      */
     bool restartingCounter() const {
         return m_restartingCounter;
@@ -167,9 +167,9 @@ public:
     }
 
     /**
-         * In order to help users to detect when a new list starts we also
-         * provide access to the (internal) unique ID of a list.
-         * @return 0 if it hasn't been initailized.
+     * In order to help users to detect when a new list starts we also
+     * provide access to the (internal) unique ID of a list.
+     * @return 0 if it hasn't been initailized.
      */
     S32 lsid() const {
         return m_lsid;
@@ -252,9 +252,9 @@ private:
     /**
      * @internal
      * This function tries to get the list information (if any) from the
-     * given PAP. As the list info handling is completely different in Word6
-     * and in Word97 we have one additional level of indirection here (to
-     * keep the user of the library from fighting multiple versions).
+     * given PAP. As the list info handling is completely different in
+     * Word6 and in Word97 we have one additional level of indirection here
+     * (to keep the user of the library from fighting multiple versions).
      * In case there's no list information for that paragraph it returns
      * false.
      *

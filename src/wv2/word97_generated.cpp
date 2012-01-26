@@ -4983,7 +4983,7 @@ bool FIB::read(OLEStreamReader *stream, bool preservePos)
     wvlog << "FIB bytes read:" << n << std::endl;
 #endif
     if ((expected - n) > 0) {
-        stream->seek((expected - n), G_SEEK_SET);
+        stream->seek((expected - n), WV2_SEEK_SET);
     }
     //this is new compared to Word6/Word8
     cswNew = stream->readU16();

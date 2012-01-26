@@ -129,15 +129,3 @@ SharedPtr<Parser> ParserFactory::createParser(const std::string& fileName)
 
     return setupParser(storage);
 }
-
-SharedPtr<Parser> ParserFactory::createParser(const unsigned char* buffer, size_t buflen)
-{
-    OLEStorage* storage(new OLEStorage(buffer, buflen));
-    if (!storage->open(OLEStorage::ReadOnly) || !storage->isValid()) {
-        delete storage;
-        if (buflen >= 4)
-            diagnose(buffer);
-        return 0;
-    }
-    return setupParser(storage);
-}

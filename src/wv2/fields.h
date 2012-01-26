@@ -47,7 +47,7 @@ struct FLD {
         U8 flt;
         struct {
         U8 fDiffer: 1;
-        U8 fZomieEmbed: 1;
+        U8 fZombieEmbed: 1;
         U8 fResultDirty: 1;
         U8 fResultEdited: 1;
         U8 fLocked: 1;

@@ -50,22 +50,22 @@ public:
     ~Bookmarks();
 
     /**
-             * Get the BookmarkData for the Bookmark-Start/End at @param
-             * globalCP.  The @param ok flag is true if a bookmark has been
-             * found.  If @param ok is false no valid bookmark has been found
-             * and the returned BookmarkData structure is invalid.
-    */
+     * Get the BookmarkData for the Bookmark-Start/End at @param
+     * globalCP.  The @param ok flag is true if a bookmark has been
+     * found.  If @param ok is false no valid bookmark has been found
+     * and the returned BookmarkData structure is invalid.
+     */
     BookmarkData bookmark(U32 globalCP, bool& ok);
 
     /**
-    * Returns the global CP of the next bookmark start,
-             * 0xffffffff if none exists or invalid.
-    */
+     * Returns the global CP of the next bookmark start,
+     * 0xffffffff if none exists or invalid.
+     */
     U32 nextBookmarkStart();
     /**
-    * Returns the global CP of the next bookmark end,
-             * 0xffffffff if none exists or invalid.
-    */
+     * Returns the global CP of the next bookmark end,
+     * 0xffffffff if none exists or invalid.
+     */
     U32 nextBookmarkEnd() const;
 
     /**

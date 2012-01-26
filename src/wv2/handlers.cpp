@@ -21,7 +21,6 @@
 #include "paragraphproperties.h"
 #include "functor.h"
 #include "wvlog.h"
-#include <QList>
 
 using namespace wvWare;
 

@@ -678,29 +678,29 @@ ListInfoProvider::ListInfoProvider(OLEStreamReader* tableStream, const Word97::F
 
     tableStream->push();
     if (fib.lcbPlcfLst != 0) {
-        tableStream->seek(fib.fcPlcfLst, G_SEEK_SET);
+        tableStream->seek(fib.fcPlcfLst, WV2_SEEK_SET);
         readListData(tableStream, fib.fcPlcfLst + fib.lcbPlcfLst);
     }
     if (fib.lcbPlfLfo != 0) {
         if (static_cast<U32>(tableStream->tell()) != fib.fcPlfLfo) {
             wvlog << "Found a \"hole\" within the table stream (list data): current="
             << tableStream->tell() << " expected=" << fib.fcPlfLfo << std::endl;
-            tableStream->seek(fib.fcPlfLfo, G_SEEK_SET);
+            tableStream->seek(fib.fcPlfLfo, WV2_SEEK_SET);
         }
         readListFormatOverride(tableStream);
     }
     if (fib.lcbSttbListNames != 0) {
         // Get rid of leading garbage. Take care, though, as the STTBF most likely starts
         // with 0xffff (extended character STTBF)
-        while (static_cast<U32>(tableStream->tell()) < fib.fcSttbListNames
-                && tableStream->readU8() == 0xff) {
+        while ((static_cast<U32>(tableStream->tell()) < fib.fcSttbListNames) &&
+                tableStream->readU8() == 0xff) {
         }
 
         // Check the position and warn about corrupt files
         if (static_cast<U32>(tableStream->tell()) != fib.fcSttbListNames) {
             wvlog << "Found a \"hole\" within the table stream (list format override): current="
             << tableStream->tell() << " expected=" << fib.fcSttbListNames << std::endl;
-            tableStream->seek(fib.fcSttbListNames, G_SEEK_SET);
+            tableStream->seek(fib.fcSttbListNames, WV2_SEEK_SET);
         }
         readListNames(tableStream);
     }
@@ -771,16 +771,17 @@ void ListInfoProvider::readListData(OLEStreamReader* tableStream, const U32 endO
     for (int i = 0; i < count; ++i)
         m_listData.push_back(new ListData(tableStream));
 
-    // Note that this is a bug in the spec, but it at least seems to be a "stable" bug ;)
-    if (static_cast<U32>(tableStream->tell()) != endOfLSTF)
+    // NOTE: this is a bug in the spec, but it at least seems to be a "stable" bug ;)
+    if (static_cast<U32>(tableStream->tell()) != endOfLSTF) {
         wvlog << "Expected a different size of this plcflst! (expected: "
         << endOfLSTF << " position: " << tableStream->tell() << ")" << std::endl;
+    }
 
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "ListInfoProvider::readListData(): 2nd step -- reading the LVLFs" << std::endl;
 #endif
-    // Now read in the ListLevels for each ListData
-    // If fSimpleList is true we only have one level, else there are nine
+    // Now read in the ListLevels for each ListData. If fSimpleList is true
+    // there is only 1 level, else there are 9.
     std::vector<ListData*>::const_iterator it = m_listData.begin();
     std::vector<ListData*>::const_iterator end = m_listData.end();
     for (; it != end; ++it) {
@@ -806,8 +807,8 @@ void ListInfoProvider::readListFormatOverride(OLEStreamReader* tableStream)
     for (; it != end; ++it) {
         const U8 levelCount = (*it)->countOfLevels();
         for (int i = 0; i < levelCount; ++i) {
-            // Word seems to write 0xff pagging-bytes between LFO and LFOLVLs, also
-            // between different LFOLVLs, get rid of it (Werner)
+            // Word seems to write 0xff pagging-bytes between LFO and LFOLVLs,
+            // also between different LFOLVLs, get rid of it (Werner)
             eatLeading0xff(tableStream);
             (*it)->appendListFormatOverrideLVL(new ListFormatOverrideLVL(tableStream));
         }
@@ -827,9 +828,8 @@ void ListInfoProvider::readListNames(OLEStreamReader* tableStream)
 
 void ListInfoProvider::eatLeading0xff(OLEStreamReader* tableStream)
 {
-    while (tableStream->readU8() == 0xff) {
-    }
-    tableStream->seek(-1, G_SEEK_CUR);   // rewind the stream
+    while (tableStream->readU8() == 0xff) {}
+    tableStream->seek(-1, WV2_SEEK_CUR);   // rewind the stream
 }
 
 void ListInfoProvider::processOverride(ListFormatOverride* lfo)
