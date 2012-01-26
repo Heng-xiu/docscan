@@ -23,6 +23,7 @@
 #define FILEANALYZERODF_H
 
 #include <QStringList>
+#include <QDate>
 
 #include "fileanalyzerabstract.h"
 
@@ -52,7 +53,7 @@ private:
         QString authorInitial, authorLast;
         QString title, subject;
         QString language;
-        QString dateCreation, dateModification, datePrint;
+        QDate dateCreation, dateModification, datePrint;
         int pageCount;
         PageCountOrigin pageCountOrigin;
         QString plainText;

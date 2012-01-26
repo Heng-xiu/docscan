@@ -197,11 +197,11 @@ public:
         } else {
             QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
             if (nodeName == "meta:creation-date" && date.isValid()) {
-                result.dateCreation = DocScan::formatDate(date, "creation");
+                result.dateCreation = date;
             } else if (nodeName == "dc:date" && date.isValid()) {
-                result.dateModification = DocScan::formatDate(date, "modification");
+                result.dateModification = date;
             } else if (nodeName == "meta:print-date" && date.isValid()) {
-                result.datePrint = DocScan::formatDate(date, "print");
+                result.datePrint = date;
             }
         }
 
@@ -315,12 +315,12 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             headerText.append(QString("<num-pages origin=\"%2\">%1</num-pages>\n").arg(result.pageCount).arg(result.pageCountOrigin == pcoDocument ? "document" : "own-count"));
 
         /// evaluate dates
-        if (!result.dateCreation.isEmpty())
-            headerText.append(result.dateCreation);
-        if (!result.dateModification.isEmpty())
-            headerText.append(result.dateModification);
-        if (!result.datePrint.isEmpty())
-            headerText.append(result.datePrint);
+        if (result.dateCreation.isValid())
+            headerText.append(DocScan::formatDate(result.dateCreation, QLatin1String("creation")));
+        if (result.dateModification.isValid())
+            headerText.append(DocScan::formatDate(result.dateModification, QLatin1String("modification")));
+        if (result.datePrint.isValid())
+            headerText.append(DocScan::formatDate(result.datePrint, QLatin1String("print")));
 
         // TODO fonts
 
