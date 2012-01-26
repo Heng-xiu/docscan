@@ -23,7 +23,6 @@
 namespace RtfReader
 {
 AbstractRtfOutput::AbstractRtfOutput()
-        : m_editingTool(ToolUnknown), m_pageHeight(0), m_pageWidth(0)
 {}
 
 AbstractRtfOutput::~AbstractRtfOutput()
@@ -199,16 +198,6 @@ void AbstractRtfOutput::setNumberOfPages(const int numberOfPages)
     m_numberOfPages = numberOfPages;
 }
 
-AbstractRtfOutput::EditingTool AbstractRtfOutput::editingTool() const
-{
-    return m_editingTool;
-}
-
-void AbstractRtfOutput::setEditingTool(const EditingTool editingTool)
-{
-    m_editingTool = editingTool;
-}
-
 int AbstractRtfOutput::numberOfWords() const
 {
     return m_numberOfWords;
@@ -257,29 +246,6 @@ int AbstractRtfOutput::internalVersionNumber() const
 void AbstractRtfOutput::setInternalVersionNumber(const int internalVersionNumber)
 {
     m_internalVersionNumber = internalVersionNumber;
-}
-
-
-int AbstractRtfOutput::pageHeight() const
-{
-    return m_pageHeight;
-}
-
-void AbstractRtfOutput::setPageHeight(const int pageHeight)
-{
-    m_pageHeight = pageHeight;
-    // TF qDebug() << "setPageHeight: " << pageHeight << " (" << pageHeight / 1440.0 << ")";
-}
-
-int AbstractRtfOutput::pageWidth() const
-{
-    return m_pageWidth;
-}
-
-void AbstractRtfOutput::setPageWidth(const int pageWidth)
-{
-    m_pageWidth = pageWidth;
-    // TF qDebug() << "setPageWidth: " << pageWidth << " (" << pageWidth / 1440.0 << ")";
 }
 
 QVariant AbstractRtfOutput::userProp(const QString &propertyName) const

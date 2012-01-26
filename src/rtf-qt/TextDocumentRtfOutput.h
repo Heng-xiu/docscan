@@ -103,8 +103,16 @@ public:
 
     virtual void createImage(const QImage &image, const QTextImageFormat &format);
 
+    virtual void setPageHeight(const int pageHeight);
+    virtual void setPageWidth(const int pageWidth);
+    virtual int pageHeight() const;
+    virtual int pageWidth() const;
+
     virtual void setSpaceBefore(const int twips);
     virtual void setSpaceAfter(const int twips);
+
+    virtual EditingTool editingTool() const;
+    virtual void setEditingTool(const EditingTool editingTool);
 
 protected:
     // The text cursor on the document being generated
@@ -116,13 +124,18 @@ protected:
 
     QList<QColor> m_colourTable;
 
-    QTextDocument *m_document;
-
     QHash<int, FontTableEntry> m_fontTable;
     int m_defaultFontIndex;
-    bool m_haveSetFont;
 
     QHash<int, StyleSheetTableEntry> m_stylesheetTable;
+
+    QTextDocument *m_document;
+
+    bool m_haveSetFont;
+
+    int m_pageHeight, m_pageWidth;
+
+    EditingTool m_editingTool;
 
     /**
       Convenience routine to convert a size in twips into pixels

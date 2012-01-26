@@ -26,7 +26,7 @@
 namespace RtfReader
 {
 TextDocumentRtfOutput::TextDocumentRtfOutput(QTextDocument *document) : AbstractRtfOutput(),
-        m_document(document), m_haveSetFont(false)
+        m_document(document), m_haveSetFont(false), m_pageHeight(0), m_pageWidth(0), m_editingTool(ToolUnknown)
 {
     m_cursor = new QTextCursor(m_document);
     QTextCharFormat defaultCharFormat;
@@ -277,6 +277,16 @@ void TextDocumentRtfOutput::setSpaceAfter(const int twips)
     m_cursor->setBlockFormat(m_paragraphFormat);
 }
 
+AbstractRtfOutput::EditingTool TextDocumentRtfOutput::editingTool() const
+{
+    return m_editingTool;
+}
+
+void TextDocumentRtfOutput::setEditingTool(const EditingTool editingTool)
+{
+    m_editingTool = editingTool;
+}
+
 void TextDocumentRtfOutput::setFirstLineIndent(const int twips)
 {
     m_paragraphFormat.setTextIndent(pixelsFromTwips(twips));
@@ -321,6 +331,29 @@ void TextDocumentRtfOutput::createImage(const QImage &image, const QTextImageFor
     } else
         m_cursor->insertImage(image.scaled(format.width(), format.height()));
 #endif
+}
+
+void TextDocumentRtfOutput::setPageHeight(const int pageHeight)
+{
+    qDebug() << "setPageHeight: " << pageHeight << " (" << pageHeight / 1440.0 << ")";
+    m_pageHeight = pageHeight;
+}
+
+
+void TextDocumentRtfOutput::setPageWidth(const int pageWidth)
+{
+    qDebug() << "setPageWidth: " << pageWidth << " (" << pageWidth / 1440.0 << ")";
+    m_pageWidth = pageWidth;
+}
+
+int TextDocumentRtfOutput::pageHeight() const
+{
+    return m_pageHeight;
+}
+
+int TextDocumentRtfOutput::pageWidth() const
+{
+    return m_pageWidth;
 }
 
 qreal TextDocumentRtfOutput::pixelsFromTwips(const int twips)

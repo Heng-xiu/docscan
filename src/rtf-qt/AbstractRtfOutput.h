@@ -208,8 +208,8 @@ public:
     virtual void setNumberOfPages(const int numberOfPages);
 
 
-    virtual EditingTool editingTool() const;
-    virtual void setEditingTool(const EditingTool editingTool);
+    virtual EditingTool editingTool() const = 0;
+    virtual void setEditingTool(const EditingTool editingTool) = 0;
 
 
     /**
@@ -258,16 +258,6 @@ public:
     virtual int internalVersionNumber() const;
     virtual void setInternalVersionNumber(const int internalVersionNumber);
 
-    /**
-      The pages' width and height (in which unit?)
-
-      \note page sizes are initialized with 0.
-    */
-    virtual int pageHeight() const;
-    virtual void setPageHeight(const int pageHeight);
-    virtual int pageWidth() const;
-    virtual void setPageWidth(const int pageWidth);
-
     QVariant userProp(const QString &propertyName) const;
     QList<QString> userPropNames() const;
     void addUserProp(const QString &propertyName, const QVariant &propertyValue);
@@ -308,6 +298,10 @@ public:
     virtual void setTextDirectionRightToLeft() = 0;
     virtual void resetCharacterProperties() = 0;
     virtual void createImage(const QImage &image, const QTextImageFormat &format) = 0;
+    virtual void setPageHeight(const int pageHeight) = 0;
+    virtual void setPageWidth(const int pageWidth) = 0;
+    virtual int pageHeight() const = 0;
+    virtual int pageWidth() const = 0;
     virtual void setSpaceBefore(const int value) = 0;
     virtual void setSpaceAfter(const int value) = 0;
     virtual void appendToColourTable(const QColor &colour) = 0;
@@ -369,8 +363,6 @@ private:
     // The number of pages in the document (from document meta-data, if any)
     int m_numberOfPages;
 
-    EditingTool m_editingTool;
-
     // The number of words in the document (from document meta-data, if any)
     int m_numberOfWords;
 
@@ -385,9 +377,6 @@ private:
 
     // The internal version of the document (from document meta-data, if any)
     int m_internalVersionNumber;
-
-    // The pages height and width (which unit?)
-    int m_pageHeight, m_pageWidth;
 
     // User properties dictionary (from document meta-data, if any)
     QHash< QString, QVariant > m_userProps;
