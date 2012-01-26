@@ -139,10 +139,42 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (texVersion.indexIn(text) >= 0)
             result["version"] = texVersion.cap(0);
     } else if (text.indexOf("koffice") >= 0) {
+        static const QRegExp kofficeVersion("/(d+([.]\\d+)*)\\b");
         result["manufacturer"] = "kde";
+        result["product"] = "koffice";
+        if (kofficeVersion.indexIn(text) >= 0)
+            result["version"] = kofficeVersion.cap(1);
+    } else if (text.indexOf("calligra") >= 0) {
+        static const QRegExp calligraVersion("/(d+([.]\\d+)*)\\b");
+        result["manufacturer"] = "kde";
+        result["product"] = "calligra";
+        if (calligraVersion.indexIn(text) >= 0)
+            result["version"] = calligraVersion.cap(1);
     } else if (text.indexOf("abiword") >= 0) {
         result["manufacturer"] = "abisource";
         result["product"] = "abiword";
+    } else if (text.indexOf("office_one") >= 0) {
+        checkOOoVersion = true;
+        result["product"] = "office_one";
+        result["based-on"] = "openoffice";
+    } else if (text.indexOf("infraoffice") >= 0) {
+        checkOOoVersion = true;
+        result["product"] = "infraoffice";
+        result["based-on"] = "openoffice";
+    } else if (text.indexOf("aksharnaveen") >= 0) {
+        checkOOoVersion = true;
+        result["product"] = "aksharnaveen";
+        result["based-on"] = "openoffice";
+    } else if (text.indexOf("redoffice") >= 0) {
+        checkOOoVersion = true;
+        result["manufacturer"] = "china";
+        result["product"] = "redoffice";
+        result["based-on"] = "openoffice";
+    } else if (text.indexOf("sun_odf_plugin") >= 0) {
+        checkOOoVersion = true;
+        result["manufacturer"] = "oracle";
+        result["product"] = "odfplugin";
+        result["based-on"] = "openoffice";
     } else if (text.indexOf("libreoffice") >= 0) {
         checkOOoVersion = true;
         result["manufacturer"] = "tdf";
@@ -155,6 +187,11 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["based-on"] = "openoffice";
         if (lotusSymphonyVersion.indexIn(text) >= 0)
             result["version"] = lotusSymphonyVersion.cap(1);
+    }  else if (text.indexOf("Lotus_Symphony") >= 0) {
+        checkOOoVersion = true;
+        result["manufacturer"] = "ibm";
+        result["product"] = "lotus-symphony";
+        result["based-on"] = "openoffice";
     } else if (text.indexOf("openoffice") >= 0) {
         checkOOoVersion = true;
         if (text.indexOf("staroffice") >= 0) {
@@ -281,6 +318,11 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["product"] = microsoftProducts.cap(0);
             if (!result.contains("version") && microsoftVersion.indexIn(text) >= 0)
                 result["version"] = microsoftVersion.cap(0);
+
+            if (text.indexOf(QLatin1String("Macintosh")) >= 0)
+                result["opsys"] = QLatin1String("macosx");
+            else
+                result["opsys"] = QLatin1String("windows");
         }
     }
 
@@ -288,6 +330,17 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_Beta|pre)?[$a-z]", Qt::CaseInsensitive);
         if (OOoVersion.indexIn(text) >= 0)
             result["version"] = OOoVersion.cap(1);
+
+        if (text.indexOf(QLatin1String("unix")) >= 0)
+            result["opsys"] = QLatin1String("generic-unix");
+        else if (text.indexOf(QLatin1String("linux")) >= 0)
+            result["opsys"] = QLatin1String("linux");
+        else if (text.indexOf(QLatin1String("win32")) >= 0)
+            result["opsys"] = QLatin1String("windows");
+        else if (text.indexOf(QLatin1String("solaris")) >= 0)
+            result["opsys"] = QLatin1String("solaris");
+        else if (text.indexOf(QLatin1String("freebsd")) >= 0)
+            result["opsys"] = QLatin1String("bsd");
     }
 
     return result;
