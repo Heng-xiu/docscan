@@ -64,10 +64,10 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             qDebug() << "Skipping unmatched extension" << openXMLExtension.cap(0);
     } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
         if (m_filters.contains(QChar('*') + compoundBinaryExtension.cap(0))) {
-            if (FileAnalyzerCompoundBinary::isRTFfile(filename))
-                m_fileAnalyzerRTF.analyzeFile(filename);
-            else
-                m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+            // if (FileAnalyzerCompoundBinary::isRTFfile(filename))
+            //     m_fileAnalyzerRTF.analyzeFile(filename);
+            // else
+            m_fileAnalyzerCompoundBinary.analyzeFile(filename);
         } else
             qDebug() << "Skipping unmatched extension" << compoundBinaryExtension.cap(0);
     } else if (filename.endsWith(".rtf")) {
