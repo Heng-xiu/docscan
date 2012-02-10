@@ -207,7 +207,8 @@ void UrlDownloader::finished()
                 if (!geoInformation.countryCode.isEmpty())
                     geoLocation = QString(QLatin1String("><geoinformation countrycode=\"%1\" countryname=\"%2\" city=\"%3\" latitude=\"%4\" longitude=\"%5\" /></download")).arg(geoInformation.countryCode).arg(geoInformation.countryName).arg(geoInformation.city).arg(geoInformation.latitude).arg(geoInformation.longitude);
 
-                QString logText = QString("<download url=\"%1\" filename=\"%2\" status=\"success\"%3>\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(filename)).arg(geoLocation);
+                QString logText = QString("<download url=\"%3\" filename=\"%2\" status=\"success\"%1>\n").arg(geoLocation).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(reply->url().toString()));
+
                 emit report(logText);
                 succeeded = true;
 
@@ -225,7 +226,7 @@ void UrlDownloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download url=\"%1\" message=\"download-failed\" detailed=\"%2\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString()));
+        QString logText = QString("<download url=\"%2\" message=\"download-failed\" detailed=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(reply->errorString())).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         ++m_countFaileDownloads;
     } else
