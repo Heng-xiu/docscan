@@ -9,9 +9,9 @@ TEMPLATE = app
 DEFINES += HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
 
 SOURCES += src/wv2minesweeper.cpp src/fileanalyzercompoundbinary.cpp \
-  src/fileanalyzerabstract.cpp src/general.cpp
+  src/fileanalyzerabstract.cpp src/general.cpp src/poorlogger.cpp
 HEADERS += src/fileanalyzercompoundbinary.h src/fileanalyzerabstract.h \
-  src/general.h
+  src/general.h src/poorlogger.h
 
 # wv2
 HEADERS += src/wv2/word95_helper.h src/wv2/global.h src/wv2/word_helper.h src/wv2/styles.h \
@@ -25,7 +25,7 @@ HEADERS += src/wv2/word95_helper.h src/wv2/global.h src/wv2/word_helper.h src/wv
   src/wv2/crc32.h src/wv2/paragraphproperties.h src/wv2/fields.h src/wv2/functor.h \
   src/wv2/footnotes97.h src/wv2/word95_generated.h src/wv2/ustring.h src/wv2/olestorage.h \
   src/wv2/word97_generated.h src/wv2/wvlog.h src/wv2/functordata.h src/wv2/sharedptr.h \
-  src/wv2/headers95.h
+  src/wv2/headers95.h src/wv2/pole.h
 
 SOURCES += src/wv2/crc32.c src/wv2/handlers.cpp src/wv2/word_helper.cpp \
   src/wv2/parserfactory.cpp src/wv2/parser95.cpp src/wv2/word95_generated.cpp \
@@ -37,7 +37,7 @@ SOURCES += src/wv2/crc32.c src/wv2/handlers.cpp src/wv2/word_helper.cpp \
   src/wv2/fields.cpp src/wv2/associatedstrings.cpp src/wv2/word95_helper.cpp \
   src/wv2/word97_helper.cpp src/wv2/parser97.cpp src/wv2/styles.cpp src/wv2/bookmark.cpp \
   src/wv2/global.cpp src/wv2/ustring.cpp src/wv2/fonts.cpp src/wv2/footnotes97.cpp \
-  src/wv2/properties97.cpp src/wv2/headers.cpp src/wv2/lists.cpp
+  src/wv2/properties97.cpp src/wv2/headers.cpp src/wv2/lists.cpp src/wv2/pole.cpp
 
 INCLUDEPATH += src/wv2/generator src/wv2/
 
