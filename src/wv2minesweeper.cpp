@@ -20,11 +20,14 @@
  */
 
 #include <QCoreApplication>
+#include <QObject>
 #include <QDebug>
 
 #include "fileanalyzercompoundbinary.h"
+#include "poorlogger.h"
 
 std::ofstream debugFile("/tmp/wvlog-minesweeper.txt");
+
 
 int main(int argc, char *argv[])
 {
@@ -32,10 +35,13 @@ int main(int argc, char *argv[])
 
     if (argc == 2) {
         const QString filename = QString::fromAscii(argv[argc - 1]);
-        FileAnalyzerCompoundBinary facb(&a);
+        FileAnalyzerCompoundBinary *facb = new FileAnalyzerCompoundBinary(&a);
+        PoorLogger *poorLogger = new PoorLogger();
+        // QObject::connect(facb, SIGNAL(analysisReport(QString)), poorLogger,SLOT(receiveLog(QString)));
+
         qDebug() << "Minesweeping file" << filename;
-        facb.analyzeFile(filename);
-        while (facb.isAlive()) {
+        facb->analyzeFile(filename);
+        while (facb->isAlive()) {
             qApp->processEvents();
         }
         return 0;
