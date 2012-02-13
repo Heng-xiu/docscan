@@ -83,7 +83,19 @@ void SearchEngineGoogle::finished()
         const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
         int p = -1;
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
-            QUrl url(searchHitRegExp.cap(1));
+            QString urlText = searchHitRegExp.cap(1);
+
+            /// Clean up Google's tracking URLs
+            if (urlText.startsWith(QLatin1String("/url?"))) {
+                int p1 = urlText.indexOf(QLatin1String("q="));
+                int p2 = urlText.indexOf(QLatin1String("&"), p1 + 1);
+                if (p1 > 1) {
+                    if (p2 < 0) p2 = urlText.length();
+                    urlText = urlText.mid(p1 + 2, p2 - p1 - 2);
+                }
+            }
+
+            QUrl url(urlText);
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
