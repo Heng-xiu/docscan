@@ -102,7 +102,7 @@ void UrlDownloader::download(const QUrl &url)
         m_knownUrls.insert(urlString);
         m_urlQueue.enqueue(url);
         m_internalMutex->unlock();
-        m_geoip->lookupHost(url.host());
+        // m_geoip->lookupHost(url.host());
     } else
         m_internalMutex->unlock();
 
@@ -130,7 +130,7 @@ void UrlDownloader::startNextDownload()
         connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
         m_signalMapperTimeout->setMapping(timer, reply);
         timer->start(15000 + m_runningDownloads * 1000);
-        qDebug() << " Downloading " << url.toString() << " (running:" << m_runningDownloads << ", in queue:" << inQueue << ")";
+        qDebug() << "Downloading " << url.toString() << " (running:" << m_runningDownloads << ", in queue:" << inQueue << ")";
     } else
         m_internalMutex->unlock();
 }
@@ -212,9 +212,9 @@ void UrlDownloader::finished()
                 }
 
                 QString geoLocation = QLatin1String(" /");
-                GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
-                if (!geoInformation.countryCode.isEmpty())
-                    geoLocation = QString(QLatin1String("><geoinformation countrycode=\"%1\" countryname=\"%2\" city=\"%3\" latitude=\"%4\" longitude=\"%5\" /></download")).arg(geoInformation.countryCode).arg(geoInformation.countryName).arg(geoInformation.city).arg(geoInformation.latitude).arg(geoInformation.longitude);
+                // GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
+                // if (!geoInformation.countryCode.isEmpty())
+                //    geoLocation = QString(QLatin1String("><geoinformation countrycode=\"%1\" countryname=\"%2\" city=\"%3\" latitude=\"%4\" longitude=\"%5\" /></download")).arg(geoInformation.countryCode).arg(geoInformation.countryName).arg(geoInformation.city).arg(geoInformation.latitude).arg(geoInformation.longitude);
 
                 QString logText = QString("<download url=\"%3\" filename=\"%2\" status=\"success\"%1>\n").arg(geoLocation).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(reply->url().toString()));
 
@@ -224,7 +224,7 @@ void UrlDownloader::finished()
                 emit downloaded(reply->url(), filename);
                 emit downloaded(filename);
 
-                qDebug() << "Downloaded URL " << reply->url().toString() << " to " << filename;
+                qDebug() << "Downloaded URL " << reply->url().toString() << " to " << filename << " (running:" << m_runningDownloads << ")";
             }
         }
     }
@@ -258,5 +258,5 @@ void UrlDownloader::timeout(QObject *object)
 
 
 const int UrlDownloader::maxParallelDownloads = 8;
-const QRegExp UrlDownloader::domainRegExp = QRegExp("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqrstuwxz]|aero|arpa)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emop]|jobs)|k[eghimnprwyz]|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghklmnrstwy]|pro)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])$");
+const QRegExp UrlDownloader::domainRegExp = QRegExp("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqstwxz]|aero|arpa|((com|edu|gob|gov|int|mil|net|org|tur)\\.)?ar|((com|net|org|edu|gov|csiro|asn|id)\\.)?au)|(b[abdefghijmnorstvwyz]|biz)|(c[acdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emo]|jobs|((ac|ad|co|ed|go|gr|lg|ne|or)\\.)?jp)|(k[eghimnpwyz]|((co|ne|or|re|pe|go|mil|ac|hs|ms|es|sc|kg)\\.)?kr)|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghkmnrstwy]|pro|((com|biz|net|art|edu|org|ngo|gov|info|mil)\\.)?pl)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])$");
 
