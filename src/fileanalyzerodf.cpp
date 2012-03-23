@@ -276,7 +276,10 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         /// file format including mime type and file format version
         const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QLatin1String("0");
         const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QLatin1String("0");
-        metaText.append(QString("<fileformat>\n<mimetype>%3</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n</fileformat>").arg(majorVersion).arg(minorVersion).arg(mimetype));
+        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
+        if (result.documentVersionNumbers.count() > 0)
+            metaText.append(QString("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n").arg(majorVersion).arg(minorVersion));
+        metaText.append(QLatin1String("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
@@ -303,8 +306,10 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         /// evaluate language
         if (!result.language.isEmpty())
             headerText.append(result.language);
+        /* Disabling aspell, computationally expensive
         if (result.plainText.length() > 1024)
             headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+         */
 
         /// evaluate paper size
         if (result.paperSizeHeight > 0 && result.paperSizeWidth > 0)

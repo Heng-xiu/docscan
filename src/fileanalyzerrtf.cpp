@@ -132,8 +132,10 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     /// evaluate language
     headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(FileAnalyzerCompoundBinary::langCodeToISOCode(probeLanguage(filename))));
     const QString plainText = doc.toPlainText();
+    /* Disabling aspell, computationally expensive
     if (plainText.length() > 1024)
         headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(plainText)));
+     */
 
     /// evaluate paper size
     if (output.pageHeight() > 0 && output.pageWidth() > 0)

@@ -122,9 +122,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         /// guess language using aspell
         const QString text = plainText(doc);
+        /* Disabling aspell, computationally expensive
         QString language = guessLanguage(text);
         if (!language.isEmpty())
             headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
+         */
 
         /// look into first page for info
         int numPages = doc->numPages();

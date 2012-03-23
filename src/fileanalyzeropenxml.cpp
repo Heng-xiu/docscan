@@ -374,8 +374,10 @@ bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, ResultContainer &resu
         QuaZipFile documentFile(&zipFile, parent());
         if (documentFile.open(QIODevice::ReadOnly)) {
             text(documentFile, result);
+            /* Disabling aspell, computationally expensive
             if (result.plainText.length() > 1024)
                 result.languageAspell = guessLanguage(result.plainText);
+             */
             documentFile.close();
             return true;
         }
