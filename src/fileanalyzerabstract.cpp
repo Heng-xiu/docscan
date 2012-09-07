@@ -385,11 +385,20 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
         license["type"] = "open";
     } else if (fontName.contains("Vera") || fontName.contains("Bera")) {
         license["type"] = "open";
-    } else if (fontName.contains("Computer Modern")) {
+    } else if (fontName.contains("Computer Modern") || fontName.startsWith("CM")) {
         license["type"] = "open";
-    } else {
+        license["name"] = "Open Font License";
+    } else if (fontName.contains("Marvosym")) {
+        license["type"] = "open";
+        license["name"] = "SIL Open Font License";
+    } else if (fontName.startsWith("Times") || fontName.startsWith("Courier")) {
         license["type"] = "proprietary";
-    }
+    } else if (fontName.startsWith("Arial") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
+        license["type"] = "proprietary"; // Microsoft
+    } else if (fontName.contains("Helvetica")) {
+        license["type"] = "proprietary";
+    } else
+        license["type"] = "unknown";
 
     QString text = typeName.toLower();
     if (text.indexOf("truetype") >= 0)
