@@ -26,7 +26,7 @@
 
 #include "searchengineabstract.h"
 
-class QNetworkAccessManager;
+class NetworkAccessManager;
 
 /**
  * Search engine to query SpringerLink for files.
@@ -37,13 +37,27 @@ class SearchEngineSpringerLink : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit SearchEngineSpringerLink(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
+    static const QString NoCategory;
+    static const int NoYear;
+
+    explicit SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category = NoCategory, int year = NoYear, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
 
 private:
-    QNetworkAccessManager *m_networkAccessManager;
+    NetworkAccessManager *m_networkAccessManager;
+    const QString m_searchTerm;
+    const QString m_category;
+    const int m_year;
+    int m_numExpectedHits, m_numFoundHits;
+    int m_searchOffset;
+    bool m_isRunning;
+
+    void nextSearchStep();
+
+private slots:
+    void finished();
 };
 
 #endif // SEARCHENGINESPRINGERLINK_H

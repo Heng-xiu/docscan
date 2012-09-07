@@ -22,12 +22,13 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QTextStream>
-#include <QNetworkAccessManager>
 #include <QDebug>
 #include <QThreadPool>
 
+#include "networkaccessmanager.h"
 #include "searchenginegoogle.h"
 #include "searchenginebing.h"
+#include "searchenginespringerlink.h"
 #include "urldownloader.h"
 // #include "cachedfilefinder.h"
 #include "filesystemscan.h"
@@ -37,7 +38,7 @@
 #include "logcollector.h"
 #include "fromlogfile.h"
 
-QNetworkAccessManager netAccMan;
+NetworkAccessManager netAccMan;
 QStringList filter;
 FileFinder *finder;
 Downloader *downloader;
@@ -47,6 +48,9 @@ int numHits;
 
 bool evaluateConfigfile(const QString &filename)
 {
+    QString springerLinkCategory = SearchEngineSpringerLink::NoCategory;
+    int springerLinkYear = SearchEngineSpringerLink::NoYear;
+
     QFile configFile(filename);
     if (configFile.open(QFile::ReadOnly)) {
         QTextStream ts(&configFile);
@@ -70,6 +74,14 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == "filter") {
                     qDebug() << "filter =" << value;
                     filter = value.split(QChar('|'), QString::SkipEmptyParts);
+                } else if (key == "springerlinkcategory") {
+                    springerLinkCategory = value;
+                    qDebug() << "springerlinkcategory =" << springerLinkCategory;
+                } else if (key == "springerlinkyear") {
+                    bool ok = false;
+                    springerLinkYear = value.toInt(&ok);
+                    if (!ok) springerLinkYear = SearchEngineSpringerLink::NoYear;
+                    qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::NoYear ? QLatin1String("No Year") : QString::number(springerLinkYear));
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
                     finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
@@ -79,6 +91,9 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == "searchenginebing" && finder == NULL) {
                     qDebug() << "searchenginebing =" << value;
                     finder = new SearchEngineBing(&netAccMan, value);
+                } else if (key == "searchenginespringerlink" && finder == NULL) {
+                    qDebug() << "searchenginespringerlink =" << value;
+                    finder = new SearchEngineSpringerLink(&netAccMan, value, springerLinkCategory, springerLinkYear);
                 } else if (key == "filesystemscan" && finder == NULL) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
@@ -122,6 +137,8 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
                     } else
                         fileAnalyzer = NULL;
+                } else {
+                    qDebug() << "UNKNOWN config" << key << "=" << value;
                 }
             } else {
                 configFile.close();
