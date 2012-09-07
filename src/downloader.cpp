@@ -19,16 +19,6 @@
 
  */
 
-
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QRegExp>
-#include <QCryptographicHash>
-#include <QFile>
-#include <QDebug>
-#include <QFileInfo>
-#include <QDir>
-
 #include "downloader.h"
 
 Downloader::Downloader(QObject *parent)
