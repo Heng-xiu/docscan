@@ -48,15 +48,16 @@ int numHits;
 
 bool evaluateConfigfile(const QString &filename)
 {
-    QString springerLinkCategory = SearchEngineSpringerLink::NoCategory;
-    int springerLinkYear = SearchEngineSpringerLink::NoYear;
-
     QFile configFile(filename);
     if (configFile.open(QFile::ReadOnly)) {
         QTextStream ts(&configFile);
         QString line(QString::null);
         QUrl startUrl;
         QRegExp requiredContent;
+        QString springerLinkCategory = SearchEngineSpringerLink::AllCategories;
+        QString springerLinkContentType = SearchEngineSpringerLink::AllContentTypes;
+        QString springerLinkSubject = SearchEngineSpringerLink::AllSubjects;
+        int springerLinkYear = SearchEngineSpringerLink::AllYears;
 
         while (!(line = ts.readLine()).isNull()) {
             if (line.length() == 0 || line[0] == '#') continue;
@@ -77,11 +78,17 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == "springerlinkcategory") {
                     springerLinkCategory = value;
                     qDebug() << "springerlinkcategory =" << springerLinkCategory;
+                } else if (key == "springerlinkcontenttype") {
+                    springerLinkContentType = value;
+                    qDebug() << "springerlinkcontenttype =" << springerLinkContentType;
+                } else if (key == "springerlinksubject") {
+                    springerLinkSubject = value;
+                    qDebug() << "springerlinksubject =" << springerLinkSubject;
                 } else if (key == "springerlinkyear") {
                     bool ok = false;
                     springerLinkYear = value.toInt(&ok);
-                    if (!ok) springerLinkYear = SearchEngineSpringerLink::NoYear;
-                    qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::NoYear ? QLatin1String("No Year") : QString::number(springerLinkYear));
+                    if (!ok) springerLinkYear = SearchEngineSpringerLink::AllYears;
+                    qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::AllYears ? QLatin1String("No Year") : QString::number(springerLinkYear));
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
                     finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
@@ -93,7 +100,7 @@ bool evaluateConfigfile(const QString &filename)
                     finder = new SearchEngineBing(&netAccMan, value);
                 } else if (key == "searchenginespringerlink" && finder == NULL) {
                     qDebug() << "searchenginespringerlink =" << value;
-                    finder = new SearchEngineSpringerLink(&netAccMan, value, springerLinkCategory, springerLinkYear);
+                    finder = new SearchEngineSpringerLink(&netAccMan, value, springerLinkCategory, springerLinkContentType, springerLinkSubject, springerLinkYear);
                 } else if (key == "filesystemscan" && finder == NULL) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
@@ -138,7 +145,7 @@ bool evaluateConfigfile(const QString &filename)
                     } else
                         fileAnalyzer = NULL;
                 } else {
-                    qDebug() << "UNKNOWN config" << key << "=" << value;
+                    qDebug() << "UNKNOWN CONFIG:" << key << "=" << value;
                 }
             } else {
                 configFile.close();
