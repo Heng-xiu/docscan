@@ -24,9 +24,13 @@
 #include "poorlogger.h"
 
 PoorLogger::PoorLogger(QObject *parent): QObject(parent)
-{ /* nothing */ }
+{
+    /* nothing */
+}
 PoorLogger::~PoorLogger()
-{ /* nothing */ }
+{
+    /* nothing */
+}
 
 void PoorLogger::receiveLog(const QString &message)
 {
