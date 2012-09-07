@@ -28,11 +28,12 @@
 
 #include "filefinder.h"
 
-class QNetworkAccessManager;
 class QTimer;
 class QNetworkReply;
 class QSignalMapper;
 class QMutex;
+
+class NetworkAccessManager;
 
 /**
  * @author Thomas Fischer <thomas.fischer@his.se>
@@ -43,7 +44,7 @@ class WebCrawler : public FileFinder
 public:
     static const int maxVisitedPages;
 
-    explicit WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages = WebCrawler::maxVisitedPages, QObject *parent = 0);
+    explicit WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages = WebCrawler::maxVisitedPages, QObject *parent = 0);
     ~WebCrawler();
 
     virtual void startSearch(int numExpectedHits);
@@ -56,7 +57,7 @@ private:
         int foundHits;
     } Filter;
 
-    QNetworkAccessManager *m_networkAccessManager;
+    NetworkAccessManager *m_networkAccessManager;
     QString m_baseUrl, m_startUrl;
     QRegExp m_requiredContent;
     QList<Filter> m_filterSet;

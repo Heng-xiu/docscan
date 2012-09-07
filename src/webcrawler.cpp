@@ -20,7 +20,6 @@
  */
 
 #include <QCoreApplication>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
 #include <QRegExp>
@@ -28,10 +27,11 @@
 #include <QMutex>
 #include <QDebug>
 
+#include "networkaccessmanager.h"
 #include "webcrawler.h"
 #include "general.h"
 
-WebCrawler::WebCrawler(QNetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
+WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
     : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_runningDownloads(0)
 {
     m_signalMapperTimeout = new QSignalMapper(this);

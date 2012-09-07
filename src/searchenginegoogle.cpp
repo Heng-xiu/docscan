@@ -19,7 +19,6 @@
 
  */
 
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QRegExp>
@@ -27,10 +26,11 @@
 #include <QDebug>
 #include <QCoreApplication>
 
+#include "networkaccessmanager.h"
 #include "searchenginegoogle.h"
 #include "general.h"
 
-SearchEngineGoogle::SearchEngineGoogle(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
+SearchEngineGoogle::SearchEngineGoogle(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0), m_runningSearches(0)
 {
     // nothing
@@ -49,7 +49,9 @@ void SearchEngineGoogle::startSearch(int num)
 
     emit report(QString("<searchengine type=\"google\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
 
-    QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
+    QNetworkRequest request(url);
+    m_networkAccessManager->setRequestHeaders(request);
+    QNetworkReply *reply = m_networkAccessManager->get(request);
     connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 }
 
@@ -60,7 +62,7 @@ bool SearchEngineGoogle::isAlive()
 
 void SearchEngineGoogle::finished()
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
         QTextStream tsAll(reply);
@@ -112,7 +114,9 @@ void SearchEngineGoogle::finished()
             url.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
             emit report(QString("<searchengine type=\"google\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
-            reply = m_networkAccessManager->get(QNetworkRequest(url));
+            QNetworkRequest request(url);
+            m_networkAccessManager->setRequestHeaders(request);
+            reply = m_networkAccessManager->get(request);
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         }
     } else {

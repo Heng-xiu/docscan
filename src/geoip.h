@@ -30,7 +30,8 @@
 #include "watchable.h"
 
 class QMutex;
-class QNetworkAccessManager;
+
+class NetworkAccessManager;
 
 /**
  * Retrieve geographical information of hosts by using geolocation services.
@@ -51,7 +52,7 @@ public:
     /**
      * Create instance and use the supplied network access manager for network connections.
      */
-    explicit GeoIP(QNetworkAccessManager *networkAccessManager, QObject *parent = 0);
+    explicit GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent = 0);
     ~GeoIP();
 
     /**
@@ -76,7 +77,7 @@ public:
     bool isAlive();
 
 private:
-    QNetworkAccessManager *m_networkAccessManager;
+    NetworkAccessManager *m_networkAccessManager;
 
     QMutex *m_mutexConcurrentAccess;
     int m_numRunningTasks;

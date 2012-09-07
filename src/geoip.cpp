@@ -24,10 +24,10 @@
 #include <QNetworkReply>
 #include <QRegExp>
 
+#include "networkaccessmanager.h"
 #include "geoip.h"
 
-
-GeoIP::GeoIP(QNetworkAccessManager *networkAccessManager, QObject *parent)
+GeoIP::GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager)
 {
     m_mutexConcurrentAccess = new QMutex();
@@ -112,7 +112,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
 
 void GeoIP::finishedGeoInfo()
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
         const QString ipAddress = reply->property("ip").toString();

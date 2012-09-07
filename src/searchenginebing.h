@@ -26,8 +26,9 @@
 
 #include "searchengineabstract.h"
 
-class QNetworkAccessManager;
 class QNetworkReply;
+
+class NetworkAccessManager;
 
 /**
  * Search engine using Microsoft's Bing to search for files.
@@ -38,13 +39,13 @@ class SearchEngineBing : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit SearchEngineBing(QNetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
+    explicit SearchEngineBing(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
 
 private:
-    QNetworkAccessManager *m_networkAccessManager;
+    NetworkAccessManager *m_networkAccessManager;
     const QString m_searchTerm;
     int m_numExpectedHits, m_currentPage, m_numFoundHits;
     int m_runningSearches;
