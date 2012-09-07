@@ -126,6 +126,9 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "pdftex";
         if (pdftexVersion.indexIn(text) >= 0)
             result["version"] = pdftexVersion.cap(0);
+    } else if (text.indexOf("latex") >= 0) {
+        result["manufacturer"] = "latex ";
+        result["product"] = "latex";
     } else if (text.indexOf("dvipdfm") >= 0) {
         static const QRegExp dvipdfmVersion("\\b\\d+(\\.\\d+)+[a-z]*\\b");
         result["manufacturer"] = "dvipdfm ";
@@ -391,9 +394,11 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     } else if (fontName.contains("Marvosym")) {
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
+    } else if (fontName.startsWith("Zapf")) {
+        license["type"] = "proprietary";
     } else if (fontName.startsWith("Times") || fontName.startsWith("Courier")) {
         license["type"] = "proprietary";
-    } else if (fontName.startsWith("Arial") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
+    } else if (fontName.startsWith("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
         license["type"] = "proprietary"; // Microsoft
     } else if (fontName.contains("Helvetica")) {
         license["type"] = "proprietary";
