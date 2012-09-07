@@ -25,6 +25,24 @@
 
 namespace DocScan
 {
+
+QString xmlNodeToText(const XMLNode &node)
+{
+    QString result = QString(QChar('<')).append(node.name);
+    for (QHash<QString, QString>::ConstIterator it = node.attributes.constBegin(); it != node.attributes.constEnd(); ++it)
+        result.append(QString(QLatin1String(" %1=\"%2\"")).arg(it.key()).arg(xmlify(it.value())));
+
+    if (node.text.isEmpty())
+        result.append(QLatin1String(" />\n"));
+    else {
+        result.append(QLatin1String(">\n"));
+        result.append(node.text);
+        result.append(QString(QLatin1String("</%1>\n")).arg(node.name));
+    }
+
+    return result;
+}
+
 QString xmlify(QString text)
 {
     return text.replace(QRegExp(QLatin1String("[^'a-z0-9,;.:-_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), "").replace(QChar('&'), QLatin1String("&amp;")).replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;")).replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;")).simplified();

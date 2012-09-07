@@ -24,9 +24,23 @@
 
 #include <QString>
 #include <QDate>
+#include <QHash>
 
 namespace DocScan
 {
+typedef struct {
+    QString name;
+    QHash<QString, QString> attributes;
+    QString text;
+} XMLNode;
+
+/**
+ * Serialize a XMLNode struct into plain XML text.
+ * @param node XMLNode struct to serialize
+ * @return serialized text
+ */
+QString xmlNodeToText(const XMLNode &node);
+
 /**
  * Make a text XML-safe by rewriting critical symbols such as <, & or, >.
  *
