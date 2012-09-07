@@ -274,10 +274,10 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         QString headerText = QLatin1String("<header>\n");
 
         /// file format including mime type and file format version
-        const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QLatin1String("0");
+        const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QString::null;
         const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QLatin1String("0");
         metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
-        if (result.documentVersionNumbers.count() > 0)
+        if (result.documentVersionNumbers.count() > 0 && !majorVersion.isNull())
             metaText.append(QString("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n").arg(majorVersion).arg(minorVersion));
         metaText.append(QLatin1String("</fileformat>"));
 
