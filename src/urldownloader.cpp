@@ -40,6 +40,7 @@ UrlDownloader::UrlDownloader(NetworkAccessManager *networkAccessManager, const Q
     : Downloader(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern)
 {
     m_runningDownloads = m_countSuccessfulDownloads = m_countFaileDownloads = 0;
+    m_runningdownloadsPerHostname.clear();
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
     m_setRunningJobs = new QSet<QNetworkReply *>();
@@ -85,7 +86,7 @@ void UrlDownloader::download(const QUrl &url)
 void UrlDownloader::startNextDownload()
 {
     m_internalMutex->lock();
-    if (m_runningDownloads < maxParallelDownloads && !m_urlQueue.isEmpty()) {
+    if (m_runningDownloads < maxParallelDownloads && !m_urlQueue.isEmpty() && m_runningdownloadsPerHostname.value(m_urlQueue.first().host(), 0) < maxParallelDownloadsPerHost) {
         QUrl url = m_urlQueue.dequeue();
         int inQueue = m_urlQueue.count();
 
@@ -95,6 +96,8 @@ void UrlDownloader::startNextDownload()
         connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 
         ++m_runningDownloads;
+        const QString hostname = url.host();
+        m_runningdownloadsPerHostname[hostname] = m_runningdownloadsPerHostname.value(hostname, 0) + 1;
         m_setRunningJobs->insert(reply);
 
         m_internalMutex->unlock();
@@ -103,7 +106,7 @@ void UrlDownloader::startNextDownload()
         connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
         m_signalMapperTimeout->setMapping(timer, reply);
         timer->start(15000 + m_runningDownloads * 1000);
-        qDebug() << "Downloading " << url.toString() << " (running:" << m_runningDownloads << ", in queue:" << inQueue << ")";
+        qDebug() << "Downloading " << url.toString() << " (running:" << m_runningDownloads << ", per host running:" << m_runningdownloadsPerHostname[hostname] << ", in queue:" << inQueue << ")";
     } else
         m_internalMutex->unlock();
 }
@@ -124,6 +127,8 @@ void UrlDownloader::finished()
     m_internalMutex->lock();
     m_setRunningJobs->remove(reply);
     --m_runningDownloads;
+    const QString hostname = reply->url().host();
+    m_runningdownloadsPerHostname[hostname] = m_runningdownloadsPerHostname.value(hostname, 1) - 1;
     m_internalMutex->unlock();
 
     bool succeeded = false;
@@ -245,5 +250,6 @@ void UrlDownloader::timeout(QObject *object)
 
 
 const int UrlDownloader::maxParallelDownloads = 8;
+const int UrlDownloader::maxParallelDownloadsPerHost = 1;
 const QRegExp UrlDownloader::domainRegExp = QRegExp("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqstwxz]|aero|arpa|((com|edu|gob|gov|int|mil|net|org|tur)\\.)?ar|((com|net|org|edu|gov|csiro|asn|id)\\.)?au)|(((adm|adv|agr|am|arq|art|ato|b|bio|blog|bmd|cim|cng|cnt|com|coop|ecn|edu|eng|esp|etc|eti|far|flog|fm|fnd|fot|fst||ggf|gov|imb|ind|inf|jor|jus|lel|mat|med|mil|mus|net|nom|not|ntr|odo|org|ppg|pro|psc|psi|qsl|radio|rec|slg|srv|taxi|teo|tmp|trd|tur|tv|vet|vlog|wiki|zlg)\\.)?br|b[abdefghijmnorstvwyz]|biz)|(((ab|bc|mb|nb|nf|nl|ns|nt|nu|on|pe|qc|sk|yk)\\.)?ca|c[cdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emo]|jobs|((ac|ad|co|ed|go|gr|lg|ne|or)\\.)?jp)|(k[eghimnpwyz]|((co|ne|or|re|pe|go|mil|ac|hs|ms|es|sc|kg)\\.)?kr)|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghkmnrstwy]|pro|((com|biz|net|art|edu|org|ngo|gov|info|mil)\\.)?pl)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|((ac|co|gov|ltd|me|mod|org|sch)\\.uk)|(((dni|fed|isa|kids|nsn|ak|al|ar|as|az|ca|co|ct|dc|de|fl|ga|gu|hi|ia|id|il|in|ks|ky|la|ma|md|me|mi|mn|mo|mp|ms|mt|nc|nd|ne|nh|nj|nm|nv|ny|oh|ok|or|pa|pr|ri|sc|sd|tn|tx|um|ut|va|vi|vt|wa|wi|wv|wy)\\.)?us|u[agmyz])|v[aceginu]|w[fs]|y[etu]|z[amw])$");
 

@@ -77,7 +77,8 @@ private:
     NetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
     int m_runningDownloads;
-    static const int maxParallelDownloads;
+    QHash<QString, int> m_runningdownloadsPerHostname;
+    static const int maxParallelDownloads, maxParallelDownloadsPerHost;
     QSet<QString> m_knownUrls;
     static const QRegExp domainRegExp;
     int m_countSuccessfulDownloads, m_countFaileDownloads;
