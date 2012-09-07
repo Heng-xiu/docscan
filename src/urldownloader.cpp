@@ -19,7 +19,6 @@
 
  */
 
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QRegExp>
 #include <QCryptographicHash>
@@ -35,33 +34,9 @@
 #include "urldownloader.h"
 #include "watchdog.h"
 #include "general.h"
+#include "networkaccessmanager.h"
 
-
-/// various browser strings to "disguise" origin
-const QStringList userAgentList = QStringList()
-                                  << QLatin1String("Mozilla/5.0 (Linux; U; Android 2.3.3; en-us; HTC_DesireS_S510e Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1")
-                                  << QLatin1String("Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.3) Gecko/20100402 Prism/1.0b4")
-                                  << QLatin1String("Mozilla/5.0 (Windows; U; Win 9x 4.90; SG; rv:1.9.2.4) Gecko/20101104 Netscape/9.1.0285")
-                                  << QLatin1String("Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)")
-                                  << QLatin1String("Mozilla/5.0 (compatible; Yahoo! Slurp China; http://misc.yahoo.com.cn/help.html)")
-                                  << QLatin1String("yacybot (x86 Windows XP 5.1; java 1.6.0_12; Europe/de) http://yacy.net/bot.html")
-                                  << QLatin1String("Nokia6230i/2.0 (03.25) Profile/MIDP-2.0 Configuration/CLDC-1.1")
-                                  << QLatin1String("Links (2.3-pre1; NetBSD 5.0 i386; 96x36)")
-                                  << QLatin1String("Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/523.15 (KHTML, like Gecko, Safari/419.3) Arora/0.3 (Change: 287 c9dfb30)")
-                                  << QLatin1String("Mozilla/4.0 (compatible; Dillo 2.2)")
-                                  << QLatin1String("Emacs-W3/4.0pre.46 URL/p4.0pre.46 (i686-pc-linux; X11)")
-                                  << QLatin1String("Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080208 Galeon/2.0.4 (2008.1) Firefox/2.0.0.13")
-                                  << QLatin1String("Lynx/2.8 (compatible; iCab 2.9.8; Macintosh; U; 68K)")
-                                  << QLatin1String("Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en; rv:1.8.1.14) Gecko/20080409 Camino/1.6 (like Firefox/2.0.0.14)")
-                                  << QLatin1String("msnbot/2.1")
-                                  << QLatin1String("Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.10")
-                                  << QLatin1String("Mozilla/5.0 (Windows; U; ; en-NZ) AppleWebKit/527+ (KHTML, like Gecko, Safari/419.3) Arora/0.8.0")
-                                  << QLatin1String("NCSA Mosaic/3.0 (Windows 95)")
-                                  << QLatin1String("Mozilla/5.0 (SymbianOS/9.1; U; [en]; Series60/3.0 NokiaE60/4.06.0) AppleWebKit/413 (KHTML, like Gecko) Safari/413")
-                                  << QLatin1String("Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.133 Safari/534.16");
-
-
-UrlDownloader::UrlDownloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
+UrlDownloader::UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
     : Downloader(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern)
 {
     m_runningDownloads = m_countSuccessfulDownloads = m_countFaileDownloads = 0;
@@ -70,8 +45,6 @@ UrlDownloader::UrlDownloader(QNetworkAccessManager *networkAccessManager, const 
     m_setRunningJobs = new QSet<QNetworkReply *>();
     m_internalMutex = new QMutex();
     m_geoip = new GeoIP(m_networkAccessManager);
-    qsrand(time(NULL));
-    m_userAgent = userAgentList[qrand() % userAgentList.length()];
 }
 
 UrlDownloader::~UrlDownloader()
@@ -117,7 +90,7 @@ void UrlDownloader::startNextDownload()
         int inQueue = m_urlQueue.count();
 
         QNetworkRequest request(url);
-        request.setRawHeader(QString("User-Agent").toAscii(), m_userAgent.toAscii());
+        m_networkAccessManager->setRequestHeaders(request);
         QNetworkReply *reply = m_networkAccessManager->get(request);
         connect(reply, SIGNAL(finished()), this, SLOT(finished()));
 
@@ -146,7 +119,7 @@ void UrlDownloader::finalReport()
 
 void UrlDownloader::finished()
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     m_internalMutex->lock();
     m_setRunningJobs->remove(reply);
@@ -211,14 +184,28 @@ void UrlDownloader::finished()
                         m_domainCount[domain] = 1;
                 }
 
-                QString geoLocation = QLatin1String(" /");
-                // GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
-                // if (!geoInformation.countryCode.isEmpty())
-                //    geoLocation = QString(QLatin1String("><geoinformation countrycode=\"%1\" countryname=\"%2\" city=\"%3\" latitude=\"%4\" longitude=\"%5\" /></download")).arg(geoInformation.countryCode).arg(geoInformation.countryName).arg(geoInformation.city).arg(geoInformation.latitude).arg(geoInformation.longitude);
+                DocScan::XMLNode geoLocationNode;
+                GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
+                if (!geoInformation.countryCode.isEmpty()) {
+                    geoLocationNode.name = QLatin1String("geoinformation");
+                    geoLocationNode.attributes.insert(QLatin1String("countrycode"), geoInformation.countryCode);
+                    geoLocationNode.attributes.insert(QLatin1String("countryname"), geoInformation.countryName);
+                    geoLocationNode.attributes.insert(QLatin1String("city"), geoInformation.city);
+                    geoLocationNode.attributes.insert(QLatin1String("latitude"), QString::number(geoInformation.latitude));
+                    geoLocationNode.attributes.insert(QLatin1String("longitude"), QString::number(geoInformation.longitude));
+                }
 
-                QString logText = QString("<download url=\"%3\" filename=\"%2\" status=\"success\"%1%4>\n").arg(geoLocation).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(reply->url().toString())).arg(domain.isEmpty() ? QLatin1String("") : QString(" domain=\"%1\"").arg(domain));
+                DocScan::XMLNode logNode;
+                logNode.name = QLatin1String("download");
+                logNode.attributes.insert(QLatin1String("url"), reply->url().toString());
+                logNode.attributes.insert(QLatin1String("filename"), filename);
+                logNode.attributes.insert(QLatin1String("status"), QLatin1String("success"));
+                if (!domain.isEmpty())
+                    logNode.attributes.insert(QLatin1String("domain"), domain);
+                if (!geoLocationNode.name.isEmpty())
+                    logNode.text += DocScan::xmlNodeToText(geoLocationNode);
+                emit report(DocScan::xmlNodeToText(logNode));
 
-                emit report(logText);
                 succeeded = true;
 
                 emit downloaded(reply->url(), filename);
@@ -243,7 +230,7 @@ void UrlDownloader::finished()
 
 void UrlDownloader::timeout(QObject *object)
 {
-    QNetworkReply *reply = static_cast<QNetworkReply *>(object);
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(object);
 
     m_internalMutex->lock();
     if (m_setRunningJobs->contains(reply)) {

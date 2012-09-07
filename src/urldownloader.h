@@ -32,9 +32,9 @@
 
 class QSignalMapper;
 class QMutex;
-class QNetworkAccessManager;
 class QNetworkReply;
 
+class NetworkAccessManager;
 class GeoIP;
 
 /**
@@ -52,12 +52,13 @@ public:
      * @param filePattern pattern used to rename downloaded files to make it easier to store and categorize them
      * @param parent parent object
      */
-    explicit UrlDownloader(QNetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+    explicit UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
     ~UrlDownloader();
 
     virtual bool isAlive();
 
     friend class DownloadJob;
+
 
 public slots:
     void download(const QUrl &url);
@@ -73,7 +74,7 @@ private:
     QSet<QNetworkReply *> *m_setRunningJobs;
     QMutex *m_internalMutex;
     QSignalMapper *m_signalMapperTimeout;
-    QNetworkAccessManager *m_networkAccessManager;
+    NetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
     int m_runningDownloads;
     static const int maxParallelDownloads;
@@ -81,7 +82,6 @@ private:
     static const QRegExp domainRegExp;
     int m_countSuccessfulDownloads, m_countFaileDownloads;
     GeoIP *m_geoip;
-    QString m_userAgent;
     QMap<QString, int> m_domainCount;
 
     void startNextDownload();
