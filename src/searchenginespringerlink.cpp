@@ -31,11 +31,13 @@
 #include "general.h"
 #include "searchenginespringerlink.h"
 
-const QString SearchEngineSpringerLink::NoCategory = QLatin1String("content");
-const int SearchEngineSpringerLink::NoYear = -1;
+const QString SearchEngineSpringerLink::AllCategories = QLatin1String("content");
+const int SearchEngineSpringerLink::AllYears = -1;
+const QString SearchEngineSpringerLink::AllSubjects = QString::null;
+const QString SearchEngineSpringerLink::AllContentTypes = QString::null;
 
-SearchEngineSpringerLink::SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category, int year, QObject *parent)
-    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_category(category), m_year(year), m_isRunning(false)
+SearchEngineSpringerLink::SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category, const QString &contentType, const QString &subject, int year, QObject *parent)
+    : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_category(category), m_contentType(contentType), m_subject(subject), m_year(year), m_isRunning(false)
 {
     // TODO
 }
@@ -57,13 +59,18 @@ void SearchEngineSpringerLink::nextSearchStep()
 {
     m_isRunning = true;
 
-    QUrl url(QString("http://www.springerlink.com/%1/").arg(m_category));
+    QUrl url(QString(QLatin1String("http://www.springerlink.com/%1/")).arg(m_category));
     if (!m_searchTerm.isEmpty())
-        url.addQueryItem("k", m_searchTerm);
+        url.addQueryItem(QLatin1String("k"), m_searchTerm);
+    if (!m_contentType.isEmpty())
+        url.addQueryItem(QLatin1String("Content+Type"), m_contentType);
+    if (!m_subject.isEmpty())
+        url.addQueryItem(QLatin1String("Subject"), m_subject);
     if (m_searchOffset > 0)
-        url.addQueryItem("o", QString::number(m_searchOffset));
+        url.addQueryItem(QLatin1String("o"), QString::number(m_searchOffset));
     if (m_year >= 1970)
-        url.addQueryItem("Copyright", QString::number(m_year));
+        url.addQueryItem(QLatin1String("Copyright"), QString::number(m_year));
+    url.addQueryItem(QLatin1String("Language"), QLatin1String("English"));
 
     DocScan::XMLNode reportNode;
     reportNode.name = QLatin1String("searchengine");
@@ -99,12 +106,13 @@ void SearchEngineSpringerLink::finished()
                 /// first page
 
                 static const QRegExp regExpNumHits(QLatin1String("Viewing items \\d+ - \\d+ of ([0-9,.]+)"));
-                int p1 = htmlText.indexOf(regExpNumHits);
+                int p1 = regExpNumHits.indexIn(htmlText);
                 if (p1 >= 0) {
+                    QString numHits = regExpNumHits.cap(1).replace(QLatin1String(","), QString::null);
                     DocScan::XMLNode numHitsNode;
                     numHitsNode.name = QLatin1String("searchengine");
                     numHitsNode.attributes.insert(QLatin1String("type"), QLatin1String("springerlink"));
-                    numHitsNode.attributes.insert(QLatin1String("numresults"), regExpNumHits.cap(0));
+                    numHitsNode.attributes.insert(QLatin1String("numresults"), numHits);
                     emit report(DocScan::xmlNodeToText(numHitsNode));
                 }
             }

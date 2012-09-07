@@ -37,10 +37,12 @@ class SearchEngineSpringerLink : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    static const QString NoCategory;
-    static const int NoYear;
+    static const QString AllCategories;
+    static const int AllYears;
+    static const QString AllContentTypes;
+    static const QString AllSubjects;
 
-    explicit SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category = NoCategory, int year = NoYear, QObject *parent = 0);
+    explicit SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category = AllCategories, const QString &contentType = AllContentTypes, const QString &subject = AllSubjects, int year = AllYears, QObject *parent = 0);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
@@ -49,6 +51,8 @@ private:
     NetworkAccessManager *m_networkAccessManager;
     const QString m_searchTerm;
     const QString m_category;
+    const QString m_contentType;
+    const QString m_subject;
     const int m_year;
     int m_numExpectedHits, m_numFoundHits;
     int m_searchOffset;
