@@ -28,7 +28,8 @@ SOURCES += src/main.cpp \
     src/fileanalyzermultiplexer.cpp \
     src/fileanalyzercompoundbinary.cpp \
     src/geoip.cpp \
-    src/searchenginespringerlink.cpp
+    src/searchenginespringerlink.cpp \
+    src/networkaccessmanager.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
@@ -43,7 +44,8 @@ HEADERS += src/searchengineabstract.h \
     src/fileanalyzermultiplexer.h \
     src/fileanalyzercompoundbinary.h \
     src/geoip.h \
-    src/searchenginespringerlink.h
+    src/searchenginespringerlink.h \
+    src/networkaccessmanager.h
 
 # wv2
 HEADERS += src/wv2/word95_helper.h src/wv2/global.h src/wv2/word_helper.h src/wv2/styles.h \
