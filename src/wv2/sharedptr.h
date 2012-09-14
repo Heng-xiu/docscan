@@ -174,8 +174,8 @@ public:
     }
 
     int count() const {
-        return ptr->_Shared_count();
-    } // for debugging purposes
+        return ptr->_Shared_count();    // for debugging purposes
+    }
 private:
     T *ptr;
 };

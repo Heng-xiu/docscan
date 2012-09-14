@@ -31,7 +31,8 @@ namespace wvWare
 {
 namespace Word97
 {
-class PHE; class BTE;
+class PHE;
+class BTE;
 }
 namespace Word95
 {
@@ -94,7 +95,7 @@ private:
 // the header of generate.pl
 // Use the short count for "broken" plfs like the LSTF one (surprisingly
 // labeled plcflst(!) (see spec_defects for more information)
-template < class T, bool shortCount = false > class PLF
+template<class T, bool shortCount = false> class PLF
 {
 public:
     PLF(OLEStreamReader *reader, bool preservePos = false);
@@ -106,18 +107,25 @@ public:
     }
 
     const T *first() const {
-        it = m_items.begin(); if (it != m_items.end()) return *it;  return 0;
+        it = m_items.begin();
+        if (it != m_items.end()) return *it;
+        return 0;
     }
     const T *next() const;
     const T *prev() const;
     const T *last() const {
-        it = m_items.end(); if (it == m_items.begin()) return 0; --it; return *it;
+        it = m_items.end();
+        if (it == m_items.begin()) return 0;
+        --it;
+        return *it;
     }
     const T *current() const {
-        if (it != m_items.end()) return *it;  return 0;
+        if (it != m_items.end()) return *it;
+        return 0;
     }
     const T *at(unsigned int index) const {
-        if (index < m_items.size()) return m_items[ index ]; return 0;
+        if (index < m_items.size()) return m_items[ index ];
+        return 0;
     }
 
 private:
@@ -357,11 +365,13 @@ public:
     T *toLast();
 
     U32 currentStart() const {
-        if (m_itemIt != m_plcf.m_items.end()) return *m_indexIt; return 0;
+        if (m_itemIt != m_plcf.m_items.end()) return *m_indexIt;
+        return 0;
     }
     U32 currentLim() const;
     T *current() const {
-        if (m_itemIt != m_plcf.m_items.end()) return *m_itemIt; return 0;
+        if (m_itemIt != m_plcf.m_items.end()) return *m_itemIt;
+        return 0;
     }
 
     U32 currentRun() const {
@@ -503,7 +513,9 @@ public:
     FKP(const U8 *ptr);
     FKP(const FKP<Offset> &rhs);
     ~FKP() {
-        delete [] m_rgfc; delete [] m_rgb; delete [] m_fkp;
+        delete [] m_rgfc;
+        delete [] m_rgb;
+        delete [] m_fkp;
     }
 
     unsigned int crun() const {
@@ -612,13 +624,16 @@ public:
     }
 
     U32 currentStart() const {
-        if (m_index < m_fkp.m_crun) return m_fkp.m_rgfc[ m_index ]; return 0;
+        if (m_index < m_fkp.m_crun) return m_fkp.m_rgfc[ m_index ];
+        return 0;
     }
     U32 currentLim() const {
-        if (m_index < m_fkp.m_crun) return m_fkp.m_rgfc[ m_index + 1 ]; return 0;
+        if (m_index < m_fkp.m_crun) return m_fkp.m_rgfc[ m_index + 1 ];
+        return 0;
     }
     Offset currentOffset() const {
-        if (m_index < m_fkp.m_crun) return m_fkp.m_rgb[ m_index ]; return Offset();
+        if (m_index < m_fkp.m_crun) return m_fkp.m_rgb[ m_index ];
+        return Offset();
     }
 
     // Pointer to the start of the current CHPX/PAPX/..., 0 if we are at the end of the array
@@ -627,10 +642,12 @@ public:
     const U8 *current() const;
 
     FKPIterator &operator++() {
-        if (m_index < m_fkp.m_crun) ++m_index; return *this;
+        if (m_index < m_fkp.m_crun) ++m_index;
+        return *this;
     }
     FKPIterator &operator--() {
-        if (m_index > 0) --m_index; return *this;
+        if (m_index > 0) --m_index;
+        return *this;
     }
 
     U8 index() const {
@@ -745,7 +762,7 @@ template<typename PHE> struct BX {
     }
 
     /**
-     * Set all the fields to the inital value (default is 0)
+     * Set all the fields to the initial value (default is 0)
      */
     void clear() {
         offset = 0;
@@ -818,7 +835,7 @@ struct CHPFKP_BX {
     bool write(OLEStreamWriter *stream, bool preservePos = false) const;
 
     /**
-     * Set all the fields to the inital value (default is 0)
+     * Set all the fields to the initial value (default is 0)
      */
     void clear();
 

@@ -201,6 +201,7 @@ typedef enum {
     sprmCRgLid1 = 0x486E,
     sprmCRgLidUndocumented1 = 0x4873, // According to OOo it's equal to sprmCRgLid0
     sprmCUndocumented2 = 0x4874,
+    sprmCPbiGrf = 0x4888,
     sprmCIstd = 0x4A30,
     sprmCFtcDefault = 0x4A3D,
     sprmCLid = 0x4A41,
@@ -249,6 +250,7 @@ typedef enum {
     sprmCBrc = 0x6865,
     sprmCCv = 0x6870,
     sprmCCvUl = 0x6877,
+    sprmCPbiIBullet = 0x6887,
     sprmCPicLocation = 0x6A03,
     sprmCSymbol = 0x6A09,
     sprmPicBrcTop = 0x6C02,
@@ -705,9 +707,10 @@ U8 addTabs(const U8 *ptr, TabDescVector &rgdxaTab)
         std::inplace_merge(rgdxaTab.begin(), middle, rgdxaTab.end());
     }
     TabDescVector::iterator uend = std::unique(rgdxaTab.begin(), rgdxaTab.end());
-    if (uend != rgdxaTab.end())
+    if (uend != rgdxaTab.end()) {
         rgdxaTab.erase(uend, rgdxaTab.end());
-    //wvlog << "After applying sprmPChgTabs(Papx) : " << (int)rgdxaTab.size() << std::endl;
+    }
+    //wvlog << "After applying sprmPChgTabs(Papx) : " << (int)rgdxaTab.size() << endl;
     return itbdAddMax;
 }
 
@@ -901,8 +904,10 @@ S16 PAP::applyPAPSPRM(const U8 *ptr, const Style *style, const StyleSheet *style
         const U8 itbdDelMax = *myPtr++;
         // Remove the tabs within the deletion zones
         std::vector<TabDescriptor>::iterator newEnd = rgdxaTab.end();
-        for (U8 i = 0; i < itbdDelMax; ++i)
-            newEnd = std::remove_if(rgdxaTab.begin(), newEnd, std::bind2nd(InZone(), Zone(myPtr, i, itbdDelMax)));
+        for (U8 i = 0; i < itbdDelMax; ++i) {
+            newEnd = std::remove_if(rgdxaTab.begin(), newEnd,
+                                    std::bind2nd(InZone(), Zone(myPtr, i, itbdDelMax)));
+        }
         rgdxaTab.erase(newEnd, rgdxaTab.end());   // really get rid of them
         myPtr += itbdDelMax * 4;
 
@@ -1709,6 +1714,15 @@ S16 CHP::applyCHPSPRM(const U8 *ptr, const Style *paragraphStyle, const StyleShe
         fTNYCompress = ufel;
         break;
     }
+    case SPRM::sprmCPbiIBullet:
+        picBulletCP = readU16(ptr);
+        wvlog << "=> picBulletCP:" << picBulletCP;
+        break;
+    case SPRM::sprmCPbiGrf:
+        fPicBullet = (*ptr & 0x01);
+        fNoAutoSize = (*ptr & 0x02) >> 1;
+        wvlog << "=> fPicBullet:" << fPicBullet << "| fNoAutoSize:" << fNoAutoSize << "| check:" << *ptr;
+        break;
     default:
         wvlog << "Huh? None of the defined sprms matches 0x" << std::hex << sprm << std::dec << "... trying to skip anyway" << std::endl;
         break;

@@ -79,8 +79,9 @@ typedef enum {
     msoblipUsageMax = 255 // Since this is stored in a byte
 } MSOBLIPUSAGE;
 
-typedef enum {                         // GEL provided types...
-    msoblipERROR = 0,          // An error occured during loading
+typedef enum {
+    // GEL provided types...
+    msoblipERROR = 0,          // An error occurred during loading
     msoblipUNKNOWN,            // An unknown blip type
     msoblipEMF,                // Windows Enhanced Metafile
     msoblipWMF,                // Windows Metafile

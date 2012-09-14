@@ -501,8 +501,9 @@ void ListData::applyGrpprlPapx(Word97::PAP *pap, const StyleSheet *styleSheet) c
 ListFormatOverrideLVL::ListFormatOverrideLVL(OLEStreamReader *tableStream) :
     m_lfolvl(tableStream, false), m_level(0)
 {
-    if (m_lfolvl.fFormatting)
+    if (m_lfolvl.fFormatting) {
         m_level = new ListLevel(tableStream);
+    }
 }
 
 ListFormatOverrideLVL::~ListFormatOverrideLVL()
@@ -603,14 +604,15 @@ ListText::~ListText()
 }
 
 
-ListInfo::ListInfo(Word97::PAP &pap, const Word97::CHP &chp, ListInfoProvider &listInfoProvider) :
+ListInfo::ListInfo(Word97::PAP &pap, Word97::CHP &chp, ListInfoProvider &listInfoProvider) :
     m_linkedIstd(istdNil), m_restartingCounter(false), m_numberFormat(0),
     m_alignment(0), m_isLegal(false), m_notRestarted(false), m_prev(false),
     m_prevSpace(false), m_isWord6(false), m_followingChar(0), m_lsid(0),
-    m_space(0), m_indent(0)
+    m_space(0), m_indent(0), m_picAutoSize(false), m_type(NumberType)
 {
-    if (!listInfoProvider.setPAP(&pap))
+    if (!listInfoProvider.setPAP(&pap)) {
         return;
+    }
     const ListLevel *const level = listInfoProvider.formattingListLevel();
     const ListData *const listData = listInfoProvider.m_currentLst;
 
@@ -618,12 +620,14 @@ ListInfo::ListInfo(Word97::PAP &pap, const Word97::CHP &chp, ListInfoProvider &l
         m_linkedIstd = listData->istdForLevel(pap.ilvl);
         m_restartingCounter = listData->restartingCounter();
         m_lsid = listData->lsid();
-    } else
+    } else {
         wvlog << "Bug: The ListData is 0!!" << std::endl;
+    }
 
     m_startAt = listInfoProvider.startAt();
 
     if (level) {
+
         m_numberFormat = level->numberFormat();
         m_alignment = level->alignment();
         m_isLegal = level->isLegal();
@@ -631,12 +635,32 @@ ListInfo::ListInfo(Word97::PAP &pap, const Word97::CHP &chp, ListInfoProvider &l
         m_prev = level->prev();
         m_prevSpace = level->prevSpace();
         m_isWord6 = level->isWord6();
-        m_text = listInfoProvider.text(chp);
         m_followingChar = level->followingChar();
         m_space = level->space();
         m_indent = level->indent();
-    } else
+
+        if (m_numberFormat == msonfcBullet) {
+            m_type = BulletType;
+        }
+
+        // A label does NOT inherit Underline from text-properties of
+        // the paragraph mark.  A bullet does not inherit {Italics,
+        // Bold}.
+        if (m_type != NumberType) {
+            chp.fItalic = 0;
+            chp.fBold = 0;
+        }
+        chp.kul = 0;
+
+        m_text = listInfoProvider.text(chp);
+
+        if (m_text.chp->fPicBullet) {
+            m_type = PictureType;
+            m_picAutoSize = !m_text.chp->fNoAutoSize;
+        }
+    } else {
         wvlog << "Bug: The ListLevel is 0!!" << std::endl;
+    }
 }
 
 void ListInfo::dump() const
@@ -770,8 +794,9 @@ void ListInfoProvider::readListData(OLEStreamReader *tableStream, const U32 endO
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "ListInfoProvider::readListData(): count=" << count << std::endl;
 #endif
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < count; ++i) {
         m_listData.push_back(new ListData(tableStream));
+    }
 
     // NOTE: this is a bug in the spec, but it at least seems to be a "stable" bug ;)
     if (static_cast<U32>(tableStream->tell()) != endOfLSTF) {
@@ -787,11 +812,13 @@ void ListInfoProvider::readListData(OLEStreamReader *tableStream, const U32 endO
     std::vector<ListData *>::const_iterator it = m_listData.begin();
     std::vector<ListData *>::const_iterator end = m_listData.end();
     for (; it != end; ++it) {
-        if ((*it)->isSimpleList())
+        if ((*it)->isSimpleList()) {
             (*it)->appendListLevel(new ListLevel(tableStream));
-        else
-            for (int i = 0; i < maxListLevels; ++i)
+        } else {
+            for (int i = 0; i < maxListLevels; ++i) {
                 (*it)->appendListLevel(new ListLevel(tableStream));
+            }
+        }
     }
 }
 
@@ -801,8 +828,9 @@ void ListInfoProvider::readListFormatOverride(OLEStreamReader *tableStream)
 #ifdef WV2_DEBUG_LIST_READING
     wvlog << "ListInfoProvider::readListFormatOverride(): count=" << count << std::endl;
 #endif
-    for (U32 i = 0; i < count; ++i)
+    for (U32 i = 0; i < count; ++i) {
         m_listFormatOverride.push_back(new ListFormatOverride(tableStream));
+    }
 
     std::vector<ListFormatOverride *>::const_iterator it = m_listFormatOverride.begin();
     std::vector<ListFormatOverride *>::const_iterator end = m_listFormatOverride.end();
@@ -947,13 +975,13 @@ ListText ListInfoProvider::text(const Word97::CHP &chp) const
     Style style(chp);
 
     // Get the appropriate style for this paragraph
-//     const Style* style = m_styleSheet->styleByIndex( m_pap->istd );
-//     if ( !style ) {
-//         wvlog << "Bug: Huh, really obscure error, couldn't find the Style for the current PAP" << std::endl;
-//         ret.chp = new Word97::CHP;
-//     } else {
-//         ret.chp = new Word97::CHP( style->chp() );
-//     }
+    // const Style* style = m_styleSheet->styleByIndex( m_pap->istd );
+    // if ( !style ) {
+    //     wvlog << "Bug: Huh, really obscure error, couldn't find the Style for the current PAP" << std::endl;
+    //     ret.chp = new Word97::CHP;
+    // } else {
+    //     ret.chp = new Word97::CHP( style->chp() );
+    // }
     formattingListLevel()->applyGrpprlChpx(ret.chp, &style, m_styleSheet);
     return ret;
 }

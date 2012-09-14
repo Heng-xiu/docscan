@@ -16,6 +16,8 @@
    Boston, MA 02111-1307, USA.
 */
 
+#include <QString>
+
 #include "handlers.h"
 #include "parser9x.h"
 #include "paragraphproperties.h"
@@ -142,8 +144,9 @@ void GraphicsHandler::handleFloatingObject(unsigned int /*globalCP*/)
 
 }
 
-void GraphicsHandler::handleInlineObject(const PictureData & /*data*/)
+QString GraphicsHandler::handleInlineObject(const PictureData & /*data*/, const bool /*isBulletPicture*/)
 {
+    return QString();
 }
 
 TextHandler::~TextHandler()

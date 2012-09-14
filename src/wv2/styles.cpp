@@ -248,6 +248,11 @@ throw(InvalidFormatException)
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "cbUPX: " << cbUPX << std::endl;
 #endif
+        // do not overflow the allocated buffer grupx
+        if (offset + cbUPX > grupxLen) {
+            wvlog << "====> Error: grupx would overflow!" << std::endl;
+            return false;
+        }
         for (U16 j = 0; j < cbUPX; ++j) {
             grupx[ offset + j ] = stream->readU8();  // read the whole UPX
 #ifdef WV2_DEBUG_STYLESHEET
@@ -611,24 +616,28 @@ void Style::validate(const U16 istd, const U16 rglpstd_cnt, const std::vector<St
         return;
     }
 
+    //The same repair approach is used by the MSWord2007 DOCX filter.
+    //Remember that stiNormal == istdNormal.
     if ((m_std->istdNext != 0x0fff) &&
             (m_std->istdNext >= rglpstd_cnt)) {
-        wvlog << "istdNext - invalid index into rglpstd!" << std::endl;
-        return;
+
+#ifdef WV2_DEBUG_STYLESHEET
+        wvlog << "Warning: istdNext - invalid index into rglpstd, setting to stiNormal!";
+#endif
+        m_std->istdNext = stiNormal;
     }
-    //TODO: Why did I disable this one ???
-//     if (m_std->istdNext == istd) {
-//         wvlog << "istdNext MUST NOT be same as istd!" << std::endl;
-//         return false;
-//     }
     if ((m_std->istdNext != 0x0fff) &&
             styles[m_std->istdNext]->isEmpty()) {
         wvlog << "istdNext - style definition EMPTY!" << std::endl;
         return;
     }
-    //Each style name, whether primary or alternate, MUST NOT be empty and MUST
-    //be unique within all names in the stylesheet.
+    //Each style name, whether primary or alternate, MUST NOT be empty
+    //and MUST be unique within all names in the stylesheet.
     if (m_std->xstzName.isEmpty()) {
+
+#ifdef WV2_DEBUG_STYLESHEET
+        wvlog << "Warning: Empty xstzName detected, preparing a custom name!";
+#endif
         //generate a name for a user define style
         if (m_std->sti == 0x0ffe) {
             m_std->xstzName = UString("User_Defined_");
@@ -1098,8 +1107,9 @@ const Style *StyleSheet::styleByIndex(U16 istd) const
 const Style *StyleSheet::styleByID(U16 sti) const
 {
     for (std::vector<Style *>::const_iterator it = m_styles.begin(); it != m_styles.end(); ++it) {
-        if ((*it)->sti() == sti)
+        if ((*it)->sti() == sti) {
             return *it;
+        }
     }
     return 0;
 }
