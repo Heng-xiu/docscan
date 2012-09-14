@@ -34,7 +34,7 @@ class Headers97 : public Headers
 {
 public:
     Headers97(U32 ccpHdd, U32 fcPlcfhdd, U32 lcbPlcfhdd, U32 fcPlcfsed, U32 lcbPlcfsed,
-              OLEStreamReader* tableStream);
+              OLEStreamReader *tableStream);
 
     /**
      * Returns the header if there is any for the given mask. If we didn't find

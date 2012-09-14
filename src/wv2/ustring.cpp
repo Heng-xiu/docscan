@@ -56,8 +56,8 @@ unsigned char NaN_Bytes[] = { 0, 0, 0, 0, 0, 0, 0xf8, 0x7f };
 unsigned char Inf_Bytes[] = { 0, 0, 0, 0, 0, 0, 0xf0, 0x7f };
 #endif
 
-const double NaN = *(reinterpret_cast<const double*>(NaN_Bytes));
-const double Inf = *(reinterpret_cast<const double*>(Inf_Bytes));
+const double NaN = *(reinterpret_cast<const double *>(NaN_Bytes));
+const double Inf = *(reinterpret_cast<const double *>(Inf_Bytes));
 }
 
 using namespace wvWare;
@@ -104,13 +104,13 @@ bool wvWare::isNegInf(double d)
 
 CString::CString(const char *c)
 {
-    data = new char[strlen(c)+1];
+    data = new char[strlen(c) + 1];
     strcpy(data, c);
 }
 
 CString::CString(const CString &b)
 {
-    data = new char[b.length()+1];
+    data = new char[b.length() + 1];
     strcpy(data, b.c_str());
 }
 
@@ -123,10 +123,10 @@ CString &CString::append(const CString &t)
 {
     char *n;
     if (data) {
-        n = new char[strlen(data)+t.length()+1];
+        n = new char[strlen(data) + t.length() + 1];
         strcpy(n, data);
     } else {
-        n = new char[t.length()+1];
+        n = new char[t.length() + 1];
         n[0] = '\0';
     }
     strcat(n, t.c_str());
@@ -137,30 +137,30 @@ CString &CString::append(const CString &t)
     return *this;
 }
 
-CString &CString::operator=(const char * c)
+CString &CString::operator=(const char *c)
 {
     if (data)
         delete [] data;
-    data = new char[strlen(c)+1];
+    data = new char[strlen(c) + 1];
     strcpy(data, c);
 
     return *this;
 }
 
-CString &CString::operator=(const CString & str)
+CString &CString::operator=(const CString &str)
 {
     if (this == &str)
         return *this;
 
     if (data)
         delete [] data;
-    data = new char[str.length()+1];
+    data = new char[str.length() + 1];
     strcpy(data, str.c_str());
 
     return *this;
 }
 
-CString &CString::operator+=(const CString & str)
+CString &CString::operator+=(const CString &str)
 {
     return append(CString(str.c_str()));
 }
@@ -170,7 +170,7 @@ int CString::length() const
     return strlen(data);
 }
 
-bool wvWare::operator==(const wvWare::CString& c1, const wvWare::CString& c2)
+bool wvWare::operator==(const wvWare::CString &c1, const wvWare::CString &c2)
 {
     return (strcmp(c1.c_str(), c2.c_str()) == 0);
 }
@@ -181,7 +181,7 @@ UString UString::null;
 static char *statBuffer = 0L;
 
 UChar::UChar(const UCharReference &c)
-        : uc(c.unicode())
+    : uc(c.unicode())
 {
 }
 
@@ -202,7 +202,7 @@ UChar UChar::toUpper() const
     return UChar(toupper(uc));
 }
 
-UCharReference& UCharReference::operator=(UChar c)
+UCharReference &UCharReference::operator=(UChar c)
 {
     str->detach();
     if (offset < str->rep->len)
@@ -211,7 +211,7 @@ UCharReference& UCharReference::operator=(UChar c)
     return *this;
 }
 
-UChar& UCharReference::ref() const
+UChar &UCharReference::ref() const
 {
     if (offset < str->rep->len)
         return *(str->rep->dat + offset);
@@ -222,10 +222,10 @@ UChar& UCharReference::ref() const
 namespace
 {
 // return an uninitialized UChar array of size s
-static inline UChar* allocateChars(int s)
+static inline UChar *allocateChars(int s)
 {
     // work around default UChar constructor code
-    return reinterpret_cast<UChar*>(new short[s]);
+    return reinterpret_cast<UChar *>(new short[s]);
 }
 }
 
@@ -326,9 +326,9 @@ UString UString::from(double d)
 
     // ECMA 3rd ed. 9.8.1 9 e: "with no leading zeros"
     int buflen = strlen(buf);
-    if (buflen >= 4 && buf[buflen-4] == 'e' && buf[buflen-2] == '0') {
-        buf[buflen-2] = buf[buflen-1];
-        buf[buflen-1] = 0;
+    if (buflen >= 4 && buf[buflen - 4] == 'e' && buf[buflen - 2] == '0') {
+        buf[buflen - 2] = buf[buflen - 1];
+        buf[buflen - 1] = 0;
     }
 
     return UString(buf);
@@ -356,7 +356,7 @@ char *UString::ascii() const
     if (statBuffer)
         delete [] statBuffer;
 
-    statBuffer = new char[length()+1];
+    statBuffer = new char[length() + 1];
     for (int i = 0; i < length(); i++)
         statBuffer[i] = data()[i].low();
     statBuffer[length()] = '\0';
@@ -364,7 +364,7 @@ char *UString::ascii() const
     return statBuffer;
 }
 
-UString &UString::operator=(const char * c)
+UString &UString::operator=(const char *c)
 {
     release();
     int l = c ? strlen(c) : 0;
@@ -376,7 +376,7 @@ UString &UString::operator=(const char * c)
     return *this;
 }
 
-UString &UString::operator=(const UString & str)
+UString &UString::operator=(const UString &str)
 {
     str.rep->ref();
     release();
@@ -385,7 +385,7 @@ UString &UString::operator=(const UString & str)
     return *this;
 }
 
-UString &UString::operator+=(const UString & s)
+UString &UString::operator+=(const UString &s)
 {
     return append(s);
 }
@@ -502,7 +502,7 @@ int UString::find(const UString &f, int pos) const
     const UChar *end = data() + length() - f.length();
     for (const UChar *c = data() + pos; c <= end; c++)
         if (!memcmp(c, f.data(), fsize))
-            return (c -data());
+            return (c - data());
 
     return -1;
 }
@@ -516,7 +516,7 @@ int UString::rfind(const UString &f, int pos) const
     long fsize = f.length() * sizeof(UChar);
     for (const UChar *c = data() + pos; c >= data(); c--) {
         if (!memcmp(c, f.data(), fsize))
-            return (c -data());
+            return (c - data());
     }
 
     return -1;
@@ -568,7 +568,7 @@ void UString::release()
     }
 }
 
-bool wvWare::operator==(const UString& s1, const UString& s2)
+bool wvWare::operator==(const UString &s1, const UString &s2)
 {
     if (s1.rep->len != s2.rep->len)
         return false;
@@ -577,7 +577,7 @@ bool wvWare::operator==(const UString& s1, const UString& s2)
                    s1.rep->len * sizeof(UChar)) == 0);
 }
 
-bool wvWare::operator==(const UString& s1, const char *s2)
+bool wvWare::operator==(const UString &s1, const char *s2)
 {
     if (s2 == 0L && s1.isNull())
         return true;
@@ -596,7 +596,7 @@ bool wvWare::operator==(const UString& s1, const char *s2)
     return true;
 }
 
-bool wvWare::operator<(const UString& s1, const UString& s2)
+bool wvWare::operator<(const UString &s1, const UString &s2)
 {
     const int l1 = s1.length();
     const int l2 = s2.length();
@@ -615,7 +615,7 @@ bool wvWare::operator<(const UString& s1, const UString& s2)
     return (l1 < l2);
 }
 
-UString wvWare::operator+(const UString& s1, const UString& s2)
+UString wvWare::operator+(const UString &s1, const UString &s2)
 {
     UString tmp(s1);
     tmp.append(s2);
@@ -624,7 +624,7 @@ UString wvWare::operator+(const UString& s1, const UString& s2)
 }
 
 
-UConstString::UConstString(UChar* data, unsigned int length) : UString(data, length, false)
+UConstString::UConstString(UChar *data, unsigned int length) : UString(data, length, false)
 {
 }
 
@@ -632,7 +632,7 @@ UConstString::~UConstString()
 {
     if (rep->rc > 1) {
         int l = length();
-        UChar* n = allocateChars(l);
+        UChar *n = allocateChars(l);
         memcpy(n, data(), l * sizeof(UChar));
         rep->dat = n;
     } else

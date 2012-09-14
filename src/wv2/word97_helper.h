@@ -29,17 +29,20 @@ class OLEStreamReader;
 class ParagraphProperties;
 class StyleSheet;
 
-namespace Word97 {
+namespace Word97
+{
 struct TAP;
 }
 
-namespace Word97 {
-ParagraphProperties* initPAPFromStyle(const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version);
-Word97::TAP* initTAP(const U8* exceptions, OLEStreamReader* dataStream, WordVersion version);
+namespace Word97
+{
+ParagraphProperties *initPAPFromStyle(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version);
+Word97::TAP *initTAP(const U8 *exceptions, OLEStreamReader *dataStream, WordVersion version);
 
-namespace SPRM {
+namespace SPRM
+{
 U16 unzippedOpCode(U8 isprm);
-U16 determineParameterLength(U16 sprm, const U8* in, WordVersion version);
+U16 determineParameterLength(U16 sprm, const U8 *in, WordVersion version);
 U16 word6toWord8(U8 sprm);
 }
 } // namespace Word97

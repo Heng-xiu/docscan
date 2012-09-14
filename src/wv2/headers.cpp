@@ -29,7 +29,7 @@ using namespace wvWare;
 const uint Headers::headerTypes = 6;
 
 Headers::Headers(U32 ccpHdd, U32 fcPlcfhdd, U32 lcbPlcfhdd, U32 fcPlcfsed, U32 lcbPlcfsed,
-                 OLEStreamReader* tableStream, WordVersion version)
+                 OLEStreamReader *tableStream, WordVersion version)
 {
     if (lcbPlcfhdd == 0) {
         return;

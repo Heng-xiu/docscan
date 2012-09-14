@@ -32,7 +32,8 @@
 namespace wvWare
 {
 
-namespace Word97 {
+namespace Word97
+{
 
 // STD implementation
 STD::STD()
@@ -40,7 +41,7 @@ STD::STD()
     clearInternal();
 }
 
-STD::STD(U16 baseSize, U16 totalSize, OLEStreamReader* stream, bool preservePos)
+STD::STD(U16 baseSize, U16 totalSize, OLEStreamReader *stream, bool preservePos)
 throw(InvalidFormatException)
 {
     clearInternal();
@@ -50,7 +51,7 @@ throw(InvalidFormatException)
     }
 }
 
-STD::STD(const STD& rhs) : xstzName(rhs.xstzName)
+STD::STD(const STD &rhs) : xstzName(rhs.xstzName)
 {
     sti = rhs.sti;
     fScratch = rhs.fScratch;
@@ -78,7 +79,7 @@ STD::~STD()
     delete [] grupx;
 }
 
-STD& STD::operator=(const STD& rhs)
+STD &STD::operator=(const STD &rhs)
 {
     // Check for assignment to self
     if (this == &rhs)
@@ -110,7 +111,7 @@ STD& STD::operator=(const STD& rhs)
     return *this;
 }
 
-bool STD::read(const U16 cbStd, const U16 stdfSize, OLEStreamReader* stream, bool preservePos)
+bool STD::read(const U16 cbStd, const U16 stdfSize, OLEStreamReader *stream, bool preservePos)
 throw(InvalidFormatException)
 {
     U16 shifterU16;
@@ -274,7 +275,7 @@ throw(InvalidFormatException)
     return true;
 }
 
-bool STD::write(U16 /*stdfSize*/, OLEStreamWriter* stream, bool preservePos) const
+bool STD::write(U16 /*stdfSize*/, OLEStreamWriter *stream, bool preservePos) const
 {
     // FIXME: don't ignore stdfSize and add writing code for the STD
     U16 shifterU16;
@@ -339,7 +340,7 @@ void STD::clearInternal()
     m_invalid = false;
 }
 
-bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamReader* stream)
+bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamReader *stream)
 {
 #ifdef WV2_DEBUG_STYLESHEET
     wvlog << "stdfSize:" << std::hex << "0x" << stdfSize << std::dec << "(" << stdfSize << ")" << std::endl;
@@ -392,7 +393,7 @@ bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamRea
         }
         if (name[ length ] != 0) {
             wvlog << "Warning: Illegal trailing character: " <<
-            static_cast<int>(name[ length ]) << std::endl;
+                  static_cast<int>(name[ length ]) << std::endl;
             delete [] name;
             return false;
         }
@@ -430,7 +431,7 @@ bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamRea
         if (name[ length ] != 0) {
             wvlog << "Warning: processing on older Style Sheet";
             wvlog << "Warning: Illegal trailing character: " <<
-            static_cast<int>(name[ length ]) << std::endl;
+                  static_cast<int>(name[ length ]) << std::endl;
 //             name[ length ] = 0;
             delete [] name;
             return false;
@@ -445,7 +446,7 @@ bool STD::readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamRea
     return true;
 }
 
-bool operator==(const STD& lhs, const STD& rhs)
+bool operator==(const STD &lhs, const STD &rhs)
 {
     if (lhs.grupxLen != rhs.grupxLen)
         return false;
@@ -470,7 +471,7 @@ bool operator==(const STD& lhs, const STD& rhs)
            lhs.unused8_3 == rhs.unused8_3;
 }
 
-bool operator!=(const STD& lhs, const STD& rhs)
+bool operator!=(const STD &lhs, const STD &rhs)
 {
     return !(lhs == rhs);
 }
@@ -481,15 +482,15 @@ bool operator!=(const STD& lhs, const STD& rhs)
 
 using namespace wvWare;
 
-Style::Style(const U16 stdfSize, OLEStreamReader* tableStream, U16* ftc)
-        :
-        m_isEmpty(false),
-        m_isWrapped(true),
-        m_invalid(false),
-        m_std(0),
-        m_properties(0),
-        m_chp(0),
-        m_upechpx(0)
+Style::Style(const U16 stdfSize, OLEStreamReader *tableStream, U16 *ftc)
+    :
+    m_isEmpty(false),
+    m_isWrapped(true),
+    m_invalid(false),
+    m_std(0),
+    m_properties(0),
+    m_chp(0),
+    m_upechpx(0)
 {
     //NOTE: A signed integer that specifies the size, in bytes, of std.  This
     //value MUST NOT be less than 0.  LPStd structures are stored on even-byte
@@ -556,15 +557,15 @@ Style::Style(const U16 stdfSize, OLEStreamReader* tableStream, U16* ftc)
     }
 }
 
-Style::Style(const Word97::CHP& chp)
-        :
-        m_isEmpty(true),
-        m_isWrapped(false),
-        m_invalid(true),
-        m_std(0),
-        m_properties(0),
-        m_chp(0),
-        m_upechpx(0)
+Style::Style(const Word97::CHP &chp)
+    :
+    m_isEmpty(true),
+    m_isWrapped(false),
+    m_invalid(true),
+    m_std(0),
+    m_properties(0),
+    m_chp(0),
+    m_upechpx(0)
 {
     m_chp = new Word97::CHP(chp);
 }
@@ -577,7 +578,7 @@ Style::~Style()
     delete m_upechpx;
 }
 
-void Style::validate(const U16 istd, const U16 rglpstd_cnt, const std::vector<Style*>& styles, U16& uds_num)
+void Style::validate(const U16 istd, const U16 rglpstd_cnt, const std::vector<Style *> &styles, U16 &uds_num)
 {
     if (m_isEmpty) {
         return;
@@ -639,7 +640,7 @@ void Style::validate(const U16 istd, const U16 rglpstd_cnt, const std::vector<St
     m_invalid = false;
 }
 
-void Style::unwrapStyle(const StyleSheet& stylesheet, WordVersion version)
+void Style::unwrapStyle(const StyleSheet &stylesheet, WordVersion version)
 {
     if (!m_isWrapped || !m_std) {
         return;
@@ -650,7 +651,7 @@ void Style::unwrapStyle(const StyleSheet& stylesheet, WordVersion version)
 #endif
 
     if (m_std->sgc == sgcPara) {
-        const Style* parentStyle = 0;
+        const Style *parentStyle = 0;
         // only try to unwrap the "parent" if the style isn't the Nil style
         if (m_std->istdBase != 0x0fff) {
             parentStyle = stylesheet.styleByIndex(m_std->istdBase);
@@ -658,7 +659,7 @@ void Style::unwrapStyle(const StyleSheet& stylesheet, WordVersion version)
 #ifdef WV2_DEBUG_SPRMS
                 wvlog << "#### parent style ASCII Name: '" << parentStyle->name().ascii() << "'" << std::endl;
 #endif
-                const_cast<Style*>(parentStyle)->unwrapStyle(stylesheet, version);
+                const_cast<Style *>(parentStyle)->unwrapStyle(stylesheet, version);
                 m_properties->pap() = parentStyle->paragraphProperties().pap();
                 *m_chp = parentStyle->chp();
             }
@@ -701,7 +702,7 @@ void Style::unwrapStyle(const StyleSheet& stylesheet, WordVersion version)
             }
         }
     } else if (m_std->sgc == sgcChp) {
-        const Style* parentStyle = 0;
+        const Style *parentStyle = 0;
         // only try to unwrap the "parent" if the style isn't the Nil style
         if (m_std->istdBase != 0x0fff) {
             parentStyle = stylesheet.styleByIndex(m_std->istdBase);
@@ -709,7 +710,7 @@ void Style::unwrapStyle(const StyleSheet& stylesheet, WordVersion version)
 #ifdef WV2_DEBUG_SPRMS
                 wvlog << "#### parent style ASCII Name: '" << parentStyle->name().ascii() << "'" << std::endl;
 #endif
-                const_cast<Style*>(parentStyle)->unwrapStyle(stylesheet, version);
+                const_cast<Style *>(parentStyle)->unwrapStyle(stylesheet, version);
                 bool ok;
                 m_upechpx->istd = stylesheet.indexByID(m_std->sti, ok);
 #ifdef WV2_DEBUG_SPRMS
@@ -767,7 +768,7 @@ ST_StyleType Style::type() const
     return sgcUnknown;
 }
 
-const ParagraphProperties& Style::paragraphProperties() const
+const ParagraphProperties &Style::paragraphProperties() const
 {
     if (!m_properties) {
         wvlog << "You requested the PAP of a character style? Hmm..." << std::endl;
@@ -776,7 +777,7 @@ const ParagraphProperties& Style::paragraphProperties() const
     return *m_properties;
 }
 
-const Word97::CHP& Style::chp() const
+const Word97::CHP &Style::chp() const
 {
     if (!m_chp) {
         if (!m_isEmpty) {
@@ -790,7 +791,7 @@ const Word97::CHP& Style::chp() const
     return *m_chp;
 }
 
-const UPECHPX& Style::upechpx() const
+const UPECHPX &Style::upechpx() const
 {
     if (!m_upechpx) {
         wvlog << "You requested the CHPX of a paragraph style? Hmm..." << std::endl;
@@ -808,17 +809,17 @@ struct SprmEntry {
     U16 offset;
 };
 
-bool operator<(const SprmEntry& rhs, const SprmEntry& lhs)
+bool operator<(const SprmEntry &rhs, const SprmEntry &lhs)
 {
     return rhs.sprm < lhs.sprm;
 }
 
-bool operator==(const SprmEntry& rhs, const SprmEntry& lhs)
+bool operator==(const SprmEntry &rhs, const SprmEntry &lhs)
 {
     return rhs.sprm == lhs.sprm;
 }
 
-void analyzeGrpprl(U8* grpprl, U16 count, std::vector<SprmEntry>& entries, WordVersion version)
+void analyzeGrpprl(U8 *grpprl, U16 count, std::vector<SprmEntry> &entries, WordVersion version)
 {
     U16 offset = 0;
     while (offset < count) {
@@ -842,7 +843,7 @@ void analyzeGrpprl(U8* grpprl, U16 count, std::vector<SprmEntry>& entries, WordV
     }
 }
 
-U16 copySprm(U8* destGrpprl, U8* srcGrpprl, const SprmEntry& entry, WordVersion version)
+U16 copySprm(U8 *destGrpprl, U8 *srcGrpprl, const SprmEntry &entry, WordVersion version)
 {
     srcGrpprl += entry.offset;
 
@@ -869,16 +870,16 @@ U16 copySprm(U8* destGrpprl, U8* srcGrpprl, const SprmEntry& entry, WordVersion 
 }
 }
 
-void Style::mergeUpechpx(const Style* parentStyle, WordVersion version)
+void Style::mergeUpechpx(const Style *parentStyle, WordVersion version)
 {
     // Analyze the source and the base grpprls
-    U8* srcGrpprl = m_std->grupx;
+    U8 *srcGrpprl = m_std->grupx;
     U16 cbUPX = readU16(srcGrpprl);
     srcGrpprl += 2;
     std::vector<SprmEntry> source;
     analyzeGrpprl(srcGrpprl, cbUPX, source, version);
 
-    U8* baseGrpprl = parentStyle->m_upechpx->grpprl;
+    U8 *baseGrpprl = parentStyle->m_upechpx->grpprl;
     std::vector<SprmEntry> base;
     analyzeGrpprl(baseGrpprl, parentStyle->m_upechpx->cb, base, version);
 
@@ -922,8 +923,8 @@ void Style::mergeUpechpx(const Style* parentStyle, WordVersion version)
 }
 
 
-StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) throw(InvalidFormatException)
-        : m_udsNum(0)
+StyleSheet::StyleSheet(OLEStreamReader *tableStream, U32 fcStshf, U32 lcbStshf) throw(InvalidFormatException)
+    : m_udsNum(0)
 {
     WordVersion version = Word8;
 
@@ -935,7 +936,7 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
     //STSH = StyleSheet
 #ifdef WV2_DEBUG_STYLESHEET
     wvlog << "StyleSheet::StyleSheet(): fcStshf=" << fcStshf << " lcbStshf=" << lcbStshf
-    << " cbStshi=" << cbStshi << std::endl;
+          << " cbStshi=" << cbStshi << std::endl;
 #endif
 
     //NOTE: STSHI definition in MS-DOC and Microsoft Word 97 (aka Version 8)
@@ -971,7 +972,7 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
     //FIXME: That's OK for newer files, we are not using the rest of the data.
     if (tableStream->tell() != static_cast<int>(fcStshf + cbStshi + 2)) {
         wvlog << "Warning: STSHI too big? New version?"
-        << " Expected: " << cbStshi + 2 << " Read: " << tableStream->tell() - fcStshf << std::endl;
+              << " Expected: " << cbStshi + 2 << " Read: " << tableStream->tell() - fcStshf << std::endl;
         tableStream->seek(fcStshf + 2 + cbStshi, WV2_SEEK_SET);
     }
     // ------------------------------------------------------------
@@ -1012,8 +1013,8 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
 
 #ifdef WV2_DEBUG_STYLESHEET
     wvlog << "Done reading the stylesheet: " <<
-    " stream postion:" << tableStream->tell() <<
-    " expected:" << fcStshf + lcbStshf << std::endl;
+          " stream postion:" << tableStream->tell() <<
+          " expected:" << fcStshf + lcbStshf << std::endl;
 #endif
     if (tableStream->tell() < static_cast<int>(fcStshf + lcbStshf)) {
         wvlog << "Warning: Didn't read all bytes of the stylesheet..." << std::endl;
@@ -1026,11 +1027,11 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
     int i = 0;
 #endif
     // "unzip" them and build up the PAPs and CHPs
-    for (std::vector<Style*>::iterator it = m_styles.begin();
+    for (std::vector<Style *>::iterator it = m_styles.begin();
             it != m_styles.end(); ++it) {
 #ifdef WV2_DEBUG_STYLESHEET
         wvlog << "Going to unwrap style:" << "[" << i << "]" <<
-        "ASCII Name: '" << (*it)->name().ascii() << "'" << std::endl;
+              "ASCII Name: '" << (*it)->name().ascii() << "'" << std::endl;
         i++;
 #endif
         (*it)->unwrapStyle(*this, version);
@@ -1043,7 +1044,7 @@ StyleSheet::StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) 
 
 StyleSheet::~StyleSheet()
 {
-    for (std::vector<Style*>::iterator it = m_styles.begin(); it != m_styles.end(); ++it)
+    for (std::vector<Style *>::iterator it = m_styles.begin(); it != m_styles.end(); ++it)
         delete *it;
 }
 
@@ -1086,7 +1087,7 @@ unsigned int StyleSheet::size() const
     return m_styles.size();
 }
 
-const Style* StyleSheet::styleByIndex(U16 istd) const
+const Style *StyleSheet::styleByIndex(U16 istd) const
 {
     if (istd < m_styles.size()) {
         return m_styles[ istd ];
@@ -1094,20 +1095,20 @@ const Style* StyleSheet::styleByIndex(U16 istd) const
     return 0;
 }
 
-const Style* StyleSheet::styleByID(U16 sti) const
+const Style *StyleSheet::styleByID(U16 sti) const
 {
-    for (std::vector<Style*>::const_iterator it = m_styles.begin(); it != m_styles.end(); ++it) {
+    for (std::vector<Style *>::const_iterator it = m_styles.begin(); it != m_styles.end(); ++it) {
         if ((*it)->sti() == sti)
             return *it;
     }
     return 0;
 }
 
-U16 StyleSheet::indexByID(U16 sti, bool& ok) const
+U16 StyleSheet::indexByID(U16 sti, bool &ok) const
 {
     ok = true;
     U16 istd = 0;
-    for (std::vector<Style*>::const_iterator it = m_styles.begin(); it != m_styles.end(); ++it, ++istd) {
+    for (std::vector<Style *>::const_iterator it = m_styles.begin(); it != m_styles.end(); ++it, ++istd) {
         if ((*it)->sti() == sti)
             return istd;
     }

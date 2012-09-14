@@ -30,7 +30,7 @@
 
 using namespace wvWare;
 
-OLEStream::OLEStream(OLEStorage* storage) : m_storage(storage)
+OLEStream::OLEStream(OLEStorage *storage) : m_storage(storage)
 {
 }
 
@@ -54,7 +54,7 @@ bool OLEStream::pop()
 
 
 OLEStreamReader::OLEStreamReader(POLE::Stream *stream, OLEStorage *storage) :
-        OLEStream(storage), m_stream(stream), m_pos(0)
+    OLEStream(storage), m_stream(stream), m_pos(0)
 {
 }
 
@@ -117,7 +117,7 @@ U8 OLEStreamReader::readU8()
 #endif
 
     U8 ret;
-    m_pos += m_stream->read(static_cast<unsigned char*>(&ret), sizeof(U8));
+    m_pos += m_stream->read(static_cast<unsigned char *>(&ret), sizeof(U8));
 
     return ret;
 }
@@ -143,7 +143,7 @@ U16 OLEStreamReader::readU16()
     return (tmp2 << 8) | tmp1;
 #else
     U16 ret;
-    m_pos += m_stream->read(reinterpret_cast<unsigned char*>(&ret), sizeof(U16));
+    m_pos += m_stream->read(reinterpret_cast<unsigned char *>(&ret), sizeof(U16));
     return ret;
 #endif
 }
@@ -169,7 +169,7 @@ U32 OLEStreamReader::readU32()
     return (tmp2 << 16) | tmp1;
 #else
     U32 ret;
-    m_pos += m_stream->read(reinterpret_cast<unsigned char*>(&ret), sizeof(U32));
+    m_pos += m_stream->read(reinterpret_cast<unsigned char *>(&ret), sizeof(U32));
     return ret;
 #endif
 }
@@ -185,13 +185,13 @@ bool OLEStreamReader::read(U8 *buffer, size_t length)
     if (!m_stream)
         return false;
 #endif
-    m_pos += m_stream->read(static_cast<unsigned char*>(buffer), length);
+    m_pos += m_stream->read(static_cast<unsigned char *>(buffer), length);
     return true;
 }
 
 
-OLEStreamWriter::OLEStreamWriter(OLEStorage* storage) :
-        OLEStream(storage)
+OLEStreamWriter::OLEStreamWriter(OLEStorage *storage) :
+    OLEStream(storage)
 {
 }
 
@@ -243,6 +243,6 @@ void OLEStreamWriter::write(S32 data)
 {
 }
 
-void OLEStreamWriter::write(U8* data, size_t length)
+void OLEStreamWriter::write(U8 *data, size_t length)
 {
 }

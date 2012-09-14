@@ -36,7 +36,8 @@ class ListData;
 class ListFormatOverride;
 class ListFormatOverrideLVL;
 class ListInfoProvider;
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 struct PAP;
 struct CHP;
@@ -65,7 +66,7 @@ struct ListText {
 class ListInfo
 {
 public:
-    ListInfo(Word97::PAP& pap, const Word97::CHP& chp, ListInfoProvider& listInfoProvider);
+    ListInfo(Word97::PAP &pap, const Word97::CHP &chp, ListInfoProvider &listInfoProvider);
 
     /**
      * The istd linked to the current list/level, istdNil (4095) if none (LSTF::rgistd)
@@ -155,7 +156,7 @@ public:
      * the alignment and optional spaces/tabs after the counter text is
      * also available here (alignment, followingChar,...)
      */
-    const ListText& text() const {
+    const ListText &text() const {
         return m_text;
     }
 
@@ -195,7 +196,7 @@ public:
     void dump() const;
 
 private:
-    ListInfo& operator=(const ListInfo& rhs);
+    ListInfo &operator=(const ListInfo &rhs);
 
     U16 m_linkedIstd;
     bool m_restartingCounter;
@@ -232,12 +233,12 @@ public:
      * inside pap.anld. To make that work you have to set the ANLD structure
      * every time the PAP changes, using setWord6StylePAP()
      */
-    ListInfoProvider(const StyleSheet* styleSheet);
+    ListInfoProvider(const StyleSheet *styleSheet);
     /**
      * This constructor reads the structures from the table stream of a
      * Word 97 document.
      */
-    ListInfoProvider(OLEStreamReader* tableStream, const Word97::FIB& fib, const StyleSheet* styleSheet);
+    ListInfoProvider(OLEStreamReader *tableStream, const Word97::FIB &fib, const StyleSheet *styleSheet);
     ~ListInfoProvider();
 
     /**
@@ -246,8 +247,8 @@ public:
     bool isValid(S16 ilfo, U8 nLvlAnm) const;
 
 private:
-    ListInfoProvider(const ListInfoProvider& rhs);
-    ListInfoProvider& operator=(const ListInfoProvider& rhs);
+    ListInfoProvider(const ListInfoProvider &rhs);
+    ListInfoProvider &operator=(const ListInfoProvider &rhs);
 
     /**
      * @internal
@@ -260,30 +261,30 @@ private:
      *
      * Take care, these methods modify the passed PAP structure!!
      */
-    bool setPAP(Word97::PAP* pap);
+    bool setPAP(Word97::PAP *pap);
 
-    void readListData(OLEStreamReader* tableStream, const U32 endOfLSTF);
-    void readListFormatOverride(OLEStreamReader* tableStream);
-    void readListNames(OLEStreamReader* tableStream);
-    void eatLeading0xff(OLEStreamReader* tableStream);
+    void readListData(OLEStreamReader *tableStream, const U32 endOfLSTF);
+    void readListFormatOverride(OLEStreamReader *tableStream);
+    void readListNames(OLEStreamReader *tableStream);
+    void eatLeading0xff(OLEStreamReader *tableStream);
 
-    void processOverride(ListFormatOverride* lfo);
+    void processOverride(ListFormatOverride *lfo);
     void convertCompatANLD();
-    ListData* findLST(S32 lsid);
+    ListData *findLST(S32 lsid);
 
-    const ListLevel* formattingListLevel() const;
+    const ListLevel *formattingListLevel() const;
     std::pair<S32, bool> startAt();
-    ListText text(const Word97::CHP& chp) const;
+    ListText text(const Word97::CHP &chp) const;
 
-    std::vector<ListData*> m_listData;
-    std::vector<ListFormatOverride*> m_listFormatOverride;
-    STTBF* m_listNames;
+    std::vector<ListData *> m_listData;
+    std::vector<ListFormatOverride *> m_listFormatOverride;
+    STTBF *m_listNames;
 
-    Word97::PAP* m_pap; // we don't own that one!
-    const StyleSheet* const m_styleSheet; // needed to determine the CHP
+    Word97::PAP *m_pap; // we don't own that one!
+    const StyleSheet *const m_styleSheet; // needed to determine the CHP
 
-    ListFormatOverrideLVL* m_currentLfoLVL;
-    const ListData* m_currentLst;
+    ListFormatOverrideLVL *m_currentLfoLVL;
+    const ListData *m_currentLst;
 
     // We have to keep track of the version, as Word radically changed
     // it's way to handle lists from version 7 to 8.

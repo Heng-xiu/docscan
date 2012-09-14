@@ -24,13 +24,13 @@
 
 using namespace wvWare;
 
-Parser::Parser(OLEStorage* storage, OLEStreamReader* wordDocument) :
-        m_inlineHandler(new InlineReplacementHandler), m_subDocumentHandler(new SubDocumentHandler),
-        m_tableHandler(new TableHandler), m_textHandler(new TextHandler),
-        m_graphicsHandler(new GraphicsHandler), m_ourInlineHandler(true),
-        m_ourSubDocumentHandler(true), m_ourTableHandler(true),
-        m_ourTextHandler(true), m_ourGraphicsHandler(true), m_storage(storage),
-        m_wordDocument(wordDocument), m_okay(true)
+Parser::Parser(OLEStorage *storage, OLEStreamReader *wordDocument) :
+    m_inlineHandler(new InlineReplacementHandler), m_subDocumentHandler(new SubDocumentHandler),
+    m_tableHandler(new TableHandler), m_textHandler(new TextHandler),
+    m_graphicsHandler(new GraphicsHandler), m_ourInlineHandler(true),
+    m_ourSubDocumentHandler(true), m_ourTableHandler(true),
+    m_ourTextHandler(true), m_ourGraphicsHandler(true), m_storage(storage),
+    m_wordDocument(wordDocument), m_okay(true)
 {
     if (!storage || !wordDocument) {
         m_okay = false;
@@ -65,27 +65,27 @@ Parser::~Parser()
     delete m_storage;
 }
 
-void Parser::setInlineReplacementHandler(InlineReplacementHandler* handler)
+void Parser::setInlineReplacementHandler(InlineReplacementHandler *handler)
 {
     setHandler<InlineReplacementHandler>(handler, &m_inlineHandler, m_ourInlineHandler);
 }
 
-void Parser::setSubDocumentHandler(SubDocumentHandler* handler)
+void Parser::setSubDocumentHandler(SubDocumentHandler *handler)
 {
     setHandler<SubDocumentHandler>(handler, &m_subDocumentHandler, m_ourSubDocumentHandler);
 }
 
-void Parser::setTableHandler(TableHandler* handler)
+void Parser::setTableHandler(TableHandler *handler)
 {
     setHandler<TableHandler>(handler, &m_tableHandler, m_ourTableHandler);
 }
 
-void Parser::setTextHandler(TextHandler* handler)
+void Parser::setTextHandler(TextHandler *handler)
 {
     setHandler<TextHandler>(handler, &m_textHandler, m_ourTextHandler);
 }
 
-void Parser::setGraphicsHandler(GraphicsHandler* handler)
+void Parser::setGraphicsHandler(GraphicsHandler *handler)
 {
     setHandler<GraphicsHandler>(handler, &m_graphicsHandler, m_ourGraphicsHandler);
 }

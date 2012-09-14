@@ -27,7 +27,8 @@
 
 namespace wvWare
 {
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 struct FRD;
 }
@@ -42,7 +43,7 @@ struct AnnotationData;
 class Annotations
 {
 public:
-    Annotations(OLEStreamReader* tableStream, const Word97::FIB& fib);
+    Annotations(OLEStreamReader *tableStream, const Word97::FIB &fib);
     ~Annotations();
 
     /**
@@ -51,7 +52,7 @@ public:
      * If @param ok is false no Annotation has been found and the
      * returned AnnotationData structure is invalid.
      */
-    AnnotationData annotation(U32 globalCP, bool& ok);
+    AnnotationData annotation(U32 globalCP, bool &ok);
 
     /**
      * Returns the global CP of the next Annotation reference,
@@ -60,16 +61,16 @@ public:
     U32 nextAnnotation() const;
 
 private:
-    Annotations(const Annotations& rhs);
-    Annotations& operator=(const Annotations& rhs);
+    Annotations(const Annotations &rhs);
+    Annotations &operator=(const Annotations &rhs);
 
     // Ugly, but helps to avoid code duplication
-    void init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
-              PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
-              std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt);
+    void init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader *tableStream,
+              PLCF<Word97::FRD> **ref, PLCFIterator<Word97::FRD> **refIt,
+              std::vector<U32> &txt, std::vector<U32>::const_iterator &txtIt);
 
-    PLCF<Word97::FRD>* m_annotationRef;
-    PLCFIterator<Word97::FRD>* m_annotationRefIt;
+    PLCF<Word97::FRD> *m_annotationRef;
+    PLCFIterator<Word97::FRD> *m_annotationRefIt;
     std::vector<U32> m_annotationTxt;
     std::vector<U32>::const_iterator m_annotationTxtIt;
 

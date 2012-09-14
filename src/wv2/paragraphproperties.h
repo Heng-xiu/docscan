@@ -37,29 +37,29 @@ class WV2_EXPORT ParagraphProperties : public Shared
 {
 public:
     ParagraphProperties();
-    explicit ParagraphProperties(const Word97::PAP& pap);
-    ParagraphProperties(const ParagraphProperties& rhs);
+    explicit ParagraphProperties(const Word97::PAP &pap);
+    ParagraphProperties(const ParagraphProperties &rhs);
     ~ParagraphProperties();
 
-    Word97::PAP& pap();
-    const Word97::PAP& pap() const;
+    Word97::PAP &pap();
+    const Word97::PAP &pap() const;
     /**
      * If this paragraph belongs to a list, the ListInfo object will be
      * valid and contain useful information about the formatting of the
      * list counter. @return 0 if the paragraph is not inside of a list
      */
-    const ListInfo* listInfo() const;
+    const ListInfo *listInfo() const;
 
     /**
      * @internal
      */
-    void createListInfo(ListInfoProvider& listInfoProvider, const Word97::CHP& chp);
+    void createListInfo(ListInfoProvider &listInfoProvider, const Word97::CHP &chp);
 
 private:
-    ParagraphProperties& operator=(const ParagraphProperties& rhs);
+    ParagraphProperties &operator=(const ParagraphProperties &rhs);
 
     Word97::PAP m_pap;
-    ListInfo* m_listInfo;
+    ListInfo *m_listInfo;
 };
 
 } // namespace wvWare

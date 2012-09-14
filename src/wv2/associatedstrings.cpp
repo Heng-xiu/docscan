@@ -24,8 +24,8 @@
 
 using namespace wvWare;
 
-AssociatedStrings::AssociatedStrings(U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, OLEStreamReader* tableStream) :
-        m_sttbf(0)
+AssociatedStrings::AssociatedStrings(U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, OLEStreamReader *tableStream) :
+    m_sttbf(0)
 {
     tableStream->push();
     tableStream->seek(fcSttbfAssoc);
@@ -35,8 +35,8 @@ AssociatedStrings::AssociatedStrings(U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 li
     tableStream->pop();
 }
 
-AssociatedStrings::AssociatedStrings(const AssociatedStrings& rhs) :
-        m_sttbf(new STTBF(*rhs.m_sttbf))
+AssociatedStrings::AssociatedStrings(const AssociatedStrings &rhs) :
+    m_sttbf(new STTBF(*rhs.m_sttbf))
 {
 }
 

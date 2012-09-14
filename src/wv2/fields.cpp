@@ -29,17 +29,17 @@ FLD::FLD() : ch(0), flt(0)
 {
 }
 
-FLD::FLD(OLEStreamReader* stream, bool preservePos) : ch(0), flt(0)
+FLD::FLD(OLEStreamReader *stream, bool preservePos) : ch(0), flt(0)
 {
     read(stream, preservePos);
 }
 
-FLD::FLD(const U8* ptr) : ch(0), flt(0)
+FLD::FLD(const U8 *ptr) : ch(0), flt(0)
 {
     readPtr(ptr);
 }
 
-bool FLD::read(OLEStreamReader* stream, bool preservePos)
+bool FLD::read(OLEStreamReader *stream, bool preservePos)
 {
     if (preservePos)
         stream->push();
@@ -52,7 +52,7 @@ bool FLD::read(OLEStreamReader* stream, bool preservePos)
     return true;
 }
 
-bool FLD::readPtr(const U8* ptr)
+bool FLD::readPtr(const U8 *ptr)
 {
     ch = *ptr++;
     flt = *ptr;
@@ -82,22 +82,22 @@ bool operator!=(const FLD &lhs, const FLD &rhs)
 using namespace wvWare;
 
 
-Fields::Fields(OLEStreamReader* tableStream, const Word97::FIB& fib) :
-        m_main(0), m_header(0), m_footnote(0), m_annotation(0),
-        m_endnote(0), m_textbox(0), m_headerTextbox(0), m_bookmark(0)
+Fields::Fields(OLEStreamReader *tableStream, const Word97::FIB &fib) :
+    m_main(0), m_header(0), m_footnote(0), m_annotation(0),
+    m_endnote(0), m_textbox(0), m_headerTextbox(0), m_bookmark(0)
 {
     tableStream->push();
 
 #ifdef WV2_DEBUG_FIELDS
     wvlog << "Fields --------------" << std::endl
-    << "  main: fc=" << fib.fcPlcffldMom << " lcb=" << fib.lcbPlcffldMom << std::endl
-    << "  header: fc=" << fib.fcPlcffldHdr << " lcb=" << fib.lcbPlcffldHdr << std::endl
-    << "  footnote: fc=" << fib.fcPlcffldFtn << " lcb=" << fib.lcbPlcffldFtn << std::endl
-    << "  annotation: fc=" << fib.fcPlcffldAtn << " lcb=" << fib.lcbPlcffldAtn << std::endl
-    << "  endnote: fc=" << fib.fcPlcffldEdn << " lcb=" << fib.lcbPlcffldEdn << std::endl
-    << "  textbox: fc=" << fib.fcPlcffldTxbx << " lcb=" << fib.lcbPlcffldTxbx << std::endl
-    << "  bookmark: fc=" << fib.fcSttbfbkmk << " lcb=" << fib.lcbSttbfbkmk << std::endl
-    << "  headertextbox: fc=" << fib.fcPlcffldHdrTxbx << " lcb=" << fib.lcbPlcffldHdrTxbx << std::endl;
+          << "  main: fc=" << fib.fcPlcffldMom << " lcb=" << fib.lcbPlcffldMom << std::endl
+          << "  header: fc=" << fib.fcPlcffldHdr << " lcb=" << fib.lcbPlcffldHdr << std::endl
+          << "  footnote: fc=" << fib.fcPlcffldFtn << " lcb=" << fib.lcbPlcffldFtn << std::endl
+          << "  annotation: fc=" << fib.fcPlcffldAtn << " lcb=" << fib.lcbPlcffldAtn << std::endl
+          << "  endnote: fc=" << fib.fcPlcffldEdn << " lcb=" << fib.lcbPlcffldEdn << std::endl
+          << "  textbox: fc=" << fib.fcPlcffldTxbx << " lcb=" << fib.lcbPlcffldTxbx << std::endl
+          << "  bookmark: fc=" << fib.fcSttbfbkmk << " lcb=" << fib.lcbSttbfbkmk << std::endl
+          << "  headertextbox: fc=" << fib.fcPlcffldHdrTxbx << " lcb=" << fib.lcbPlcffldHdrTxbx << std::endl;
 #endif
     tableStream->seek(fib.fcPlcffldMom, WV2_SEEK_SET);   // to make the sanity check work
     read(fib.fcPlcffldMom, fib.lcbPlcffldMom, tableStream, &m_main);
@@ -138,7 +138,7 @@ Fields::~Fields()
     delete m_main;
 }
 
-const FLD* Fields::fldForCP(Parser::SubDocument subDocument, U32 cp) const
+const FLD *Fields::fldForCP(Parser::SubDocument subDocument, U32 cp) const
 {
     switch (subDocument) {
     case Parser::None:
@@ -177,7 +177,7 @@ const FLD* Fields::fldForCP(Parser::SubDocument subDocument, U32 cp) const
     return 0; // make the compiler happy, never reached
 }
 
-void Fields::read(U32 fc, U32 lcb, OLEStreamReader* tableStream, PLCFMap<FLD>** plcf)
+void Fields::read(U32 fc, U32 lcb, OLEStreamReader *tableStream, PLCFMap<FLD> **plcf)
 {
     if (lcb == 0)
         return;
@@ -185,13 +185,13 @@ void Fields::read(U32 fc, U32 lcb, OLEStreamReader* tableStream, PLCFMap<FLD>** 
     *plcf = new PLCFMap<FLD>(lcb, tableStream);
 }
 
-void Fields::sanityCheck(const OLEStreamReader* tableStream, U32 nextFC, U32 lcb) const
+void Fields::sanityCheck(const OLEStreamReader *tableStream, U32 nextFC, U32 lcb) const
 {
     if (lcb != 0 && static_cast<U32>(tableStream->tell()) != nextFC)
         wvlog << "Warning: Detected a hole within the table stream (next fc=" << nextFC << ")" << std::endl;
 }
 
-const FLD* Fields::fldForCP(const PLCFMap<FLD>* plcf, U32 cp) const
+const FLD *Fields::fldForCP(const PLCFMap<FLD> *plcf, U32 cp) const
 {
     if (!plcf)
         return 0;

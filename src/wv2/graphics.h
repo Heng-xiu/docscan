@@ -29,7 +29,8 @@ using std::string;
 namespace wvWare
 {
 class OLEStreamReader;
-namespace Word97 {
+namespace Word97
+{
 struct FSPA;
 struct FIB;
 struct FTXBXS;
@@ -39,33 +40,33 @@ struct BKD;
 class Drawings
 {
 public:
-    Drawings(OLEStreamReader* table, const Word97::FIB &fib);
+    Drawings(OLEStreamReader *table, const Word97::FIB &fib);
     ~Drawings();
 
-    const PLCF<Word97::FSPA>* getSpaMom() const {
+    const PLCF<Word97::FSPA> *getSpaMom() const {
         return m_plcfspaMom;
     };
-    const PLCF<Word97::FSPA>* getSpaHdr() const {
+    const PLCF<Word97::FSPA> *getSpaHdr() const {
         return m_plcfspaHdr;
     };
-    const PLCF<Word97::FTXBXS>* getTxbxTxt() const {
+    const PLCF<Word97::FTXBXS> *getTxbxTxt() const {
         return m_plcftxbxTxt;
     };
-    const PLCF<Word97::FTXBXS>* getHdrTxbxTxt() const {
+    const PLCF<Word97::FTXBXS> *getHdrTxbxTxt() const {
         return m_plcfHdrtxbxTxt;
     };
 private:
-    Drawings(const Drawings& rhs);
-    Drawings& operator=(const Drawings& rhs);
+    Drawings(const Drawings &rhs);
+    Drawings &operator=(const Drawings &rhs);
 
-    PLCF<Word97::FSPA>* m_plcfspaMom;
-    PLCF<Word97::FSPA>* m_plcfspaHdr;
+    PLCF<Word97::FSPA> *m_plcfspaMom;
+    PLCF<Word97::FSPA> *m_plcfspaHdr;
 
-    PLCF<Word97::FTXBXS>* m_plcftxbxTxt;
-    PLCF<Word97::FTXBXS>* m_plcfHdrtxbxTxt;
+    PLCF<Word97::FTXBXS> *m_plcftxbxTxt;
+    PLCF<Word97::FTXBXS> *m_plcfHdrtxbxTxt;
 
-    PLCF<Word97::BKD>* m_plcftxbxBkd;
-    PLCF<Word97::BKD>* m_plcfHdrtxbxBkd;
+    PLCF<Word97::BKD> *m_plcftxbxBkd;
+    PLCF<Word97::BKD> *m_plcfHdrtxbxBkd;
 };
 
 class Pictures
@@ -110,7 +111,7 @@ typedef enum {
 class EscherHeader
 {
 public:
-    EscherHeader(OLEStreamReader* stream);
+    EscherHeader(OLEStreamReader *stream);
     ~EscherHeader();
 
     bool isAtom();
@@ -120,9 +121,9 @@ public:
     void dump();
 
 private:
-U32 recVer: 4; //4 bits
-U32 recInstance: 12; //12 bits
-U32 recType: 16; //16 bits
+    U32 recVer: 4; //4 bits
+    U32 recInstance: 12; //12 bits
+    U32 recType: 16; //16 bits
     U32 recLen; //4 bytes
 }; //EscherHeader
 
@@ -136,14 +137,14 @@ U32 recType: 16; //16 bits
 class FBSE
 {
 public:
-    FBSE(OLEStreamReader* stream);
+    FBSE(OLEStreamReader *stream);
     ~FBSE();
 
     int recordSize();//size of the record without the Escher header
     //(does NOT include actual picture data, either, which is in a
     //new record)
 
-    U8* getRgbUid();
+    U8 *getRgbUid();
     int getBlipType();
     int getStreamOffset();
     int getNameLength();
@@ -168,7 +169,7 @@ private:
 class Blip
 {
 public:
-    Blip(OLEStreamReader* stream, string blipType);
+    Blip(OLEStreamReader *stream, string blipType);
     ~Blip();
 
     bool isMetafileBlip(); //is this an EMF, WMF, or PICT?

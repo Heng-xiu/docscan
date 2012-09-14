@@ -25,7 +25,7 @@
 
 using namespace wvWare;
 
-FontCollection::FontCollection(OLEStreamReader* reader, const Word97::FIB& fib)
+FontCollection::FontCollection(OLEStreamReader *reader, const Word97::FIB &fib)
 {
     m_fallbackFont = new Word97::FFN();
     if (!m_fallbackFont) {
@@ -40,7 +40,7 @@ FontCollection::FontCollection(OLEStreamReader* reader, const Word97::FIB& fib)
     if (fib.nFib < Word8nFib) {   // older than Word97
         int bytesLeft = reader->readU16() - 2;
         while (bytesLeft > 0) {
-            Word97::FFN* ffn = new Word97::FFN(reader, Word97::FFN::Word95, false);
+            Word97::FFN *ffn = new Word97::FFN(reader, Word97::FFN::Word95, false);
 
             if (!ffn) {
                 wvlog << "Error: FFN allocation!";
@@ -58,7 +58,7 @@ FontCollection::FontCollection(OLEStreamReader* reader, const Word97::FIB& fib)
             wvlog << "Huh?? Found STTBF extra data within the STTBF of FFNs" << std::endl;
         }
         for (int i = 0; i < count; ++i) {
-            Word97::FFN* ffn = new Word97::FFN(reader, Word97::FFN::Word97, false);
+            Word97::FFN *ffn = new Word97::FFN(reader, Word97::FFN::Word97, false);
 
             if (!ffn) {
                 wvlog << "Error: FFN allocation!";
@@ -72,7 +72,7 @@ FontCollection::FontCollection(OLEStreamReader* reader, const Word97::FIB& fib)
 
     if (reader->tell() - fib.fcSttbfffn != fib.lcbSttbfffn) {
         wvlog << "Warning: Didn't read lcbSttbfffn bytes: read=" << reader->tell() - fib.fcSttbfffn
-        << " lcbSttbfffn=" << fib.lcbSttbfffn << std::endl;
+              << " lcbSttbfffn=" << fib.lcbSttbfffn << std::endl;
     }
     reader->pop();
 }
@@ -83,7 +83,7 @@ FontCollection::~FontCollection()
     delete m_fallbackFont;
 }
 
-const Word97::FFN& FontCollection::font(S16 ftc) const
+const Word97::FFN &FontCollection::font(S16 ftc) const
 {
     if (ftc >= 0 && static_cast<U16>(ftc) < m_fonts.size()) {
         return *m_fonts[ ftc ];
@@ -93,8 +93,8 @@ const Word97::FFN& FontCollection::font(S16 ftc) const
 
 void FontCollection::dump() const
 {
-    std::vector<Word97::FFN*>::const_iterator it = m_fonts.begin();
-    std::vector<Word97::FFN*>::const_iterator end = m_fonts.end();
+    std::vector<Word97::FFN *>::const_iterator it = m_fonts.begin();
+    std::vector<Word97::FFN *>::const_iterator end = m_fonts.end();
     for (; it != end; ++it) {
         wvlog << "Font: xszFfn='" << (*it)->xszFfn.ascii() << "'" << std::endl;
         if (!(*it)->xszFfnAlt.isEmpty()) {

@@ -42,8 +42,8 @@ public:
      * You shouldn't have to create such an object yourself, the Parser provides
      * it.
      */
-    AssociatedStrings(U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, OLEStreamReader* tableStream);
-    AssociatedStrings(const AssociatedStrings& rhs);
+    AssociatedStrings(U32 fcSttbfAssoc, U32 lcbSttbfAssoc, U16 lid, OLEStreamReader *tableStream);
+    AssociatedStrings(const AssociatedStrings &rhs);
     ~AssociatedStrings();
 
     /**
@@ -84,9 +84,9 @@ public:
     UString headerDocument() const;
 
 private:
-    AssociatedStrings& operator=(const AssociatedStrings& rhs);
+    AssociatedStrings &operator=(const AssociatedStrings &rhs);
 
-    STTBF* m_sttbf;
+    STTBF *m_sttbf;
 };
 
 } // namespace wvWare

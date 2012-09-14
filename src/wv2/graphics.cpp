@@ -21,9 +21,9 @@
 
 using namespace wvWare;
 
-Drawings::Drawings(OLEStreamReader* table, const Word97::FIB &fib) :
-        m_plcfspaMom(0), m_plcfspaHdr(0), m_plcftxbxTxt(0), m_plcfHdrtxbxTxt(0),
-        m_plcftxbxBkd(0), m_plcfHdrtxbxBkd(0)
+Drawings::Drawings(OLEStreamReader *table, const Word97::FIB &fib) :
+    m_plcfspaMom(0), m_plcfspaHdr(0), m_plcftxbxTxt(0), m_plcfHdrtxbxTxt(0),
+    m_plcftxbxBkd(0), m_plcfHdrtxbxBkd(0)
 {
     table->push();
 
@@ -57,7 +57,7 @@ Drawings::~Drawings()
 
 }
 
-EscherHeader::EscherHeader(OLEStreamReader* stream)
+EscherHeader::EscherHeader(OLEStreamReader *stream)
 {
     //read first 32 bits
     U32 shifterU32;
@@ -179,7 +179,7 @@ void EscherHeader::dump()
     wvlog << "Finished dumping Escher header." << std::endl;
 }
 
-FBSE::FBSE(OLEStreamReader* stream)
+FBSE::FBSE(OLEStreamReader *stream)
 {
     btWin32 = static_cast<MSOBLIPTYPE>(stream->readU8());
     btMacOS = static_cast<MSOBLIPTYPE>(stream->readU8());
@@ -239,12 +239,12 @@ int FBSE::getNameLength()
     return static_cast<unsigned int>(cbName);
 }
 
-U8* FBSE::getRgbUid()
+U8 *FBSE::getRgbUid()
 {
     return rgbUid;
 }
 
-Blip::Blip(OLEStreamReader* stream, string blipType)
+Blip::Blip(OLEStreamReader *stream, string blipType)
 {
     m_size = 0; //just an initial value
     m_blipType = blipType;

@@ -142,7 +142,7 @@ void GraphicsHandler::handleFloatingObject(unsigned int /*globalCP*/)
 
 }
 
-void GraphicsHandler::handleInlineObject(const PictureData& /*data*/)
+void GraphicsHandler::handleInlineObject(const PictureData & /*data*/)
 {
 }
 
@@ -162,7 +162,7 @@ void TextHandler::pageBreak()
 {
 }
 
-void TextHandler::headersFound(const HeaderFunctor& parseHeaders)
+void TextHandler::headersFound(const HeaderFunctor &parseHeaders)
 {
     parseHeaders();
 }
@@ -175,7 +175,7 @@ void TextHandler::paragraphEnd()
 {
 }
 
-void TextHandler::runOfText(const UString& /*text*/, SharedPtr<const Word97::CHP> /*chp*/)
+void TextHandler::runOfText(const UString & /*text*/, SharedPtr<const Word97::CHP> /*chp*/)
 {
 }
 
@@ -186,7 +186,7 @@ void TextHandler::specialCharacter(SpecialCharacter /*character*/, SharedPtr<con
 void TextHandler::footnoteFound(FootnoteData /*data*/, UString characters,
                                 SharedPtr<const Word97::SEP> /*sep*/,
                                 SharedPtr<const Word97::CHP> chp,
-                                const FootnoteFunctor& parseFootnote)
+                                const FootnoteFunctor &parseFootnote)
 {
     if (characters[0].unicode() != 2)
         runOfText(characters, chp);   // The character shouldn't get lost unless it's the auto-number
@@ -194,7 +194,7 @@ void TextHandler::footnoteFound(FootnoteData /*data*/, UString characters,
 }
 
 void TextHandler::annotationFound(UString characters,
-                                  SharedPtr<const Word97::CHP> chp, const AnnotationFunctor& parseAnnotation)
+                                  SharedPtr<const Word97::CHP> chp, const AnnotationFunctor &parseAnnotation)
 {
 #ifdef WV_DEBUG_ANNOTATIONS
     wvlog << "TextHandler::annotationFound: ";
@@ -212,19 +212,19 @@ void TextHandler::footnoteAutoNumber(SharedPtr<const Word97::CHP> /*chp*/)
 {
 }
 
-void TextHandler::fieldStart(const FLD* /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
+void TextHandler::fieldStart(const FLD * /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
 {
 }
 
-void TextHandler::fieldSeparator(const FLD* /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
+void TextHandler::fieldSeparator(const FLD * /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
 {
 }
 
-void TextHandler::fieldEnd(const FLD* /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
+void TextHandler::fieldEnd(const FLD * /*fld*/, SharedPtr<const Word97::CHP> /*chp*/)
 {
 }
 
-void TextHandler::tableRowFound(const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> /*tap*/)
+void TextHandler::tableRowFound(const TableRowFunctor &tableRow, SharedPtr<const Word97::TAP> /*tap*/)
 {
     tableRow();
 }
@@ -233,14 +233,14 @@ void TextHandler::tableEndFound()
 {
 }
 
-void TextHandler::msodrawObjectFound(const unsigned int /*globalCP*/, const PictureData* /*data*/)
+void TextHandler::msodrawObjectFound(const unsigned int /*globalCP*/, const PictureData * /*data*/)
 {
 }
 
-void TextHandler::bookmarkStart(const BookmarkData& /*data*/)
+void TextHandler::bookmarkStart(const BookmarkData & /*data*/)
 {
 }
 
-void TextHandler::bookmarkEnd(const BookmarkData& /*data*/)
+void TextHandler::bookmarkEnd(const BookmarkData & /*data*/)
 {
 }

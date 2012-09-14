@@ -30,7 +30,8 @@
 
 namespace wvWare
 {
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 struct BKF;
 struct BKL;
@@ -46,7 +47,7 @@ struct BookmarkData;
 class Bookmarks
 {
 public:
-    Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib);
+    Bookmarks(OLEStreamReader *tableStream, const Word97::FIB &fib);
     ~Bookmarks();
 
     /**
@@ -55,7 +56,7 @@ public:
      * found.  If @param ok is false no valid bookmark has been found
      * and the returned BookmarkData structure is invalid.
      */
-    BookmarkData bookmark(U32 globalCP, bool& ok);
+    BookmarkData bookmark(U32 globalCP, bool &ok);
 
     /**
      * Returns the global CP of the next bookmark start,
@@ -76,8 +77,8 @@ public:
     void check(U32 globalCP);
 
 private:
-    Bookmarks(const Bookmarks& rhs);
-    Bookmarks& operator=(const Bookmarks& rhs);
+    Bookmarks(const Bookmarks &rhs);
+    Bookmarks &operator=(const Bookmarks &rhs);
 
     /**
      * Validate bookmarks.
@@ -85,15 +86,15 @@ private:
      */
     bool valid(U16 &num, const U32 ccpText);
 
-    PLCF<Word97::BKF>* m_start;
-    PLCFIterator<Word97::BKF>* m_startIt;
+    PLCF<Word97::BKF> *m_start;
+    PLCFIterator<Word97::BKF> *m_startIt;
 
     std::vector<UString> m_name;
     std::vector<UString>::const_iterator m_nameIt;
 
     //Used for MS Word Version 6,7 documents.
-    PLCF<Word97::BKL>* m_end;
-    PLCFIterator<Word97::BKL>* m_endIt;
+    PLCF<Word97::BKL> *m_end;
+    PLCFIterator<Word97::BKL> *m_endIt;
 
     //Used instead of m_end for MS Word 97 (aka Version 8)
     //documents.

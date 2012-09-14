@@ -26,7 +26,8 @@
 namespace wvWare
 {
 class OLEStreamReader;
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 struct FFN;
 }
@@ -42,14 +43,14 @@ public:
      * provides accesst to the internal font collection.
      * @param reader is either a table or a document stream (97+ / older versions)
      */
-    FontCollection(OLEStreamReader* reader, const Word97::FIB& fib);
+    FontCollection(OLEStreamReader *reader, const Word97::FIB &fib);
     ~FontCollection();
 
     /**
      * Returns the matching FFN structure for the given font code. If no matching
      * FFN is found, a fallback defaulting to "Helvetica" is returned.
      */
-    const Word97::FFN& font(S16 ftc) const;
+    const Word97::FFN &font(S16 ftc) const;
 
     /**
      * Dump all the font information, used for debugging.
@@ -57,11 +58,11 @@ public:
     void dump() const;
 
 private:
-    FontCollection(const FontCollection& rhs);
-    FontCollection& operator=(const FontCollection& rhs);
+    FontCollection(const FontCollection &rhs);
+    FontCollection &operator=(const FontCollection &rhs);
 
-    std::vector<Word97::FFN*> m_fonts;
-    Word97::FFN* m_fallbackFont;
+    std::vector<Word97::FFN *> m_fonts;
+    Word97::FFN *m_fallbackFont;
 };
 
 } // namespace wvWare

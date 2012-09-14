@@ -41,7 +41,8 @@ class OLEStreamWriter;
 class StyleSheet;
 class Style;
 
-namespace Word95 {
+namespace Word95
+{
 
 
 /**
@@ -98,27 +99,27 @@ struct DTTM {
     /**
      * minutes (0-59)
      */
-U16 mint: 6;
+    U16 mint: 6;
 
     /**
      * hours (0-23)
      */
-U16 hr: 5;
+    U16 hr: 5;
 
     /**
      * days of month (1-31)
      */
-U16 dom: 5;
+    U16 dom: 5;
 
     /**
      * months (1-12)
      */
-U16 mon: 4;
+    U16 mon: 4;
 
     /**
      * years (1900-2411)-1900
      */
-U16 yr: 9;
+    U16 yr: 9;
 
     /**
      * weekday
@@ -130,7 +131,7 @@ U16 yr: 9;
      * Friday=5
      * Saturday=6
      */
-U16 wdy: 3;
+    U16 wdy: 3;
 
 }; // DTTM
 
@@ -173,12 +174,12 @@ struct PRM2 {
     /**
      * set to 1 for variant 2
      */
-U16 fComplex: 1;
+    U16 fComplex: 1;
 
     /**
      * index to a grpprl stored in CLX portion of file.
      */
-U16 igrpprl: 15;
+    U16 igrpprl: 15;
 
 }; // PRM2
 
@@ -238,12 +239,12 @@ struct PRM {
     /**
      * set to 0 for variant 1
      */
-U8 fComplex: 1;
+    U8 fComplex: 1;
 
     /**
      * sprm opcode
      */
-U8 sprm: 7;
+    U8 sprm: 7;
 
     /**
      * sprm's second byte if necessary
@@ -310,12 +311,12 @@ struct SHD {
     /**
      * foreground color (see chp.ico)
      */
-U16 icoFore: 5;
+    U16 icoFore: 5;
 
     /**
      * background color (see chp.ico)
      */
-U16 icoBack: 5;
+    U16 icoBack: 5;
 
     /**
      * shading pattern (see ipat table below)
@@ -374,7 +375,7 @@ U16 icoBack: 5;
      * 61 97.5 Percent
      * 62 97 Percent
      */
-U16 ipat: 6;
+    U16 ipat: 6;
 
 }; // SHD
 
@@ -439,28 +440,28 @@ struct PHE {
     /**
      * reserved
      */
-U16 fSpare: 1;
+    U16 fSpare: 1;
 
     /**
      * phe entry is invalid when == 1
      */
-U16 fUnk: 1;
+    U16 fUnk: 1;
 
     /**
      * when 1, total height of paragraph is known but lines in paragraph have
      * different heights.
      */
-U16 fDiffLines: 1;
+    U16 fDiffLines: 1;
 
     /**
      * reserved
      */
-U16 unused0_3: 5;
+    U16 unused0_3: 5;
 
     /**
      * when fDiffLines is 0 is number of lines in paragraph
      */
-U16 clMac: 8;
+    U16 clMac: 8;
 
     /**
      * width of lines in paragraph
@@ -541,7 +542,7 @@ struct BRC {
      * brcType is nonzero.When dxpLineWidth is 6, it means that the border line
      * is dotted.When dxpLineWidth is 7, it means the border line is dashed.
      */
-U16 dxpLineWidth: 3;
+    U16 dxpLineWidth: 3;
 
     /**
      * border type code
@@ -550,24 +551,24 @@ U16 dxpLineWidth: 3;
      * 2 thick
      * 3 double
      */
-U16 brcType: 2;
+    U16 brcType: 2;
 
     /**
      * when 1, border is drawn with shadow. Must be 0 when BRC is a substructure
      * of the TC
      */
-U16 fShadow: 1;
+    U16 fShadow: 1;
 
     /**
      * color code (see chp.ico)
      */
-U16 ico: 5;
+    U16 ico: 5;
 
     /**
      * width of space to maintain between border and text within border. Must
      * be 0 when BRC is a substructure of the TC.Stored in points for Windows.
      */
-U16 dxpSpace: 5;
+    U16 dxpSpace: 5;
 
 }; // BRC
 
@@ -634,56 +635,56 @@ struct TLP {
     /**
      * when ==1, use the border properties from the selected table look
      */
-U16 fBorders: 1;
+    U16 fBorders: 1;
 
     /**
      * when ==1, use the shading properties from the selected table look
      */
-U16 fShading: 1;
+    U16 fShading: 1;
 
     /**
      * when ==1, use the font from the selected table look
      */
-U16 fFont: 1;
+    U16 fFont: 1;
 
     /**
      * when ==1, use the color from the selected table look
      */
-U16 fColor: 1;
+    U16 fColor: 1;
 
     /**
      * when ==1, do best fit from the selected table look
      */
-U16 fBestFit: 1;
+    U16 fBestFit: 1;
 
     /**
      * when ==1, apply properties from the selected table look to the header
      * rows in the table
      */
-U16 fHdrRows: 1;
+    U16 fHdrRows: 1;
 
     /**
      * when ==1, apply properties from the selected table look to the last
      * row in the table
      */
-U16 fLastRow: 1;
+    U16 fLastRow: 1;
 
     /**
      * when ==1, apply properties from the selected table look to the header
      * columns ofthe table
      */
-U16 fHdrCols: 1;
+    U16 fHdrCols: 1;
 
     /**
      * when ==1, apply properties from the selected table look to the last
      * column ofthe table
      */
-U16 fLastCol: 1;
+    U16 fLastCol: 1;
 
     /**
      * unused
      */
-U16 unused2_9: 7;
+    U16 unused2_9: 7;
 
 }; // TLP
 
@@ -751,17 +752,17 @@ struct TC {
      * consolidated and the text within the cells is interpreted as belonging
      * to one text stream for purposes of calculating line breaks.
      */
-U16 fFirstMerged: 1;
+    U16 fFirstMerged: 1;
 
     /**
      * set to 1 when cell has been merged with preceding cell.
      */
-U16 fMerged: 1;
+    U16 fMerged: 1;
 
     /**
      * reserved
      */
-U16 fUnused: 14;
+    U16 fUnused: 14;
 
     /**
      * specification of the top border of a table cell
@@ -944,12 +945,12 @@ struct DPTXBX {
     /**
      * 1 if the textbox has rounded corners
      */
-U16 fRoundCorners: 1;
+    U16 fRoundCorners: 1;
 
     /**
      * REVIEW davebu
      */
-U16 zaShape: 15;
+    U16 zaShape: 15;
 
     /**
      * REVIEW davebu
@@ -1042,36 +1043,36 @@ struct DPPOLYLINE {
      * 1 Hollow
      * 2 Filled
      */
-U16 eppsStart: 2;
+    U16 eppsStart: 2;
 
     /**
      * Start EndPoint Property Weight
      */
-U16 eppwStart: 2;
+    U16 eppwStart: 2;
 
     /**
      * Start EndPoint Property length
      */
-U16 epplStart: 2;
+    U16 epplStart: 2;
 
-U16 unused30_6: 10;
+    U16 unused30_6: 10;
 
     /**
      * End EndPoint Property Style
      */
-U16 eppsEnd: 2;
+    U16 eppsEnd: 2;
 
     /**
      * End EndPoint Property Weight
      */
-U16 eppwEnd: 2;
+    U16 eppwEnd: 2;
 
     /**
      * End EndPoint Property length
      */
-U16 epplEnd: 2;
+    U16 epplEnd: 2;
 
-U16 unused32_6: 10;
+    U16 unused32_6: 10;
 
     /**
      * Shadow Property Intensity
@@ -1091,12 +1092,12 @@ U16 unused32_6: 10;
     /**
      * 1 if this is a polygon
      */
-U16 fPolygon: 1;
+    U16 fPolygon: 1;
 
     /**
      * count of points
      */
-U16 cpt: 15;
+    U16 cpt: 15;
 
     /**
      * These are the endpoints of the first line.
@@ -1216,27 +1217,27 @@ struct TAP : public Shared {
     /**
      * used internally by Word
      */
-U16 fCaFull: 1;
+    U16 fCaFull: 1;
 
     /**
      * used internally by Word
      */
-U16 fFirstRow: 1;
+    U16 fFirstRow: 1;
 
     /**
      * used internally by Word
      */
-U16 fLastRow: 1;
+    U16 fLastRow: 1;
 
     /**
      * used internally by Word
      */
-U16 fOutline: 1;
+    U16 fOutline: 1;
 
     /**
      * reserved
      */
-U16 unused12_4: 12;
+    U16 unused12_4: 12;
 
     /**
      * count of cells defined for this row. ItcMac must be >= 0 and less than
@@ -1431,96 +1432,96 @@ struct ANLD {
      * 2 right justify
      * 3 left and right justify
      */
-U8 jc: 2;
+    U8 jc: 2;
 
     /**
      * when ==1, number generated will include previous levels (used for legal
      * numbering)
      */
-U8 fPrev: 1;
+    U8 fPrev: 1;
 
     /**
      * when ==1, number will be displayed using a hanging indent
      */
-U8 fHang: 1;
+    U8 fHang: 1;
 
     /**
      * when ==1, boldness of number will be determined by anld.fBold.
      */
-U8 fSetBold: 1;
+    U8 fSetBold: 1;
 
     /**
      * when ==1, italicness of number will be determined by anld.fItalic
      */
-U8 fSetItalic: 1;
+    U8 fSetItalic: 1;
 
     /**
      * when ==1, anld.fSmallCaps will determine whether number will be displayed
      * in small caps or not.
      */
-U8 fSetSmallCaps: 1;
+    U8 fSetSmallCaps: 1;
 
     /**
      * when ==1, anld.fCaps will determine whether number will be displayed
      * capitalized or not
      */
-U8 fSetCaps: 1;
+    U8 fSetCaps: 1;
 
     /**
      * when ==1, anld.fStrike will determine whether the number will be displayed
      * using strikethrough or not.
      */
-U8 fSetStrike: 1;
+    U8 fSetStrike: 1;
 
     /**
      * when ==1, anld.kul will determine the underlining state of the autonumber.
      */
-U8 fSetKul: 1;
+    U8 fSetKul: 1;
 
     /**
      * when ==1, autonumber will be displayed with a single prefixing space
      * character
      */
-U8 fPrevSpace: 1;
+    U8 fPrevSpace: 1;
 
     /**
      * determines boldness of autonumber when anld.fSetBold == 1.
      */
-U8 fBold: 1;
+    U8 fBold: 1;
 
     /**
      * determines italicness of autonumber when anld.fSetItalic == 1.
      */
-U8 fItalic: 1;
+    U8 fItalic: 1;
 
     /**
      * determines whether autonumber will be displayed using small caps when
      * anld.fSetSmallCaps == 1.
      */
-U8 fSmallCaps: 1;
+    U8 fSmallCaps: 1;
 
     /**
      * determines whether autonumber will be displayed using caps when anld.fSetCaps
      * == 1.
      */
-U8 fCaps: 1;
+    U8 fCaps: 1;
 
     /**
      * determines whether autonumber will be displayed using caps when anld.fSetStrike
      * == 1.
      */
-U8 fStrike: 1;
+    U8 fStrike: 1;
 
     /**
      * determines whether autonumber will be displayed with underlining when
      * anld.fSetKul == 1.
      */
-U8 kul: 3;
+    U8 kul: 3;
 
     /**
      * color of autonumber
      */
-U8 ico: 5;
+    U8 ico: 5;
 
     /**
      * font code of autonumber
@@ -1664,96 +1665,96 @@ struct ANLV {
      * 2 right justify
      * 3 left and right justify
      */
-U8 jc: 2;
+    U8 jc: 2;
 
     /**
      * when ==1, number generated will include previous levels (used for legal
      * numbering)
      */
-U8 fPrev: 1;
+    U8 fPrev: 1;
 
     /**
      * when ==1, number will be displayed using a hanging indent
      */
-U8 fHang: 1;
+    U8 fHang: 1;
 
     /**
      * when ==1, boldness of number will be determined by anld.fBold.
      */
-U8 fSetBold: 1;
+    U8 fSetBold: 1;
 
     /**
      * when ==1, italicness of number will be determined by anld.fItalic
      */
-U8 fSetItalic: 1;
+    U8 fSetItalic: 1;
 
     /**
      * when ==1, anld.fSmallCaps will determine whether number will be displayed
      * in small caps or not.
      */
-U8 fSetSmallCaps: 1;
+    U8 fSetSmallCaps: 1;
 
     /**
      * when ==1, anld.fCaps will determine whether number will be displayed
      * capitalized or not
      */
-U8 fSetCaps: 1;
+    U8 fSetCaps: 1;
 
     /**
      * when ==1, anld.fStrike will determine whether the number will be displayed
      * using strikethrough or not.
      */
-U8 fSetStrike: 1;
+    U8 fSetStrike: 1;
 
     /**
      * when ==1, anld.kul will determine the underlining state of the autonumber.
      */
-U8 fSetKul: 1;
+    U8 fSetKul: 1;
 
     /**
      * when ==1, autonumber will be displayed with a single prefixing space
      * character
      */
-U8 fPrevSpace: 1;
+    U8 fPrevSpace: 1;
 
     /**
      * determines boldness of autonumber when anld.fSetBold == 1.
      */
-U8 fBold: 1;
+    U8 fBold: 1;
 
     /**
      * determines italicness of autonumber when anld.fSetItalic == 1.
      */
-U8 fItalic: 1;
+    U8 fItalic: 1;
 
     /**
      * determines whether autonumber will be displayed using small caps when
      * anld.fSetSmallCaps == 1.
      */
-U8 fSmallCaps: 1;
+    U8 fSmallCaps: 1;
 
     /**
      * determines whether autonumber will be displayed using caps when anld.fSetCaps
      * == 1.
      */
-U8 fCaps: 1;
+    U8 fCaps: 1;
 
     /**
      * determines whether autonumber will be displayed using caps when anld.fSetStrike
      * == 1.
      */
-U8 fStrike: 1;
+    U8 fStrike: 1;
 
     /**
      * determines whetherautonumber will be displayed with underlining when
      * anld.fSetKul == 1.
      */
-U8 kul: 3;
+    U8 kul: 3;
 
     /**
      * color of autonumber
      */
-U8 ico: 5;
+    U8 ico: 5;
 
     /**
      * font code of autonumber
@@ -1828,25 +1829,25 @@ struct BKF {
      * when bkf.fCol is 1, this is the index to the first column of a table
      * column bookmark.
      */
-U16 itcFirst: 7;
+    U16 itcFirst: 7;
 
     /**
      * when 1, this indicates that this bookmark is marking the range of a
      * Macintosh Publisher section.
      */
-U16 fPub: 1;
+    U16 fPub: 1;
 
     /**
      * when bkf.fCol is 1, this is the index to limit column of a table column
      * bookmark.
      */
-U16 itcLim: 7;
+    U16 itcLim: 7;
 
     /**
      * when 1, this bookmark marks a range of columns in a table specified
      * by [bkf.itcFirst, bkf.itcLim).
      */
-U16 fCol: 1;
+    U16 fCol: 1;
 
 }; // BKF
 
@@ -1932,34 +1933,34 @@ struct BRC10 {
     /**
      * width of second line of border in pixels
      */
-U16 dxpLine2Width: 3;
+    U16 dxpLine2Width: 3;
 
     /**
      * distance to maintain between both lines of borderin pixels
      */
-U16 dxpSpaceBetween: 3;
+    U16 dxpSpaceBetween: 3;
 
     /**
      * width of first border line in pixels
      */
-U16 dxpLine1Width: 3;
+    U16 dxpLine1Width: 3;
 
     /**
      * width of space to maintain between border and text within border. Must
      * be 0 when BRC is a substructure of the TC.
      */
-U16 dxpSpace: 5;
+    U16 dxpSpace: 5;
 
     /**
      * when 1, border is drawn with shadow. Must be 0 when BRC10 is a substructure
      * of the TC.
      */
-U16 fShadow: 1;
+    U16 fShadow: 1;
 
     /**
      * reserved
      */
-U16 fSpare: 1;
+    U16 fSpare: 1;
 
 }; // BRC10
 
@@ -2058,75 +2059,75 @@ struct CHP : public Shared {
     /**
      * text is bold when 1 , and not bold when 0.
      */
-U8 fBold: 1;
+    U8 fBold: 1;
 
     /**
      * italic when 1, not italic when 0
      */
-U8 fItalic: 1;
+    U8 fItalic: 1;
 
     /**
      * when 1, text has been deleted and will be displayed with strikethrus
      * when revision marked text is to displayed
      */
-U8 fRMarkDel: 1;
+    U8 fRMarkDel: 1;
 
     /**
      * outlined when 1, not outlined when 0
      */
-U8 fOutline: 1;
+    U8 fOutline: 1;
 
     /**
      * &lt;needs work>
      */
-U8 fFldVanish: 1;
+    U8 fFldVanish: 1;
 
     /**
      * displayed with small caps when 1, no small caps when 0
      */
-U8 fSmallCaps: 1;
+    U8 fSmallCaps: 1;
 
     /**
      * displayed with caps when 1, no caps when 0
      */
-U8 fCaps: 1;
+    U8 fCaps: 1;
 
-U8 fVanish: 1;
+    U8 fVanish: 1;
 
     /**
      * when 1, text is newly typed since the last time revision marks have
      * been accepted and will be displayed with an underline when revision marked
      * text is to be displayed
      */
-U8 fRMark: 1;
+    U8 fRMark: 1;
 
     /**
      * character is a Word special character when 1, not a special character
      * when 0
      */
-U8 fSpec: 1;
+    U8 fSpec: 1;
 
     /**
      * displayed with strikethrough when 1, no strikethroughwhen 0
      */
-U8 fStrike: 1;
+    U8 fStrike: 1;
 
     /**
      * embedded object when 1, not an embedded object when 0
      */
-U8 fObj: 1;
+    U8 fObj: 1;
 
     /**
      * character is drawn with a shdow when 1; drawn without shadow when 0
      */
-U8 fShadow: 1;
+    U8 fShadow: 1;
 
     /**
      * character is displayed in lower case when 1. No case transformation
      * is performed when 0. This field may be set to 1 only when chp.fSmallCaps
      * is 1.
      */
-U8 fLowerCase: 1;
+    U8 fLowerCase: 1;
 
     /**
      * when 1, chp.fcPic points to an FFDATA the data structure binary data
@@ -2134,7 +2135,7 @@ U8 fLowerCase: 1;
      * is also 1 and the special character in the document stream that has this
      * property is a chPicture (0x01).
      */
-U8 fData: 1;
+    U8 fData: 1;
 
     /**
      * when 1, chp.lTagObj specifies a particular object in the object stream
@@ -2143,7 +2144,7 @@ U8 fData: 1;
      * chp.fOle2 may only be 1 when chp.fSpec is also 1 and the special character
      * in the document stream that has this property is a chPicture (0x01).
      */
-U8 fOle2: 1;
+    U8 fOle2: 1;
 
     /**
      * Reserved
@@ -2173,22 +2174,22 @@ U8 fOle2: 1;
      * 1 means text in run is superscrpted
      * 2 means text in run is subscripted
      */
-U8 iss: 3;
+    U8 iss: 3;
 
     /**
      * reserved
      */
-U8 unused10_3: 3;
+    U8 unused10_3: 3;
 
     /**
      * used by Word internally, not stored in file
      */
-U8 fSysVanish: 1;
+    U8 fSysVanish: 1;
 
     /**
      * reserved
      */
-U8 unused10_7: 1;
+    U8 unused10_7: 1;
 
     /**
      * color of text:
@@ -2210,7 +2211,7 @@ U8 unused10_7: 1;
      * 15 DkGray
      * 16 LtGray
      */
-U8 ico: 5;
+    U8 ico: 5;
 
     /**
      * underline code:
@@ -2221,7 +2222,7 @@ U8 ico: 5;
      * 4 dotted
      * 5 hidden
      */
-U8 kul: 3;
+    U8 kul: 3;
 
     /**
      * super/subscript position in half points; positive means text is raised;
@@ -2591,12 +2592,12 @@ struct DCS {
      * 1 normal drop cap
      * 2 drop cap in margin
      */
-U8 fdct: 3;
+    U8 fdct: 3;
 
     /**
      * count of lines to drop
      */
-U8 lines: 5;
+    U8 lines: 5;
 
     /**
      * reserved
@@ -2674,9 +2675,9 @@ struct DO {
     /**
      * 1 if the DO anchor is locked
      */
-U16 fAnchorLock: 1;
+    U16 fAnchorLock: 1;
 
-U16 unused8: 15;
+    U16 unused8: 15;
 
     /**
      * variable length array of drawing primitives
@@ -2724,18 +2725,18 @@ struct DOP {
     /**
      * 1 when facing pages should be printed (default 0)
      */
-U16 fFacingPages: 1;
+    U16 fFacingPages: 1;
 
     /**
      * 1 when widow control is in effect. 0 when widow control disabled. (default
      * 1)
      */
-U16 fWidowControl: 1;
+    U16 fWidowControl: 1;
 
     /**
      * 1 when doc is a main doc for Print Merge Helper, 0 when not; default=0
      */
-U16 fPMHMainDoc: 1;
+    U16 fPMHMainDoc: 1;
 
     /**
      * Default line suppression storage
@@ -2743,7 +2744,7 @@ U16 fPMHMainDoc: 1;
      * 1= no line suppression
      * default=0
      */
-U16 grfSuppression: 2;
+    U16 grfSuppression: 2;
 
     /**
      * footnote position code
@@ -2752,18 +2753,18 @@ U16 grfSuppression: 2;
      * 2 print immediately beneath text
      * (default 1)
      */
-U16 fpc: 2;
+    U16 fpc: 2;
 
     /**
      * unused (default 0)
      */
-U16 unused0_7: 1;
+    U16 unused0_7: 1;
 
     /**
      * specification of document headers and footers. See explanation under
      * Headers and Footers topic. (default 0)
      */
-U16 grpfIhdt: 8;
+    U16 grpfIhdt: 8;
 
     /**
      * restart index for footnote
@@ -2772,203 +2773,203 @@ U16 grpfIhdt: 8;
      * 2 restart for each page
      * (default 0)
      */
-U16 rncFtn: 2;
+    U16 rncFtn: 2;
 
     /**
      * initial footnote number for document (default 1)
      */
-U16 nFtn: 14;
+    U16 nFtn: 14;
 
     /**
      * when 1, indicates that information in the hplcpad should be refreshed
      * since outline has been dirtied
      */
-U8 fOutlineDirtySave: 1;
+    U8 fOutlineDirtySave: 1;
 
     /**
      * reserved
      */
-U8 unused4_1: 7;
+    U8 unused4_1: 7;
 
     /**
      * when 1, Word believes all pictures recorded in the document were created
      * on a Macintosh
      */
-U8 fOnlyMacPics: 1;
+    U8 fOnlyMacPics: 1;
 
     /**
      * when 1, Word believes all pictures recorded in the document were created
      * in Windows
      */
-U8 fOnlyWinPics: 1;
+    U8 fOnlyWinPics: 1;
 
     /**
      * when 1, document was created as a print merge labels document
      */
-U8 fLabelDoc: 1;
+    U8 fLabelDoc: 1;
 
     /**
      * when 1, Word is allowed to hyphenate words that are capitalized. When
      * 0, capitalized may not be hyphenated
      */
-U8 fHyphCapitals: 1;
+    U8 fHyphCapitals: 1;
 
     /**
      * when 1, Word will hyphenate newly typed text as a background task
      */
-U8 fAutoHyphen: 1;
+    U8 fAutoHyphen: 1;
 
-U8 fFormNoFields: 1;
+    U8 fFormNoFields: 1;
 
     /**
      * when 1, Word will merge styles from its template
      */
-U8 fLinkStyles: 1;
+    U8 fLinkStyles: 1;
 
     /**
      * when 1, Word will mark revisions as the document is edited
      */
-U8 fRevMarking: 1;
+    U8 fRevMarking: 1;
 
     /**
      * always make backup when document saved when 1.
      */
-U8 fBackup: 1;
+    U8 fBackup: 1;
 
-U8 fExactCWords: 1;
+    U8 fExactCWords: 1;
 
-U8 fPagHidden: 1;
+    U8 fPagHidden: 1;
 
-U8 fPagResults: 1;
+    U8 fPagResults: 1;
 
     /**
      * when 1, annotations are locked for editing
      */
-U8 fLockAtn: 1;
+    U8 fLockAtn: 1;
 
     /**
      * swap margins on left/right pages when 1.
      */
-U8 fMirrorMargins: 1;
+    U8 fMirrorMargins: 1;
 
     /**
      * user has recommended that this doc be opened read-only when 1
      */
-U8 fReadOnlyRecommended: 1;
+    U8 fReadOnlyRecommended: 1;
 
     /**
      * when 1, use TrueType fonts by default (flag obeyed only when doc was
      * created by WinWord 2.x)
      */
-U8 fDfltTrueType: 1;
+    U8 fDfltTrueType: 1;
 
     /**
      * when 1, file created with SUPPRESSTOPSPACING=YES in win.ini. (flag
      * obeyed only when doc was created by WinWord 2.x).
      */
-U8 fPagSuppressTopSpacing: 1;
+    U8 fPagSuppressTopSpacing: 1;
 
     /**
      * when 1, document is protected from edit operations
      */
-U8 fProtEnabled: 1;
+    U8 fProtEnabled: 1;
 
     /**
      * when 1, restrict selections to occur only within form fields
      */
-U8 fDispFormFldSel: 1;
+    U8 fDispFormFldSel: 1;
 
     /**
      * when 1, show revision markings on screen
      */
-U8 fRMView: 1;
+    U8 fRMView: 1;
 
     /**
      * when 1, print revision marks when document is printed
      */
-U8 fRMPrint: 1;
+    U8 fRMPrint: 1;
 
-U8 fWriteReservation: 1;
+    U8 fWriteReservation: 1;
 
     /**
      * when 1, the current revision marking state is locked
      */
-U8 fLockRev: 1;
+    U8 fLockRev: 1;
 
     /**
      * when 1, document contains embedded True Type fonts
      */
-U8 fEmbedFonts: 1;
+    U8 fEmbedFonts: 1;
 
     /**
      * compatability option: when 1, don?t add automatic tab stops for hanging
      * indent
      */
-U16 copts_fNoTabForInd: 1;
+    U16 copts_fNoTabForInd: 1;
 
     /**
      * compatability option: when 1, don?t add extra space for raised or lowered
      * characters
      */
-U16 copts_fNoSpaceRaiseLower: 1;
+    U16 copts_fNoSpaceRaiseLower: 1;
 
     /**
      * compatability option: when 1, supress the paragraph Space Before and
      * Space After options after a page break
      */
-U16 copts_fSuppressSpbfAfterPageBreak: 1;
+    U16 copts_fSuppressSpbfAfterPageBreak: 1;
 
     /**
      * compatability option: when 1, wrap trailing spaces at the end of a
      * line to the next line
      */
-U16 copts_fWrapTrailSpaces: 1;
+    U16 copts_fWrapTrailSpaces: 1;
 
     /**
      * compatability option: when 1, print colors as black on non-color printers
      */
-U16 copts_fMapPrintTextColor: 1;
+    U16 copts_fMapPrintTextColor: 1;
 
     /**
      * compatability option: when 1, don?t balance columns for Continuous
      * Section starts
      */
-U16 copts_fNoColumnBalance: 1;
+    U16 copts_fNoColumnBalance: 1;
 
-U16 copts_fConvMailMergeEsc: 1;
+    U16 copts_fConvMailMergeEsc: 1;
 
     /**
      * compatability option: when 1, supress extra line spacing at top of
      * page
      */
-U16 copts_fSupressTopSpacing: 1;
+    U16 copts_fSupressTopSpacing: 1;
 
     /**
      * compatability option: when 1, combine table borders like Word 5.x for
      * the Macintosh
      */
-U16 copts_fOrigWordTableRules: 1;
+    U16 copts_fOrigWordTableRules: 1;
 
     /**
      * compatability option: when 1, don?t blank area between metafile pictures
      */
-U16 copts_fTransparentMetafiles: 1;
+    U16 copts_fTransparentMetafiles: 1;
 
     /**
      * compatability option: when 1, show hard page or column breaks in frames
      */
-U16 copts_fShowBreaksInFrames: 1;
+    U16 copts_fShowBreaksInFrames: 1;
 
     /**
      * compatability option: when 1, swap left and right pages on odd facing
      * pages
      */
-U16 copts_fSwapBordersFacingPgs: 1;
+    U16 copts_fSwapBordersFacingPgs: 1;
 
     /**
      * reserved
      */
-U16 unused8_12: 4;
+    U16 unused8_12: 4;
 
     /**
      * (default 720 twips) default tab width
@@ -3043,19 +3044,19 @@ U16 unused8_12: 4;
      * 1 restart for each section
      * 2 restart for each page
      */
-U16 rncEdn: 2;
+    U16 rncEdn: 2;
 
     /**
      * beginning endnote number
      */
-U16 nEdn: 14;
+    U16 nEdn: 14;
 
     /**
      * endnote position code
      * 0 display endnotes at end of section
      * 3 display endnotes at end of document
      */
-U16 epc: 2;
+    U16 epc: 2;
 
     /**
      * number format code for auto footnotes
@@ -3066,7 +3067,7 @@ U16 epc: 2;
      * 4 Lower case letter
      * 5 Ordinal
      */
-U16 nfcFtnRef: 4;
+    U16 nfcFtnRef: 4;
 
     /**
      * number format code for auto endnotes
@@ -3077,32 +3078,32 @@ U16 nfcFtnRef: 4;
      * 4 Lower case letter
      * 5 Ordinal
      */
-U16 nfcEdnRef: 4;
+    U16 nfcEdnRef: 4;
 
     /**
      * only print data inside of form fields
      */
-U16 fPrintFormData: 1;
+    U16 fPrintFormData: 1;
 
     /**
      * only save document data that is inside of a form field.
      */
-U16 fSaveFormData: 1;
+    U16 fSaveFormData: 1;
 
     /**
      * shade form fields
      */
-U16 fShadeFormData: 1;
+    U16 fShadeFormData: 1;
 
     /**
      * reserved
      */
-U16 unused54_13: 2;
+    U16 unused54_13: 2;
 
     /**
      * when 1, include footnotes and endnotes in word count
      */
-U16 fWCFtnEdn: 1;
+    U16 fWCFtnEdn: 1;
 
     /**
      * count of lines tallied by last Word Count operation
@@ -3151,13 +3152,13 @@ U16 fWCFtnEdn: 1;
      * 1 Outline view
      * 2 Page View
      */
-U16 wvkSaved: 3;
+    U16 wvkSaved: 3;
 
-U16 wScaleSaved: 9;
+    U16 wScaleSaved: 9;
 
-U16 zkSaved: 2;
+    U16 zkSaved: 2;
 
-U16 unused82_14: 2;
+    U16 unused82_14: 2;
 
 }; // DOP
 
@@ -3250,12 +3251,12 @@ struct DPARC {
     /**
      * REVIEW davebu
      */
-U16 fLeft: 8;
+    U16 fLeft: 8;
 
     /**
      * REVIEW davebu
      */
-U16 fUp: 8;
+    U16 fUp: 8;
 
 }; // DPARC
 
@@ -3501,36 +3502,36 @@ struct DPLINE {
      * 1 Hollow
      * 2 Filled
      */
-U16 eppsStart: 2;
+    U16 eppsStart: 2;
 
     /**
      * Start EndPoint Property Weight
      */
-U16 eppwStart: 2;
+    U16 eppwStart: 2;
 
     /**
      * Start EndPoint Property length
      */
-U16 epplStart: 2;
+    U16 epplStart: 2;
 
-U16 unused24_6: 10;
+    U16 unused24_6: 10;
 
     /**
      * End EndPoint Property Style
      */
-U16 eppsEnd: 2;
+    U16 eppsEnd: 2;
 
     /**
      * End EndPoint Property Weight
      */
-U16 eppwEnd: 2;
+    U16 eppwEnd: 2;
 
     /**
      * End EndPoint Property length
      */
-U16 epplEnd: 2;
+    U16 epplEnd: 2;
 
-U16 unused26_6: 10;
+    U16 unused26_6: 10;
 
     /**
      * Shadow Property Intensity REVIEW davebu
@@ -3638,12 +3639,12 @@ struct DPRECT {
     /**
      * 1 if the textbox has rounded corners
      */
-U16 fRoundCorners: 1;
+    U16 fRoundCorners: 1;
 
     /**
      * REVIEW davebu
      */
-U16 zaShape: 15;
+    U16 zaShape: 15;
 
 }; // DPRECT
 
@@ -3724,36 +3725,36 @@ struct DPSAMPLE {
      * 1 Hollow
      * 2 Filled
      */
-U16 eppsStart: 2;
+    U16 eppsStart: 2;
 
     /**
      * Start EndPoint Property Weight
      */
-U16 eppwStart: 2;
+    U16 eppwStart: 2;
 
     /**
      * Start EndPoint Property length
      */
-U16 epplStart: 2;
+    U16 epplStart: 2;
 
-U16 unused30_6: 10;
+    U16 unused30_6: 10;
 
     /**
      * End EndPoint Property Style
      */
-U16 eppsEnd: 2;
+    U16 eppsEnd: 2;
 
     /**
      * End EndPoint Property Weight
      */
-U16 eppwEnd: 2;
+    U16 eppwEnd: 2;
 
     /**
      * End EndPoint Property length
      */
-U16 epplEnd: 2;
+    U16 epplEnd: 2;
 
-U16 unused32_6: 10;
+    U16 unused32_6: 10;
 
     /**
      * Shadow Property Intensity
@@ -3790,12 +3791,12 @@ U16 unused32_6: 10;
     /**
      * 1 if the textbox has rounded corners
      */
-U16 fRoundCorners: 1;
+    U16 fRoundCorners: 1;
 
     /**
      * REVIEW davebu
      */
-U16 zaShape: 15;
+    U16 zaShape: 15;
 
     /**
      * REVIEW davebu
@@ -4022,54 +4023,54 @@ struct WV2_EXPORT FIB {
 
     U16 pnNext;
 
-U16 fDot: 1;
+    U16 fDot: 1;
 
-U16 fGlsy: 1;
+    U16 fGlsy: 1;
 
     /**
      * when 1, file is in complex, fast-saved format.
      */
-U16 fComplex: 1;
+    U16 fComplex: 1;
 
     /**
      * file contains 1 or more pictures
      */
-U16 fHasPic: 1;
+    U16 fHasPic: 1;
 
     /**
      * count of times file was quicksaved
      */
-U16 cQuickSaves: 4;
+    U16 cQuickSaves: 4;
 
     /**
      * 1 if file is encrypted, 0 if not
      */
-U16 fEncrypted: 1;
+    U16 fEncrypted: 1;
 
     /**
      * reserved
      */
-U16 unused10_9: 1;
+    U16 unused10_9: 1;
 
     /**
      * =1 when user has recommended that file be read read-only
      */
-U16 fReadOnlyRecommended: 1;
+    U16 fReadOnlyRecommended: 1;
 
     /**
      * =1, when file owner has made the file write reserved
      */
-U16 fWriteReservation: 1;
+    U16 fWriteReservation: 1;
 
     /**
      * =1, when using extended character set in file
      */
-U16 fExtChar: 1;
+    U16 fExtChar: 1;
 
     /**
      * unused
      */
-U16 unused10_13: 3;
+    U16 unused10_13: 3;
 
     U16 nFibBack;
 
@@ -5268,14 +5269,14 @@ struct PAP : public Shared {
      */
     U8 fPageBreakBefore;
 
-U8 fBrLnAbove: 1;
+    U8 fBrLnAbove: 1;
 
-U8 fBrLnBelow: 1;
+    U8 fBrLnBelow: 1;
 
     /**
      * reserved
      */
-U8 fUnused: 2;
+    U8 fUnused: 2;
 
     /**
      * vertical position code. Specifies coordinate frame to use when paragraphs
@@ -5285,7 +5286,7 @@ U8 fUnused: 2;
      * 2 coordinates are relative to text.This means: relative to where the
      * next non-APO text would have been placed if this APO did not exist.
      */
-U8 pcVert: 2;
+    U8 pcVert: 2;
 
     /**
      * horizontal position code. Specifies coordinate frame to use when paragraphs
@@ -5294,7 +5295,7 @@ U8 pcVert: 2;
      * 1 coordinates are relative to margin
      * 2 coordinates are relative to page
      */
-U8 pcHorz: 2;
+    U8 pcHorz: 2;
 
     /**
      * rectangle border codes (the brcp and brcl fields have been superceded
@@ -5487,12 +5488,12 @@ U8 pcHorz: 2;
     /**
      * height of abs obj; 0 == Auto
      */
-U16 dyaHeight: 15;
+    U16 dyaHeight: 15;
 
     /**
      * 0 = Exact, 1 = At Least
      */
-U16 fMinHeight: 1;
+    U16 fMinHeight: 1;
 
     /**
      * shading
@@ -5757,24 +5758,24 @@ struct PCD {
     /**
      * when 1, means that piece contains no end of paragraph marks.
      */
-U16 fNoParaLast: 1;
+    U16 fNoParaLast: 1;
 
     /**
      * used internally by Word
      */
-U16 fPaphNil: 1;
+    U16 fPaphNil: 1;
 
     /**
      * used internally by Word
      */
-U16 fCopied: 1;
+    U16 fCopied: 1;
 
-U16 unused0_3: 5;
+    U16 unused0_3: 5;
 
     /**
      * used internally by Word
      */
-U16 fn: 8;
+    U16 fn: 8;
 
     /**
      * file offset of beginning of piece. The size of the ithpiece can be
@@ -5826,62 +5827,62 @@ struct PGD {
     void clear();
 
     // Data
-U16 unused0_0: 5;
+    U16 unused0_0: 5;
 
     /**
      * redefine fEmptyPage and fAllFtn. true when blank page or footnote only
      * page
      */
-U16 fGhost: 2;
+    U16 fGhost: 2;
 
-U16 unused0_7: 9;
+    U16 unused0_7: 9;
 
     /**
      * 1 only when footnote is continued from previous page
      */
-U16 fContinue: 1;
+    U16 fContinue: 1;
 
     /**
      * 1 when page is dirty (ie. pagination cannot be trusted)
      */
-U16 fUnk: 1;
+    U16 fUnk: 1;
 
     /**
      * 1 when right hand side page
      */
-U16 fRight: 1;
+    U16 fRight: 1;
 
     /**
      * 1 when page number must be reset to 1.
      */
-U16 fPgnRestart: 1;
+    U16 fPgnRestart: 1;
 
     /**
      * 1 when section break forced page to be empty.
      */
-U16 fEmptyPage: 1;
+    U16 fEmptyPage: 1;
 
     /**
      * 1 when page contains nothing but footnotes
      */
-U16 fAllFtn: 1;
+    U16 fAllFtn: 1;
 
-U16 fColOnly: 1;
+    U16 fColOnly: 1;
 
-U16 fTableBreaks: 1;
+    U16 fTableBreaks: 1;
 
-U16 fMarked: 1;
+    U16 fMarked: 1;
 
-U16 fColumnBreaks: 1;
+    U16 fColumnBreaks: 1;
 
-U16 fTableHeader: 1;
+    U16 fTableHeader: 1;
 
-U16 fNewPage: 1;
+    U16 fNewPage: 1;
 
     /**
      * section break code
      */
-U16 bkc: 4;
+    U16 bkc: 4;
 
     /**
      * line number of first line, -1 if no line numbering
@@ -6032,27 +6033,27 @@ struct PICF : public Shared {
      * 2 double
      * 3 shadow
      */
-U16 brcl: 4;
+    U16 brcl: 4;
 
     /**
      * picture consists of a single frame
      */
-U16 fFrameEmpty: 1;
+    U16 fFrameEmpty: 1;
 
     /**
      * ==1, when picture is just a bitmap
      */
-U16 fBitmap: 1;
+    U16 fBitmap: 1;
 
     /**
      * ==1, when picture is an active OLE object
      */
-U16 fDrawHatch: 1;
+    U16 fDrawHatch: 1;
 
     /**
      * ==1, when picture is just an error message
      */
-U16 fError: 1;
+    U16 fError: 1;
 
     /**
      * bits per pixel
@@ -6060,7 +6061,7 @@ U16 fError: 1;
      * 1 monochrome
      * 4
      */
-U16 bpp: 8;
+    U16 bpp: 8;
 
     /**
      * specification for border above picture
@@ -6200,17 +6201,17 @@ struct SED {
      * runtime flag, indicates whether orientation should be changed before
      * printing. 0 indicates no change, 1 indicates orientation change.
      */
-U16 fSwap: 1;
+    U16 fSwap: 1;
 
     /**
      * used internally by Windows Word
      */
-U16 fUnk: 1;
+    U16 fUnk: 1;
 
     /**
      * used internally by Windows Word
      */
-U16 fn: 14;
+    U16 fn: 14;
 
     /**
      * file offset to beginning of SEPX stored for section. If sed.fcSepx==
@@ -6614,12 +6615,12 @@ struct STSHI {
     /**
      * Are built-in stylenames stored?
      */
-U16 fStdStylenamesWritten: 1;
+    U16 fStdStylenamesWritten: 1;
 
     /**
      * Spare flags
      */
-U16 unused4_2: 15;
+    U16 unused4_2: 15;
 
     /**
      * Max sti known when this file was written

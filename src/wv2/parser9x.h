@@ -84,7 +84,7 @@ public:
      *
      * @see parse, init
      */
-    Parser9x(OLEStorage* storage, OLEStreamReader* wordDocument, const Word97::FIB& fib);
+    Parser9x(OLEStorage *storage, OLEStreamReader *wordDocument, const Word97::FIB &fib);
     virtual ~Parser9x();
 
     /**
@@ -92,13 +92,13 @@ public:
      */
     virtual bool parse();
 
-    virtual const Word97::FIB& fib() const;
-    virtual const Word97::DOP& dop() const;
+    virtual const Word97::FIB &fib() const;
+    virtual const Word97::DOP &dop() const;
 
     /**
      * Get the font family name structure for a given ftc.
      */
-    virtual const Word97::FFN& font(S16 ftc) const;
+    virtual const Word97::FFN &font(S16 ftc) const;
 
     /**
      * Get the associated strings (author, title,...).
@@ -106,11 +106,11 @@ public:
      */
     virtual AssociatedStrings associatedStrings();
 
-    virtual const StyleSheet& styleSheet() const;
+    virtual const StyleSheet &styleSheet() const;
 
-    virtual const Drawings* getDrawings() const;
+    virtual const Drawings *getDrawings() const;
 
-    virtual OLEStreamReader* getTable();
+    virtual OLEStreamReader *getTable();
 
     // This part of the public API is only visible to the Functor classes,
     // as the "outside world" only sees the public API of Parser. The Functors
@@ -121,11 +121,11 @@ public:
     //    - Executing the method mustn't change the state of the parser (i.e. save and
     //      restore the state!)
     //    - Be very careful, these calls can possibly be triggered at any time
-    void parseHeaders(const HeaderData& data);
-    void parseFootnote(const FootnoteData& data);
-    void parseAnnotation(const AnnotationData& data);
-    void parseTableRow(const TableRowData& data);
-    void parsePicture(const PictureData& data);
+    void parseHeaders(const HeaderData &data);
+    void parseFootnote(const FootnoteData &data);
+    void parseAnnotation(const AnnotationData &data);
+    void parseTableRow(const TableRowData &data);
+    void parsePicture(const PictureData &data);
 
     //Can't create Functor for textbox in advance.  Index into plcfTxbxTxt unknown.
     virtual void parseTextBox(uint index, bool stylesxml);
@@ -135,12 +135,12 @@ protected:
     // the parsing process. We don't have to save and restore those.
     const Word97::FIB m_fib;
 
-    OLEStreamReader* m_table; // table stream ('WordDocument' for Word 6+95 and
+    OLEStreamReader *m_table; // table stream ('WordDocument' for Word 6+95 and
     // the real table stream for Word 97+)
-    OLEStreamReader* m_data;  // data stream (if any, most of the time 0)
+    OLEStreamReader *m_data;  // data stream (if any, most of the time 0)
 
-    Properties97* m_properties;
-    Headers* m_headers;
+    Properties97 *m_properties;
+    Headers *m_headers;
 
     // From here on we have all variables which change their state depending
     // on the parsed content. These variables have to be saved and restored
@@ -149,15 +149,15 @@ protected:
 private:
     UString m_customFootnote;
     // Don't copy or assign us
-    Parser9x(const Parser9x& rhs);
-    Parser9x& operator=(const Parser9x& rhs);
+    Parser9x(const Parser9x &rhs);
+    Parser9x &operator=(const Parser9x &rhs);
 
     // Uniquely represents a position inside a complex file. Used to map a CP to a Position
     struct Position {
         // Start position
         Position(U32 p, U32 o) : piece(p), offset(o) {}
         // Constructs a Position from a CP
-        Position(U32 cp, const PLCF<Word97::PCD>* plcfpcd);
+        Position(U32 cp, const PLCF<Word97::PCD> *plcfpcd);
 
         U32 piece;    // The piece number (0-based index)
         U32 offset;   // The CP offset within the piece
@@ -169,8 +169,8 @@ private:
     // mark sits in a different piece than the rest of the paragraph we just store
     // an empty string for this chunk.
     struct Chunk {
-        Chunk(const UString& text, const Position& position, U32 startFC, bool isUnicode) :
-                m_text(text), m_position(position), m_startFC(startFC), m_isUnicode(isUnicode) {}
+        Chunk(const UString &text, const Position &position, U32 startFC, bool isUnicode) :
+            m_text(text), m_position(position), m_startFC(startFC), m_isUnicode(isUnicode) {}
 
         UString m_text;
         Position m_position;
@@ -204,11 +204,11 @@ private:
 
     // Expects m_remainingChars to be set correctly, changes the state of m_wordDocument,...
     void parseHelper(Position startPos);
-    template<typename String> void processPiece(String* string, U32 fc, U32 limit, const Position& position);
+    template<typename String> void processPiece(String *string, U32 fc, U32 limit, const Position &position);
     // These helper methods are a cheap trick to "configure" parts of the template code by
     // plain old overloading. It's just a matter of compressed vs. real unicode (1 vs. 2 bytes)
-    UString processPieceStringHelper(XCHAR* string, unsigned int start, unsigned int index) const;
-    UString processPieceStringHelper(U8* string, unsigned int start, unsigned int index) const;
+    UString processPieceStringHelper(XCHAR *string, unsigned int start, unsigned int index) const;
+    UString processPieceStringHelper(U8 *string, unsigned int start, unsigned int index) const;
 
     /**
      * The basic structure of a Word text document is a sequence of paragraphs comprising
@@ -234,9 +234,9 @@ private:
      *</ul>
      */
     void processParagraph(U32 fc);
-    void processChunk(const Chunk& chunk, SharedPtr<const Word97::CHP> chp,
+    void processChunk(const Chunk &chunk, SharedPtr<const Word97::CHP> chp,
                       U32 length, U32 index, U32 currentStart);
-    void processRun(const Chunk& chunk, SharedPtr<const Word97::CHP> chp,
+    void processRun(const Chunk &chunk, SharedPtr<const Word97::CHP> chp,
                     U32 length, U32 index, U32 currentStart);
 
     /**
@@ -258,7 +258,7 @@ private:
 
     void emitPictureData(const U32 globalCP, SharedPtr<const Word97::CHP> chp);
 
-    void parseHeader(const HeaderData& data, unsigned char mask);
+    void parseHeader(const HeaderData &data, unsigned char mask);
 
     void saveState(U32 newRemainingChars, SubDocument newSubDocument, ParsingMode newParsingMode = Default);
     void restoreState();
@@ -267,28 +267,28 @@ private:
     // coordinate space of the corresponding sub document
     U32 toLocalCP(U32 globalCP) const;
     // Calculates the real FC and tells us whether it was unicode or not
-    inline void realFC(U32& fc, bool& unicode) const;
+    inline void realFC(U32 &fc, bool &unicode) const;
     // Helper method to use std::accumulate in the table handling code
-    static int accumulativeLength(int len, const Chunk& chunk);
+    static int accumulativeLength(int len, const Chunk &chunk);
 
     // Private variables, no access needed in 95/97 code.  First all
     // variables which don't change their state during the parsing
     // process.  We don't have to save and restore those.
-    ListInfoProvider* m_lists;
-    TextConverter* m_textconverter;
-    Fields* m_fields;
-    Footnotes97* m_footnotes;
-    Annotations* m_annotations;
-    FontCollection* m_fonts;
-    Drawings* m_drawings;
-    Bookmarks* m_bookmarks;
+    ListInfoProvider *m_lists;
+    TextConverter *m_textconverter;
+    Fields *m_fields;
+    Footnotes97 *m_footnotes;
+    Annotations *m_annotations;
+    FontCollection *m_fonts;
+    Drawings *m_drawings;
+    Bookmarks *m_bookmarks;
 
-    PLCF<Word97::PCD>* m_plcfpcd;     // piece table
+    PLCF<Word97::PCD> *m_plcfpcd;     // piece table
 
     // From here on we have all variables which change their state
     // depending on the parsed content.  These variables have to be saved
     // and restored to make the parsing code reentrant.
-    Position* m_tableRowStart;      // If != 0 this represents the start of a table row
+    Position *m_tableRowStart;      // If != 0 this represents the start of a table row
     U32 m_tableRowLength;           // Lenght of the table row (in characters). Only valid
     bool m_cellMarkFound;           // if m_tableRowStart != 0
     int m_remainingCells;           // The number of remaining cells for the processed row
@@ -297,7 +297,7 @@ private:
     // paragraph of a table.  Using parseHelper to parse the table content.
     bool m_table_skimming;
 
-    Paragraph* m_currentParagraph;
+    Paragraph *m_currentParagraph;
 
     U32 m_remainingChars;
 
@@ -313,19 +313,19 @@ private:
 
     // Needed to have reentrant parsing methods (to make the functor approach work)
     struct ParsingState {
-        ParsingState(Position* tableRowS, U32 tableRowL, bool cMarkFound,
-                     int remCells, bool ts, Paragraph* parag, U32 remChars, U32 sectionNum,
+        ParsingState(Position *tableRowS, U32 tableRowL, bool cMarkFound,
+                     int remCells, bool ts, Paragraph *parag, U32 remChars, U32 sectionNum,
                      SubDocument subD, ParsingMode mode) :
-                tableRowStart(tableRowS), tableRowLength(tableRowL), cellMarkFound(cMarkFound),
-                remainingCells(remCells), tableSkimming(ts), paragraph(parag), remainingChars(remChars),
-                sectionNumber(sectionNum), subDocument(subD), parsingMode(mode) {}
+            tableRowStart(tableRowS), tableRowLength(tableRowL), cellMarkFound(cMarkFound),
+            remainingCells(remCells), tableSkimming(ts), paragraph(parag), remainingChars(remChars),
+            sectionNumber(sectionNum), subDocument(subD), parsingMode(mode) {}
 
-        Position* tableRowStart;
+        Position *tableRowStart;
         U32 tableRowLength;
         bool cellMarkFound;
         int remainingCells;
         bool tableSkimming;
-        Paragraph* paragraph;
+        Paragraph *paragraph;
         U32 remainingChars;
         U32 sectionNumber;   // not strictly necessary, but doesn't hurt
         SubDocument subDocument;
@@ -335,7 +335,7 @@ private:
     std::stack<ParsingState> oldParsingStates;
 };
 
-inline void Parser9x::realFC(U32& fc, bool& unicode) const
+inline void Parser9x::realFC(U32 &fc, bool &unicode) const
 {
     if (fc & 0x40000000) {
         fc = (fc & 0xbfffffff) >> 1;

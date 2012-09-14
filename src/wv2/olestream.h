@@ -41,7 +41,7 @@ public:
     /**
      * Create an OLE stream
      */
-    OLEStream(OLEStorage* storage);
+    OLEStream(OLEStorage *storage);
     virtual ~OLEStream();
 
     /**
@@ -75,11 +75,11 @@ private:
     /**
      * we don't want to allow copying and assigning streams
      */
-    OLEStream(const OLEStream& rhs);
+    OLEStream(const OLEStream &rhs);
     /**
      * we don't want to allow copying and assigning streams
      */
-    OLEStream& operator=(const OLEStream& rhs);
+    OLEStream &operator=(const OLEStream &rhs);
 
     std::stack<int> m_positions;
     /**
@@ -150,8 +150,8 @@ public:
 
 private:
     // we don't want to allow copying and assigning streams
-    OLEStreamReader(const OLEStreamReader& rhs);
-    OLEStreamReader& operator=(const OLEStreamReader& rhs);
+    OLEStreamReader(const OLEStreamReader &rhs);
+    OLEStreamReader &operator=(const OLEStreamReader &rhs);
 
     POLE::Stream *m_stream;
     unsigned long m_pos;
@@ -161,7 +161,7 @@ private:
 class WV2_EXPORT OLEStreamWriter : public OLEStream
 {
 public:
-    OLEStreamWriter(OLEStorage* storage);
+    OLEStreamWriter(OLEStorage *storage);
     virtual ~OLEStreamWriter();
 
     /**
@@ -215,12 +215,12 @@ public:
      * contents of the memory directly (w/o converting
      * to little-endian first!)
      */
-    void write(U8* data, size_t length);
+    void write(U8 *data, size_t length);
 
 private:
     // we don't want to allow copying and assigning streams
-    OLEStreamWriter(const OLEStreamWriter& rhs);
-    OLEStreamWriter& operator=(const OLEStreamWriter& rhs);
+    OLEStreamWriter(const OLEStreamWriter &rhs);
+    OLEStreamWriter &operator=(const OLEStreamWriter &rhs);
 };
 
 } // namespace wvWare

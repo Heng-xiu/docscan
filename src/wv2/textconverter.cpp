@@ -40,25 +40,25 @@ using namespace wvWare;
 class TextConverter::Private
 {
 public:
-    Private(const std::string& toCode, const std::string& fromCode) :
-            m_toCode(toCode), m_fromCode(fromCode), m_iconv(reinterpret_cast<iconv_t>(-1)) {}
+    Private(const std::string &toCode, const std::string &fromCode) :
+        m_toCode(toCode), m_fromCode(fromCode), m_iconv(reinterpret_cast<iconv_t>(-1)) {}
 
-    Private(const std::string& fromCode) :
+    Private(const std::string &fromCode) :
 #ifdef WORDS_BIGENDIAN
-            m_toCode("UNICODEBIG"),
+        m_toCode("UNICODEBIG"),
 #else
-            m_toCode("UNICODELITTLE"),
+        m_toCode("UNICODELITTLE"),
 #endif
-            m_fromCode(fromCode), m_iconv(reinterpret_cast<iconv_t>(-1)) {}
+        m_fromCode(fromCode), m_iconv(reinterpret_cast<iconv_t>(-1)) {}
 
     Private(U16 lid) :
 #ifdef WORDS_BIGENDIAN
-            m_toCode("UNICODEBIG"),
+        m_toCode("UNICODEBIG"),
 #else
-            m_toCode("UNICODELITTLE"),
+        m_toCode("UNICODELITTLE"),
 #endif
-            m_fromCode(TextConverter::LID2Codepage(lid)),
-            m_iconv(reinterpret_cast<iconv_t>(-1)) {}
+        m_fromCode(TextConverter::LID2Codepage(lid)),
+        m_iconv(reinterpret_cast<iconv_t>(-1)) {}
 
 
     std::string m_toCode, m_fromCode;
@@ -66,13 +66,13 @@ public:
     bool m_swap;
 };
 
-TextConverter::TextConverter(const std::string& toCode, const std::string& fromCode) :
-        d(new Private(toCode, fromCode))
+TextConverter::TextConverter(const std::string &toCode, const std::string &fromCode) :
+    d(new Private(toCode, fromCode))
 {
     open();
 }
 
-TextConverter::TextConverter(const std::string& fromCode) : d(new Private(fromCode))
+TextConverter::TextConverter(const std::string &fromCode) : d(new Private(fromCode))
 {
     open();
 }
@@ -93,7 +93,7 @@ bool TextConverter::isOk() const
     return d->m_iconv != reinterpret_cast<iconv_t>(-1);
 }
 
-void TextConverter::setToCode(const std::string& toCode)
+void TextConverter::setToCode(const std::string &toCode)
 {
     d->m_toCode = toCode;
     close();
@@ -105,7 +105,7 @@ std::string TextConverter::toCode() const
     return d->m_toCode;
 }
 
-void TextConverter::setFromCode(const std::string& fromCode)
+void TextConverter::setFromCode(const std::string &fromCode)
 {
     d->m_fromCode = fromCode;
     close();
@@ -117,12 +117,12 @@ std::string TextConverter::fromCode() const
     return d->m_fromCode;
 }
 
-UString TextConverter::convert(const std::string& input) const
+UString TextConverter::convert(const std::string &input) const
 {
     return convert(input.c_str(), input.size());
 }
 
-UString TextConverter::convert(const char* input, unsigned int length) const
+UString TextConverter::convert(const char *input, unsigned int length) const
 {
     if (!isOk()) {
         wvlog << "Error: I don't have any open converter." << std::endl;
@@ -132,13 +132,13 @@ UString TextConverter::convert(const char* input, unsigned int length) const
     // WinWord doesn't have multi-byte characters encoded in compressed-unicode
     // sections, right?
     UChar *output = new UChar[ length ];
-    char *p_output = reinterpret_cast<char*>(output);
+    char *p_output = reinterpret_cast<char *>(output);
     size_t outputLen = length << 1;
 
-    const char* p_input = input;
+    const char *p_input = input;
     size_t inputLen = length;
 
-    if (static_cast<size_t>(-1) == iconv(d->m_iconv, const_cast<ICONV_CONST char**>(&p_input), &inputLen, &p_output, &outputLen)) {
+    if (static_cast<size_t>(-1) == iconv(d->m_iconv, const_cast<ICONV_CONST char **>(&p_input), &inputLen, &p_output, &outputLen)) {
         delete [] output;
         // If we got more than one character, try to return as much text as possible...
         // To convert the text with as few iconv calls as possible we are using a divide
@@ -174,7 +174,7 @@ U16 TextConverter::locale2LID(U8 nLocale)
     }
 }
 
-const char* TextConverter::LID2lang(U16 lid)
+const char *TextConverter::LID2lang(U16 lid)
 {
     switch (lid) {
     case 0x0405:
@@ -216,7 +216,7 @@ const char* TextConverter::LID2lang(U16 lid)
     }
 }
 
-const char* TextConverter::LID2Codepage(U16 lid)
+const char *TextConverter::LID2Codepage(U16 lid)
 {
     static const char *cp874 = "CP874";
     static const char *cp932 = "CP932";

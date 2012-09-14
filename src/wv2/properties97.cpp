@@ -28,9 +28,9 @@
 
 namespace wvWare
 {
-FKP< BX<Word97::PHE> >* convertFKP(const FKP< BX<Word95::PHE> >& old)
+FKP< BX<Word97::PHE> > *convertFKP(const FKP< BX<Word95::PHE> > &old)
 {
-    FKP< BX<Word97::PHE> >* ret(new FKP< BX<Word97::PHE> >);
+    FKP< BX<Word97::PHE> > *ret(new FKP< BX<Word97::PHE> >);
     // The unchanged fields first...
     ret->m_crun = old.m_crun;
     ret->m_rgfc = new U32[ old.m_crun + 1 ];
@@ -53,9 +53,9 @@ FKP< BX<Word97::PHE> >* convertFKP(const FKP< BX<Word95::PHE> >& old)
 using namespace wvWare;
 
 
-Properties97::Properties97(OLEStreamReader* wordDocument, OLEStreamReader* table, const Word97::FIB &fib) :
-        m_version(fib.nFib < Word8nFib ? Word67 : Word8), m_wordDocument(wordDocument), m_table(table),
-        m_stylesheet(0), m_plcfsed(0), m_plcfbtePapx(0), m_plcfbteChpx(0), m_papxFkp(0), m_chpxFkp(0)
+Properties97::Properties97(OLEStreamReader *wordDocument, OLEStreamReader *table, const Word97::FIB &fib) :
+    m_version(fib.nFib < Word8nFib ? Word67 : Word8), m_wordDocument(wordDocument), m_table(table),
+    m_stylesheet(0), m_plcfsed(0), m_plcfbtePapx(0), m_plcfbteChpx(0), m_papxFkp(0), m_chpxFkp(0)
 {
     // First create the whole stylesheet information.
     m_stylesheet = new StyleSheet(m_table, fib.fcStshf, fib.lcbStshf);
@@ -122,17 +122,17 @@ Properties97::~Properties97()
     delete m_stylesheet;
 }
 
-const Style* Properties97::styleByIndex(U16 istd) const
+const Style *Properties97::styleByIndex(U16 istd) const
 {
     return m_stylesheet->styleByIndex(istd);
 }
 
-StyleSheet& Properties97::styleSheet() const
+StyleSheet &Properties97::styleSheet() const
 {
     return *m_stylesheet;
 }
 
-const Word97::DOP& Properties97::dop() const
+const Word97::DOP &Properties97::dop() const
 {
     return m_dop;
 }
@@ -150,8 +150,8 @@ SharedPtr<const Word97::SEP> Properties97::sepForCP(U32 cp) const
         ++it;
 
     if (it.currentStart() == cp) {
-        Word97::SED* sed = it.current();
-        Word97::SEP* sep = new Word97::SEP;
+        Word97::SED *sed = it.current();
+        Word97::SEP *sep = new Word97::SEP;
 
         if (!sed || sed->fcSepx == 0xffffffff)
             return SharedPtr<const Word97::SEP>(sep);
@@ -159,7 +159,7 @@ SharedPtr<const Word97::SEP> Properties97::sepForCP(U32 cp) const
         m_wordDocument->push();
         m_wordDocument->seek(sed->fcSepx);
         const U16 count = m_wordDocument->readU16();
-        U8* grpprl = new U8[ count ];
+        U8 *grpprl = new U8[ count ];
         m_wordDocument->read(grpprl, count);
 
         sep->apply(grpprl, count, 0, m_stylesheet, 0, m_version);
@@ -171,7 +171,7 @@ SharedPtr<const Word97::SEP> Properties97::sepForCP(U32 cp) const
     return SharedPtr<const Word97::SEP>(0);
 }
 
-ParagraphProperties* Properties97::fullSavedPap(U32 fc, OLEStreamReader* dataStream)
+ParagraphProperties *Properties97::fullSavedPap(U32 fc, OLEStreamReader *dataStream)
 {
     // Step 1: Search the correct FKP entry in the PLCFBTE
     PLCFIterator<Word97::BTE> it(*m_plcfbtePapx);
@@ -220,12 +220,12 @@ ParagraphProperties* Properties97::fullSavedPap(U32 fc, OLEStreamReader* dataStr
     return properties;
 }
 
-void Properties97::applyClxGrpprl(const Word97::PCD* pcd, U32 fcClx, ParagraphProperties* properties)
+void Properties97::applyClxGrpprl(const Word97::PCD *pcd, U32 fcClx, ParagraphProperties *properties)
 {
     applyClxGrpprlImpl<Word97::PAP>(pcd, fcClx, &properties->pap(), m_stylesheet->styleByIndex(properties->pap().istd));
 }
 
-Word97::TAP* Properties97::fullSavedTap(U32 fc, OLEStreamReader* dataStream)
+Word97::TAP *Properties97::fullSavedTap(U32 fc, OLEStreamReader *dataStream)
 {
     // This method is quite similar to fullSavedPap, but a template solution would suck :}
     // Maybe I'll clean that up later
@@ -270,20 +270,20 @@ Word97::TAP* Properties97::fullSavedTap(U32 fc, OLEStreamReader* dataStream)
     return Word97::initTAP(fkpit.current(), dataStream, m_version);
 }
 
-void Properties97::applyClxGrpprl(const Word97::PCD* pcd, U32 fcClx, Word97::TAP* tap, const Style* style)
+void Properties97::applyClxGrpprl(const Word97::PCD *pcd, U32 fcClx, Word97::TAP *tap, const Style *style)
 {
     applyClxGrpprlImpl<Word97::TAP>(pcd, fcClx, tap, style);
 }
 
-U32 Properties97::fullSavedChp(const U32 fc, Word97::CHP* chp, const Style* paragraphStyle)
+U32 Properties97::fullSavedChp(const U32 fc, Word97::CHP *chp, const Style *paragraphStyle)
 {
     // Step 0: Before we start with the plain FKP algorithm like above we have
     // to apply any CHPX found in the style entry for the CHP, unless it's
     // istdNormalChar (10)
     if (chp->istd != 10) {
-        const Style* style = m_stylesheet->styleByIndex(chp->istd);
+        const Style *style = m_stylesheet->styleByIndex(chp->istd);
         if (style && style->type() == sgcChp) {
-            const UPECHPX& upechpx(style->upechpx());
+            const UPECHPX &upechpx(style->upechpx());
             chp->apply(upechpx.grpprl, upechpx.cb, paragraphStyle, m_stylesheet, 0, m_version);
         } else {
             wvlog << "Couldn't find the character style with istd " << chp->istd << std::endl;
@@ -331,13 +331,13 @@ U32 Properties97::fullSavedChp(const U32 fc, Word97::CHP* chp, const Style* para
     return fkpit.currentLim() - fc;
 }
 
-void Properties97::applyClxGrpprl(const Word97::PCD* pcd, U32 fcClx, Word97::CHP* chp, const Style* style)
+void Properties97::applyClxGrpprl(const Word97::PCD *pcd, U32 fcClx, Word97::CHP *chp, const Style *style)
 {
     applyClxGrpprlImpl<Word97::CHP>(pcd, fcClx, chp, style);
 }
 
 template<class P>
-void Properties97::applyClxGrpprlImpl(const Word97::PCD* pcd, U32 fcClx, P* properties, const Style* style)
+void Properties97::applyClxGrpprlImpl(const Word97::PCD *pcd, U32 fcClx, P *properties, const Style *style)
 {
     if (!pcd) {
         wvlog << "Huh? This can't have happended, right?" << std::endl;
@@ -382,7 +382,7 @@ void Properties97::applyClxGrpprlImpl(const Word97::PCD* pcd, U32 fcClx, P* prop
     }
 }
 
-void Properties97::fillBinTable(PLCF<Word97::BTE>* bte, U16 cpnBte)
+void Properties97::fillBinTable(PLCF<Word97::BTE> *bte, U16 cpnBte)
 {
     U16 pnLast = 0;
     PLCFIterator<Word97::BTE> it(*bte);
@@ -393,7 +393,7 @@ void Properties97::fillBinTable(PLCF<Word97::BTE>* bte, U16 cpnBte)
     m_wordDocument->push();
     cpnBte -= bte->count();
     while (cpnBte > 0) {
-        Word97::BTE* tmp(new Word97::BTE);
+        Word97::BTE *tmp(new Word97::BTE);
         tmp->pn = ++pnLast;
         m_wordDocument->seek(pnLast << 9, WV2_SEEK_SET);
         bte->insert(m_wordDocument->readU32(), tmp);

@@ -26,7 +26,7 @@
 namespace wvWare
 {
 
-STTBF::STTBF(U16 lid, OLEStreamReader* reader, bool preservePos)
+STTBF::STTBF(U16 lid, OLEStreamReader *reader, bool preservePos)
 {
     if (preservePos)
         reader->push();
@@ -35,17 +35,17 @@ STTBF::STTBF(U16 lid, OLEStreamReader* reader, bool preservePos)
         reader->pop();
 }
 
-STTBF::STTBF(U16 lid, const U8* ptr)
+STTBF::STTBF(U16 lid, const U8 *ptr)
 {
     init(lid, 0, ptr);
 }
 
-STTBF::STTBF(const STTBF& rhs) : m_strings(rhs.m_strings), m_extraDataLength(rhs.m_extraDataLength)
+STTBF::STTBF(const STTBF &rhs) : m_strings(rhs.m_strings), m_extraDataLength(rhs.m_extraDataLength)
 {
-    std::vector<U8*>::const_iterator it = rhs.m_extraData.begin();
-    std::vector<U8*>::const_iterator end = rhs.m_extraData.end();
+    std::vector<U8 *>::const_iterator it = rhs.m_extraData.begin();
+    std::vector<U8 *>::const_iterator end = rhs.m_extraData.end();
     for (; it != end; ++it) {
-        U8* tmp = new U8[ m_extraDataLength ];
+        U8 *tmp = new U8[ m_extraDataLength ];
         memcpy(tmp, *it, m_extraDataLength);
         m_extraData.push_back(tmp);
     }
@@ -53,7 +53,7 @@ STTBF::STTBF(const STTBF& rhs) : m_strings(rhs.m_strings), m_extraDataLength(rhs
 
 STTBF::~STTBF()
 {
-    std::vector<U8*>::const_iterator it = m_extraData.begin();
+    std::vector<U8 *>::const_iterator it = m_extraData.begin();
     for (; it != m_extraData.end(); ++it)
         delete [] *it;
 }
@@ -106,7 +106,7 @@ UString STTBF::stringAt(unsigned int index) const
     return UString::null;
 }
 
-const U8* STTBF::firstExtra() const
+const U8 *STTBF::firstExtra() const
 {
     m_extraIt = m_extraData.begin();
     if (m_extraIt != m_extraData.end())
@@ -114,7 +114,7 @@ const U8* STTBF::firstExtra() const
     return 0;
 }
 
-const U8* STTBF::nextExtra() const
+const U8 *STTBF::nextExtra() const
 {
     if (m_extraIt == m_extraData.end())
         return 0;
@@ -124,7 +124,7 @@ const U8* STTBF::nextExtra() const
     return 0;
 }
 
-const U8* STTBF::prevExtra() const
+const U8 *STTBF::prevExtra() const
 {
     if (m_extraData.size() == 0)
         return 0;
@@ -133,7 +133,7 @@ const U8* STTBF::prevExtra() const
     return *m_extraIt;
 }
 
-const U8* STTBF::lastExtra() const
+const U8 *STTBF::lastExtra() const
 {
     m_extraIt = m_extraData.end();
     if (m_extraIt == m_extraData.begin())
@@ -142,7 +142,7 @@ const U8* STTBF::lastExtra() const
     return *m_extraIt;
 }
 
-const U8* STTBF::extraAt(unsigned int index) const
+const U8 *STTBF::extraAt(unsigned int index) const
 {
     if (index < m_extraData.size())
         return m_extraData[ index ];
@@ -152,14 +152,14 @@ const U8* STTBF::extraAt(unsigned int index) const
 void STTBF::dumpStrings() const
 {
     wvlog << "STTBF::dumpStrings(): count=" << count() << " extraDataLength="
-    << extraDataLength() << std::endl;
+          << extraDataLength() << std::endl;
     std::vector<UString>::const_iterator it = m_strings.begin();
     std::vector<UString>::const_iterator end = m_strings.end();
     for (; it != end; ++it)
         wvlog << "   '" << (*it).ascii() << "'" << std::endl;
 }
 
-void STTBF::init(U16 lid, OLEStreamReader* reader, const U8* ptr)
+void STTBF::init(U16 lid, OLEStreamReader *reader, const U8 *ptr)
 {
     bool extended = false;
     U16 count = readU16(reader, &ptr);
@@ -172,7 +172,7 @@ void STTBF::init(U16 lid, OLEStreamReader* reader, const U8* ptr)
     m_extraDataLength = readU16(reader, &ptr);
 
     // If we don't read unicode strings we have to set up a text converter
-    TextConverter* textconverter = 0;
+    TextConverter *textconverter = 0;
     if (!extended)
         textconverter = new TextConverter(lid);
 
@@ -186,16 +186,16 @@ void STTBF::init(U16 lid, OLEStreamReader* reader, const U8* ptr)
 
         if (len != 0) {
             if (extended) {
-                XCHAR* string = new XCHAR[ len ];
+                XCHAR *string = new XCHAR[ len ];
                 for (U16 j = 0; j < len; ++j)
                     string[ j ] = readU16(reader, &ptr);
                 UString ustring(reinterpret_cast<const wvWare::UChar *>(string), len);
                 delete [] string;
                 m_strings.push_back(ustring);
             } else {
-                U8* string = new U8[ len ];
+                U8 *string = new U8[ len ];
                 read(reader, &ptr, string, len);
-                UString ustring(textconverter->convert(reinterpret_cast<char*>(string),
+                UString ustring(textconverter->convert(reinterpret_cast<char *>(string),
                                                        static_cast<unsigned int>(len)));
                 delete [] string;
                 m_strings.push_back(ustring);
@@ -203,7 +203,7 @@ void STTBF::init(U16 lid, OLEStreamReader* reader, const U8* ptr)
         } else
             m_strings.push_back(UString(""));
         if (m_extraDataLength != 0) {
-            U8* extra = new U8[ m_extraDataLength ];
+            U8 *extra = new U8[ m_extraDataLength ];
             read(reader, &ptr, extra, m_extraDataLength);
             m_extraData.push_back(extra);
         }
@@ -211,7 +211,7 @@ void STTBF::init(U16 lid, OLEStreamReader* reader, const U8* ptr)
     delete textconverter;
 }
 
-U16 STTBF::readU16(OLEStreamReader* reader, const U8** ptr) const
+U16 STTBF::readU16(OLEStreamReader *reader, const U8 **ptr) const
 {
     if (reader)
         return reader->readU16();
@@ -225,7 +225,7 @@ U16 STTBF::readU16(OLEStreamReader* reader, const U8** ptr) const
     }
 }
 
-U8 STTBF::readU8(OLEStreamReader* reader, const U8** ptr) const
+U8 STTBF::readU8(OLEStreamReader *reader, const U8 **ptr) const
 {
     if (reader)
         return reader->readU8();
@@ -239,7 +239,7 @@ U8 STTBF::readU8(OLEStreamReader* reader, const U8** ptr) const
     }
 }
 
-bool STTBF::read(OLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length) const
+bool STTBF::read(OLEStreamReader *reader, const U8 **ptr, U8 *buffer, size_t length) const
 {
     if (reader)
         return reader->read(buffer, length);
@@ -259,19 +259,19 @@ CHPFKP_BX::CHPFKP_BX()
     clear();
 }
 
-CHPFKP_BX::CHPFKP_BX(OLEStreamReader* stream, bool preservePos)
+CHPFKP_BX::CHPFKP_BX(OLEStreamReader *stream, bool preservePos)
 {
     clear();
     read(stream, preservePos);
 }
 
-CHPFKP_BX::CHPFKP_BX(const U8* ptr)
+CHPFKP_BX::CHPFKP_BX(const U8 *ptr)
 {
     clear();
     readPtr(ptr);
 }
 
-bool CHPFKP_BX::read(OLEStreamReader* stream, bool preservePos)
+bool CHPFKP_BX::read(OLEStreamReader *stream, bool preservePos)
 {
     if (preservePos)
         stream->push();
@@ -281,12 +281,12 @@ bool CHPFKP_BX::read(OLEStreamReader* stream, bool preservePos)
     return true;
 }
 
-void CHPFKP_BX::readPtr(const U8* ptr)
+void CHPFKP_BX::readPtr(const U8 *ptr)
 {
     offset = *ptr;
 }
 
-bool CHPFKP_BX::write(OLEStreamWriter* stream, bool preservePos) const
+bool CHPFKP_BX::write(OLEStreamWriter *stream, bool preservePos) const
 {
     if (preservePos)
         stream->push();
@@ -301,12 +301,12 @@ void CHPFKP_BX::clear()
     offset = 0;
 }
 
-bool operator==(const CHPFKP_BX& lhs, const CHPFKP_BX& rhs)
+bool operator==(const CHPFKP_BX &lhs, const CHPFKP_BX &rhs)
 {
     return lhs.offset == rhs.offset;
 }
 
-bool operator!=(const CHPFKP_BX& lhs, const CHPFKP_BX& rhs)
+bool operator!=(const CHPFKP_BX &lhs, const CHPFKP_BX &rhs)
 {
     return !(lhs == rhs);
 }

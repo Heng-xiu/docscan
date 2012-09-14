@@ -28,7 +28,8 @@
 
 namespace wvWare
 {
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 struct FRD;
 }
@@ -43,7 +44,7 @@ struct FootnoteData;
 class Footnotes97
 {
 public:
-    Footnotes97(OLEStreamReader* tableStream, const Word97::FIB& fib);
+    Footnotes97(OLEStreamReader *tableStream, const Word97::FIB &fib);
     ~Footnotes97();
 
     /**
@@ -52,7 +53,7 @@ public:
      * If @param ok is false no footnote/endnote has been found and the
      * returned FootnoteData structure is invalid.
      */
-    FootnoteData footnote(U32 globalCP, bool& ok);
+    FootnoteData footnote(U32 globalCP, bool &ok);
 
     /**
      * Returns the global CP of the next footnote reference,
@@ -73,21 +74,21 @@ public:
     void check(U32 globalCP);
 
 private:
-    Footnotes97(const Footnotes97& rhs);
-    Footnotes97& operator=(const Footnotes97& rhs);
+    Footnotes97(const Footnotes97 &rhs);
+    Footnotes97 &operator=(const Footnotes97 &rhs);
 
     // Ugly, but helps to avoid code duplication
-    void init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
-              PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
-              std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt);
+    void init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader *tableStream,
+              PLCF<Word97::FRD> **ref, PLCFIterator<Word97::FRD> **refIt,
+              std::vector<U32> &txt, std::vector<U32>::const_iterator &txtIt);
 
-    PLCF<Word97::FRD>* m_footnoteRef;
-    PLCFIterator<Word97::FRD>* m_footnoteRefIt;
+    PLCF<Word97::FRD> *m_footnoteRef;
+    PLCFIterator<Word97::FRD> *m_footnoteRefIt;
     std::vector<U32> m_footnoteTxt;
     std::vector<U32>::const_iterator m_footnoteTxtIt;
 
-    PLCF<Word97::FRD>* m_endnoteRef;
-    PLCFIterator<Word97::FRD>* m_endnoteRefIt;
+    PLCF<Word97::FRD> *m_endnoteRef;
+    PLCFIterator<Word97::FRD> *m_endnoteRefIt;
     std::vector<U32> m_endnoteTxt;
     std::vector<U32>::const_iterator m_endnoteTxtIt;
 };

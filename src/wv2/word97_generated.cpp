@@ -38,7 +38,8 @@
 namespace wvWare
 {
 
-namespace Word97 {
+namespace Word97
+{
 
 // FFN implementation, located in template-Word97.cpp
 FFN::FFN()
@@ -86,7 +87,7 @@ bool FFN::read(OLEStreamReader *stream, Version version, bool preservePos)
 
         // Remaining size in bytes -> shorts
         remainingSize /= 2;
-        XCHAR* string = new XCHAR[ remainingSize ];
+        XCHAR *string = new XCHAR[ remainingSize ];
         for (int i = 0; i < remainingSize; ++i)
             string[ i ] = stream->readU16();
         if (ixchSzAlt == 0)
@@ -97,14 +98,14 @@ bool FFN::read(OLEStreamReader *stream, Version version, bool preservePos)
         }
         delete [] string;
     } else {
-        U8* string = new U8[ remainingSize ];
+        U8 *string = new U8[ remainingSize ];
         stream->read(string, remainingSize);
         // ###### Assume plain latin1 strings, maybe we'll have to use a textconverter here...
         if (ixchSzAlt == 0)
-            xszFfn = UString(reinterpret_cast<char*>(string));
+            xszFfn = UString(reinterpret_cast<char *>(string));
         else {
-            xszFfn = UString(reinterpret_cast<char*>(string));     // The strings are 0-terminated, according to the SPEC
-            xszFfnAlt = UString(reinterpret_cast<char*>(&string[ ixchSzAlt ]));
+            xszFfn = UString(reinterpret_cast<char *>(string));    // The strings are 0-terminated, according to the SPEC
+            xszFfnAlt = UString(reinterpret_cast<char *>(&string[ ixchSzAlt ]));
         }
         delete [] string;
     }
@@ -139,19 +140,19 @@ void FFN::clearInternal()
 }
 
 // There can be only one tab at a given position, no matter what the other options are
-bool operator==(const TabDescriptor& lhs, const TabDescriptor& rhs)
+bool operator==(const TabDescriptor &lhs, const TabDescriptor &rhs)
 {
     return lhs.dxaTab == rhs.dxaTab;
 }
-bool operator!=(const TabDescriptor& lhs, const TabDescriptor& rhs)
+bool operator!=(const TabDescriptor &lhs, const TabDescriptor &rhs)
 {
     return lhs.dxaTab != rhs.dxaTab;
 }
-bool operator<(const TabDescriptor& lhs, const TabDescriptor& rhs)
+bool operator<(const TabDescriptor &lhs, const TabDescriptor &rhs)
 {
     return lhs.dxaTab < rhs.dxaTab;
 }
-bool operator>(const TabDescriptor& lhs, const TabDescriptor& rhs)
+bool operator>(const TabDescriptor &lhs, const TabDescriptor &rhs)
 {
     return lhs.dxaTab > rhs.dxaTab;
 }
@@ -9132,14 +9133,14 @@ void STSHI::clear()
 void STSHI::dump() const
 {
     wvlog << "Dumping STSHI:" <<
-    "\ncstd= 0x" << std::hex << cstd << std::dec << "(" << cstd << ")" <<
-    "\ncbSTDBaseInFile=" << cbSTDBaseInFile <<
-    "\nfStdStylenamesWritten=" << fStdStylenamesWritten <<
-    "\nstiMaxWhenSaved= 0x" << std::hex << stiMaxWhenSaved <<
-    std::dec << "(" << stiMaxWhenSaved  << ")" <<
-    "\nistdMaxFixedWhenSaved= 0x" << std::hex << istdMaxFixedWhenSaved <<
-    "\nnVerBuiltInNamesWhenSaved=" << std::dec << nVerBuiltInNamesWhenSaved <<
-    "\nDumping STSHI done:" << std::endl;
+          "\ncstd= 0x" << std::hex << cstd << std::dec << "(" << cstd << ")" <<
+          "\ncbSTDBaseInFile=" << cbSTDBaseInFile <<
+          "\nfStdStylenamesWritten=" << fStdStylenamesWritten <<
+          "\nstiMaxWhenSaved= 0x" << std::hex << stiMaxWhenSaved <<
+          std::dec << "(" << stiMaxWhenSaved  << ")" <<
+          "\nistdMaxFixedWhenSaved= 0x" << std::hex << istdMaxFixedWhenSaved <<
+          "\nnVerBuiltInNamesWhenSaved=" << std::dec << nVerBuiltInNamesWhenSaved <<
+          "\nDumping STSHI done:" << std::endl;
 }
 
 bool operator==(const STSHI &lhs, const STSHI &rhs)

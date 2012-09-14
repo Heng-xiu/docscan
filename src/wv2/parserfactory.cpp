@@ -28,7 +28,7 @@ using namespace wvWare;
 
 namespace
 {
-void diagnose(const unsigned char* const buffer)
+void diagnose(const unsigned char *const buffer)
 {
     // Check if it's a Word 3, 4, or 5 file
     if (buffer[0] == 0x31 && buffer[1] == 0xbe &&
@@ -44,10 +44,10 @@ void diagnose(const unsigned char* const buffer)
     }
 }
 
-SharedPtr<Parser> setupParser(OLEStorage* storage)
+SharedPtr<Parser> setupParser(OLEStorage *storage)
 {
     // Is it called WordDocument in all versions?
-    OLEStreamReader* wordDocument = storage->createStreamReader("WordDocument");
+    OLEStreamReader *wordDocument = storage->createStreamReader("WordDocument");
     if (!wordDocument || !wordDocument->isValid()) {
         std::cerr << "Error: No 'WordDocument' stream found. Are you sure this is a Word document?" << std::endl;
         delete wordDocument;
@@ -87,35 +87,35 @@ SharedPtr<Parser> setupParser(OLEStorage* storage)
         // (0x00d9)
         if (nFib == 217) {
             wvlog << "Looks like document was created with Word 9/Office 2000"
-            << ", trying with the Word 8 parser." << std::endl;
+                  << ", trying with the Word 8 parser." << std::endl;
         }
         // (0x0101)
         else if (nFib == 257) {
             wvlog << "Looks like document was created with Word 10/Office XP"
-            << ", trying with the Word 8 parser." << std::endl;
+                  << ", trying with the Word 8 parser." << std::endl;
         }
         // (0x010c)
         else if (nFib == 268) {
             wvlog << "Looks like document was created with Word 11/Office 2003"
-            << ", trying with the Word 8 parser." << std::endl;
+                  << ", trying with the Word 8 parser." << std::endl;
         }
         // (0x0112), ...
         else {
             wvlog << "A document newer than Word 8 found"
-            << ", trying with the Word 8 parser." << std::endl;
+                  << ", trying with the Word 8 parser." << std::endl;
         }
         return new Parser97(storage, wordDocument);
     }
 }
 }
 
-SharedPtr<Parser> ParserFactory::createParser(const std::string& fileName)
+SharedPtr<Parser> ParserFactory::createParser(const std::string &fileName)
 {
-    OLEStorage* storage(new OLEStorage(fileName));
+    OLEStorage *storage(new OLEStorage(fileName));
     if (!storage->open(OLEStorage::ReadOnly) || !storage->isValid()) {
         delete storage;
 
-        FILE* file = fopen(fileName.c_str(), "r");
+        FILE *file = fopen(fileName.c_str(), "r");
         if (!file) {
             std::cerr << "Couldn't open " << fileName.c_str() << " for reading." << std::endl;
             return 0;

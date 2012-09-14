@@ -43,16 +43,16 @@ template<class ParserT, typename Data>
 class WV2_EXPORT Functor : public FunctorBase
 {
 public:
-    typedef void (ParserT::*F)(const Data&);
+    typedef void (ParserT::*F)(const Data &);
 
-    Functor(ParserT& parser, F f, const Data& data)
-            : m_parser(&parser), f_(f), m_data(data) {}
+    Functor(ParserT &parser, F f, const Data &data)
+        : m_parser(&parser), f_(f), m_data(data) {}
     virtual void operator()() const {
         (m_parser->*f_)(m_data);
     }
 
 private:
-    ParserT* m_parser;
+    ParserT *m_parser;
     F  f_;
     Data m_data;
 };
@@ -63,7 +63,7 @@ private:
  * specify them explicitly every time we create a functor.
  */
 template<class ParserT, typename Data>
-Functor<ParserT, Data> make_functor(ParserT& parser, void (ParserT::*f)(const Data&), const Data& data)
+Functor<ParserT, Data> make_functor(ParserT &parser, void (ParserT::*f)(const Data &), const Data &data)
 {
     return Functor<ParserT, Data>(parser, f, data);
 }

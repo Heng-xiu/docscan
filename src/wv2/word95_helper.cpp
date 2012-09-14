@@ -29,9 +29,11 @@
 namespace wvWare
 {
 
-namespace Word95 {
+namespace Word95
+{
 
-namespace SPRM {
+namespace SPRM
+{
 
 typedef enum {
     sprmNoop = 0,
@@ -196,7 +198,7 @@ typedef enum {
 } opcodes;
 
 // The length of the SPRM parameter
-U16 determineParameterLength(U8 sprm, const U8* in)
+U16 determineParameterLength(U8 sprm, const U8 *in)
 {
     switch (sprm) {
     case SPRM::sprmNoop:

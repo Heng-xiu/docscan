@@ -106,13 +106,13 @@ template< class T >
 struct SharedPtr {
 public:
     SharedPtr()
-            : ptr(0) { }
-    SharedPtr(T* t)
-            : ptr(t) {
+        : ptr(0) { }
+    SharedPtr(T *t)
+        : ptr(t) {
         if (ptr) ptr->_Shared_ref();
     }
-    SharedPtr(const SharedPtr& p)
-            : ptr(p.ptr) {
+    SharedPtr(const SharedPtr &p)
+        : ptr(p.ptr) {
         if (ptr) ptr->_Shared_ref();
     }
 
@@ -120,56 +120,56 @@ public:
         if (ptr) ptr->_Shared_deref();
     }
 
-    SharedPtr<T>& operator= (const SharedPtr<T>& p) {
+    SharedPtr<T> &operator= (const SharedPtr<T> &p) {
         if (ptr == p.ptr) return *this;
         if (ptr) ptr->_Shared_deref();
         ptr = p.ptr;
         if (ptr) ptr->_Shared_ref();
         return *this;
     }
-    SharedPtr<T>& operator= (T* p) {
+    SharedPtr<T> &operator= (T *p) {
         if (ptr == p) return *this;
         if (ptr) ptr->_Shared_deref();
         ptr = p;
         if (ptr) ptr->_Shared_ref();
         return *this;
     }
-    bool operator== (const SharedPtr<T>& p) const {
+    bool operator== (const SharedPtr<T> &p) const {
         return (ptr == p.ptr);
     }
-    bool operator!= (const SharedPtr<T>& p) const {
+    bool operator!= (const SharedPtr<T> &p) const {
         return (ptr != p.ptr);
     }
-    bool operator== (const T* p) const {
+    bool operator== (const T *p) const {
         return (ptr == p);
     }
-    bool operator!= (const T* p) const {
+    bool operator!= (const T *p) const {
         return (ptr != p);
     }
     bool operator!() const {
         return (ptr == 0);
     }
-    operator T*() const {
+    operator T *() const {
         return ptr;
     }
 
-    T* data() {
+    T *data() {
         return ptr;
     }
-    const T* data() const {
+    const T *data() const {
         return ptr;
     }
 
-    const T& operator*() const {
+    const T &operator*() const {
         return *ptr;
     }
-    T& operator*() {
+    T &operator*() {
         return *ptr;
     }
-    const T* operator->() const {
+    const T *operator->() const {
         return ptr;
     }
-    T* operator->() {
+    T *operator->() {
         return ptr;
     }
 
@@ -177,7 +177,7 @@ public:
         return ptr->_Shared_count();
     } // for debugging purposes
 private:
-    T* ptr;
+    T *ptr;
 };
 
 } // namespace wvWare

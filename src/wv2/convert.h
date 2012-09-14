@@ -35,7 +35,8 @@
 namespace wvWare
 {
 
-namespace Word95 {
+namespace Word95
+{
 
 // This has been added to the template file, as the mapping is
 // non-trivial. Shaheed: Please check the implementation

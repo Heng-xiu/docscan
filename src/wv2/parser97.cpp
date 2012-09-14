@@ -22,8 +22,8 @@
 using namespace wvWare;
 
 
-Parser97::Parser97(OLEStorage* storage, OLEStreamReader* wordDocument) :
-        Parser9x(storage, wordDocument, Word97::FIB(wordDocument, true))
+Parser97::Parser97(OLEStorage *storage, OLEStreamReader *wordDocument) :
+    Parser9x(storage, wordDocument, Word97::FIB(wordDocument, true))
 {
     if (!isOk())
         return;

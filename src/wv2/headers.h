@@ -42,7 +42,7 @@ class Headers
 {
 public:
     Headers(U32 ccpHdd, U32 fcPlcfhdd, U32 lcbPlcfhdd, U32 fcPlcfsed, U32 lcbPlcfsed,
-            OLEStreamReader* tableStream, WordVersion version);
+            OLEStreamReader *tableStream, WordVersion version);
     virtual ~Headers();
 
     /**

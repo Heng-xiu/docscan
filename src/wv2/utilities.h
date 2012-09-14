@@ -26,8 +26,8 @@
 
 namespace wvWare
 {
-template<class T> struct Delete : public std::unary_function<T*, void> {
-    void operator()(T* t) const {
+template<class T> struct Delete : public std::unary_function<T *, void> {
+    void operator()(T *t) const {
         delete t;
     }
 };

@@ -168,7 +168,8 @@ public:
 };
 
 
-namespace Word97 {
+namespace Word97
+{
 struct TAP;
 }
 
@@ -228,13 +229,14 @@ public:
      * This method gets called when an inline object is found.  @param data
          * the picture properties and offset into data stream.
      */
-    virtual void handleInlineObject(const PictureData& data);
+    virtual void handleInlineObject(const PictureData &data);
 };
 
 
 class ParagraphProperties;
 struct FLD;
-namespace Word97 {
+namespace Word97
+{
 struct CHP;
 struct SEP;
 }
@@ -267,7 +269,7 @@ public:
      * simply invokes the functor. This function is called right after the
      * start of a new section.
      */
-    virtual void headersFound(const HeaderFunctor& parseHeaders);
+    virtual void headersFound(const HeaderFunctor &parseHeaders);
 
     //////////////////////////////////////////////////////////////////////
     // Paragraph related callbacks...
@@ -292,7 +294,7 @@ public:
      * @param text The text of this run, UString holds it as UCS-2 host order string.
      * @param chp The character properties attached to this run of text
      */
-    virtual void runOfText(const UString& text, SharedPtr<const Word97::CHP> chp);
+    virtual void runOfText(const UString &text, SharedPtr<const Word97::CHP> chp);
 
     //////////////////////////////////////////////////////////////////////
     // Special characters...
@@ -349,7 +351,7 @@ public:
     virtual void footnoteFound(FootnoteData data, UString characters,
                                SharedPtr<const Word97::SEP> sep,
                                SharedPtr<const Word97::CHP> chp,
-                               const FootnoteFunctor& parseFootnote);
+                               const FootnoteFunctor &parseFootnote);
 
     /**
      * The parser found an annotation. The passed functor will trigger the parsing of this
@@ -358,7 +360,7 @@ public:
      * invokes the functor.
      */
     virtual void annotationFound(UString characters,
-                                 SharedPtr<const Word97::CHP> chp, const AnnotationFunctor& parseAnnotation);
+                                 SharedPtr<const Word97::CHP> chp, const AnnotationFunctor &parseAnnotation);
 
     /**
      * This callback will get triggered when parsing a auto-numbered footnote.
@@ -373,21 +375,21 @@ public:
      * @param fld Describes the type of the field for live fields. May be 0!
      * @param chp The character properties of the field start (ASCII 19)
      */
-    virtual void fieldStart(const FLD* fld, SharedPtr<const Word97::CHP> chp);
+    virtual void fieldStart(const FLD *fld, SharedPtr<const Word97::CHP> chp);
     /**
      * This callback separates the two parts of a field. The first part contains control
      * codes and keywords, the second part is the field result.
      * @param fld Describes the type of the field for live fields. May be 0!
      * @param chp The character properties of the field separator (ASCII 20)
      */
-    virtual void fieldSeparator(const FLD* fld, SharedPtr<const Word97::CHP> chp);
+    virtual void fieldSeparator(const FLD *fld, SharedPtr<const Word97::CHP> chp);
     /**
      * The end of the field result is indicated by this callback, fields may be nested up
      * to 20 levels, so take care :-)
      * @param fld Describes the type of the field for live fields. May be 0!
      * @param chp The character properties of the field end (ASCII 21)
      */
-    virtual void fieldEnd(const FLD* fld, SharedPtr<const Word97::CHP> chp);
+    virtual void fieldEnd(const FLD *fld, SharedPtr<const Word97::CHP> chp);
 
     /**
      * This method is called every time an inline or floating MS-ODRAW
@@ -397,13 +399,13 @@ public:
      * @param globalCP the CP to which the floating object is anchored
      * @param data the inline object data as defined by functordata
      */
-    virtual void msodrawObjectFound(const unsigned int globalCP, const PictureData* data);
+    virtual void msodrawObjectFound(const unsigned int globalCP, const PictureData *data);
 
     /**
      * Denotes the start of a bookmark.
      */
-    virtual void bookmarkStart(const BookmarkData& data);
-    virtual void bookmarkEnd(const BookmarkData& data);
+    virtual void bookmarkStart(const BookmarkData &data);
+    virtual void bookmarkEnd(const BookmarkData &data);
 
     //NOTE: those two belong into the TableHandler !!!!!
 
@@ -415,7 +417,7 @@ public:
      * ones you'll get when invoking the functor, but by having them here,
      * you can do some preprocessing on the whole table first.
      */
-    virtual void tableRowFound(const TableRowFunctor& tableRow, SharedPtr<const Word97::TAP> tap);
+    virtual void tableRowFound(const TableRowFunctor &tableRow, SharedPtr<const Word97::TAP> tap);
 
     /**
      * This method is called every time we find a table end. No default

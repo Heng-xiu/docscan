@@ -24,7 +24,7 @@ using namespace wvWare;
 
 TableRowData::TableRowData(unsigned int sp, unsigned int so, unsigned int len,
                            int subDoc, SharedPtr<const Word97::TAP> sharedTap) :
-        startPiece(sp), startOffset(so), length(len), subDocument(subDoc), tap(sharedTap)
+    startPiece(sp), startOffset(so), length(len), subDocument(subDoc), tap(sharedTap)
 {
 }
 
@@ -34,7 +34,7 @@ TableRowData::~TableRowData()
 
 
 PictureData::PictureData(U32 fc, SharedPtr<const Word97::PICF> sharedPicf) :
-        fcPic(fc), picf(sharedPicf)
+    fcPic(fc), picf(sharedPicf)
 {
 }
 

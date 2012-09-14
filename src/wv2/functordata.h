@@ -43,7 +43,7 @@ struct WV2_EXPORT HeaderData {
                };
 
     HeaderData(int sectionNum) :
-            sectionNumber(sectionNum), headerMask(HeaderOdd | FooterOdd) {}
+        sectionNumber(sectionNum), headerMask(HeaderOdd | FooterOdd) {}
 
     int sectionNumber;
     unsigned char headerMask;
@@ -57,7 +57,7 @@ struct WV2_EXPORT FootnoteData {
     enum Type { Footnote, Endnote };
 
     FootnoteData(Type t, bool autoNum, unsigned int start, unsigned int lim) :
-            type(t), autoNumbered(autoNum), startCP(start), limCP(lim) {}
+        type(t), autoNumbered(autoNum), startCP(start), limCP(lim) {}
 
     Type type;
     bool autoNumbered;
@@ -71,7 +71,7 @@ struct WV2_EXPORT FootnoteData {
 */
 struct WV2_EXPORT BookmarkData {
     BookmarkData(unsigned int start, unsigned int lim, UString nameRef) :
-            startCP(start), limCP(lim), name(nameRef) {}
+        startCP(start), limCP(lim), name(nameRef) {}
 
     unsigned int startCP;
     unsigned int limCP;
@@ -84,7 +84,7 @@ struct WV2_EXPORT BookmarkData {
  */
 struct WV2_EXPORT AnnotationData {
     AnnotationData(unsigned int start, unsigned int lim) :
-            startCP(start), limCP(lim) {
+        startCP(start), limCP(lim) {
     }
 
     unsigned int startCP;

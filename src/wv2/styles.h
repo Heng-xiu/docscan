@@ -33,7 +33,8 @@ class OLEStreamReader;
 class OLEStreamWriter;
 
 
-namespace Word97 {
+namespace Word97
+{
 
 /**
  * STyle Definition (STD)
@@ -56,14 +57,14 @@ struct STD {
     /**
      * Simply calls read(...)
      */
-    STD(U16 stdfSize, U16 totalSize, OLEStreamReader* stream, bool preservePos = false) throw(InvalidFormatException);
+    STD(U16 stdfSize, U16 totalSize, OLEStreamReader *stream, bool preservePos = false) throw(InvalidFormatException);
     /**
      * Attention: This struct allocates memory on the heap
      */
-    STD(const STD& rhs);
+    STD(const STD &rhs);
     ~STD();
 
-    STD& operator=(const STD& rhs);
+    STD &operator=(const STD &rhs);
 
     /**
      * This method reads the STD structure from the stream.  If preservePos is
@@ -72,12 +73,12 @@ struct STD {
      *
      * @return true - success, false - failed
      */
-    bool read(const U16 cbStd, const U16 stdfSize, OLEStreamReader* stream, bool preservePos = false) throw(InvalidFormatException);
+    bool read(const U16 cbStd, const U16 stdfSize, OLEStreamReader *stream, bool preservePos = false) throw(InvalidFormatException);
 
     /**
      * Same as reading :)
      */
-    bool write(U16 baseSize, OLEStreamWriter* stream, bool preservePos = false) const;
+    bool write(U16 baseSize, OLEStreamWriter *stream, bool preservePos = false) const;
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -98,47 +99,47 @@ struct STD {
     /**
      * invariant style identifier
      */
-U16 sti: 12;
+    U16 sti: 12;
 
     /**
      * spare field for any temporary use, always reset back to zero!
      */
-U16 fScratch: 1;
+    U16 fScratch: 1;
 
     /**
      * PHEs of all text with this style are wrong
      */
-U16 fInvalHeight: 1;
+    U16 fInvalHeight: 1;
 
     /**
      * UPEs have been generated
      */
-U16 fHasUpe: 1;
+    U16 fHasUpe: 1;
 
     /**
      * std has been mass-copied; if unused at save time, style should be deleted
      */
-U16 fMassCopy: 1;
+    U16 fMassCopy: 1;
 
     /**
      * style type code
      */
-U16 sgc: 4;
+    U16 sgc: 4;
 
     /**
      * base style
      */
-U16 istdBase: 12;
+    U16 istdBase: 12;
 
     /**
      * # of UPXs (and UPEs)
      */
-U16 cupx: 4;
+    U16 cupx: 4;
 
     /**
      * next style
      */
-U16 istdNext: 12;
+    U16 istdNext: 12;
 
     /**
      * offset to end of upx's, start of upe's
@@ -150,17 +151,17 @@ U16 istdNext: 12;
     /**
      * auto redefine style when appropriate
      */
-U16 fAutoRedef: 1;
+    U16 fAutoRedef: 1;
 
     /**
      * hidden from UI?
      */
-U16 fHidden: 1;
+    U16 fHidden: 1;
 
     /**
      * unused bits
      */
-U16 unused8_3: 14;
+    U16 unused8_3: 14;
     // --------------------
     //[GRFSTD] - END
 
@@ -185,7 +186,7 @@ U16 unused8_3: 14;
     /**
      * A GrLPUpxSw structure that specifies the formatting for the style.
      */
-    U8* grupx;
+    U8 *grupx;
 
     // -------------------------
     // Internal, for bookkeeping
@@ -205,11 +206,11 @@ private:
      * Read the name of the style.
      * @return true - success, false - fail
      */
-    bool readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamReader* stream);
+    bool readStyleName(const U16 stdfSize, const U16 stdBytesLeft, OLEStreamReader *stream);
 }; // STD
 
-bool operator==(const STD& lhs, const STD& rhs);
-bool operator!=(const STD& lhs, const STD& rhs);
+bool operator==(const STD &lhs, const STD &rhs);
+bool operator!=(const STD &lhs, const STD &rhs);
 
 }  // namespace Word97
 
@@ -229,11 +230,11 @@ struct UPECHPX {
 
     U16 istd;
     U8 cb;
-    U8* grpprl;
+    U8 *grpprl;
 
 private:
-    UPECHPX(const UPECHPX& rhs);
-    UPECHPX& operator=(const UPECHPX& rhs);
+    UPECHPX(const UPECHPX &rhs);
+    UPECHPX &operator=(const UPECHPX &rhs);
 };
 
 /**
@@ -245,13 +246,13 @@ class WV2_EXPORT Style
 {
 public:
 
-    Style(const U16 stdfSize, OLEStreamReader* tableStream, U16* ftc);
+    Style(const U16 stdfSize, OLEStreamReader *tableStream, U16 *ftc);
 
     /**
      * A special purpose constructor which creates an invalid Style class which
      * stores a copy of the provided CHPs.
      */
-    Style(const Word97::CHP& chp);
+    Style(const Word97::CHP &chp);
 
     ~Style();
 
@@ -262,7 +263,7 @@ public:
      * parsing errors.
      */
     void validate(const U16 istd, const U16 rglpstd_cnt,
-                  const std::vector<Style*>& styles, U16& udsNum);
+                  const std::vector<Style *> &styles, U16 &udsNum);
 
     /**
      * Check if the style is valid.
@@ -287,7 +288,7 @@ public:
     /**
      * Unwrap the style and create a valid PAP/CHP.
      */
-    void unwrapStyle(const StyleSheet& stylesheet, WordVersion version);
+    void unwrapStyle(const StyleSheet &stylesheet, WordVersion version);
 
     /**
      * @return the (unique?) sti of that style
@@ -313,29 +314,29 @@ public:
      * For paragraph styles only.
      * @return a reference to Paragraph Properties (PAP)
      */
-    const ParagraphProperties& paragraphProperties() const;
+    const ParagraphProperties &paragraphProperties() const;
 
     /**
      * For paragraph styles only.
      * @return a reference to Character Properties (CHP)
      */
-    const Word97::CHP& chp() const;
+    const Word97::CHP &chp() const;
 
     /**
      * For character styles only.
      * @return a reference to the UPE array
      */
-    const UPECHPX& upechpx() const;
+    const UPECHPX &upechpx() const;
 
 private:
-    Style(const Style& rhs);
-    Style& operator=(const Style& rhs);
+    Style(const Style &rhs);
+    Style &operator=(const Style &rhs);
 
     /**
      * This helper method merges two CHPX structures to one (needed for
      * character styles).
      */
-    void mergeUpechpx(const Style* parentStyle, WordVersion version);
+    void mergeUpechpx(const Style *parentStyle, WordVersion version);
 
     bool m_isEmpty;
     bool m_isWrapped;
@@ -346,7 +347,7 @@ private:
      */
     bool m_invalid;
 public:
-    Word97::STD* m_std;
+    Word97::STD *m_std;
 private:
 
     /**
@@ -367,7 +368,7 @@ private:
 class WV2_EXPORT StyleSheet
 {
 public:
-    StyleSheet(OLEStreamReader* tableStream, U32 fcStshf, U32 lcbStshf) throw(InvalidFormatException);
+    StyleSheet(OLEStreamReader *tableStream, U32 fcStshf, U32 lcbStshf) throw(InvalidFormatException);
     ~StyleSheet();
 
     /**
@@ -392,21 +393,21 @@ public:
     /**
      * @return 0 in case the style sheet does not contain the requested style.
      */
-    const Style* styleByIndex(U16 istd) const;
+    const Style *styleByIndex(U16 istd) const;
 
     /**
      * @return 0 in case the style sheet does not contain the requested style.
      */
-    const Style* styleByID(U16 sti) const;
+    const Style *styleByID(U16 sti) const;
 
-    U16 indexByID(U16 sti, bool& ok) const;
+    U16 indexByID(U16 sti, bool &ok) const;
 
 private:
-    StyleSheet(const StyleSheet& rhs);
-    StyleSheet& operator=(const StyleSheet& rhs);
+    StyleSheet(const StyleSheet &rhs);
+    StyleSheet &operator=(const StyleSheet &rhs);
 
     Word97::STSHI m_stsh;
-    std::vector<Style*> m_styles;
+    std::vector<Style *> m_styles;
 
     //Number of user defined styles with empty style name.
     U16 m_udsNum;

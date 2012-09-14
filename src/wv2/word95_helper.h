@@ -26,10 +26,12 @@
 
 namespace wvWare
 {
-namespace Word95 {
-namespace SPRM {
+namespace Word95
+{
+namespace SPRM
+{
 
-U16 determineParameterLength(U8 sprm, const U8* in);
+U16 determineParameterLength(U8 sprm, const U8 *in);
 
 } // namespace SPRM
 } // namespace Word95

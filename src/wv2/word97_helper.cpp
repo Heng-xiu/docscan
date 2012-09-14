@@ -37,7 +37,8 @@
 namespace wvWare
 {
 
-namespace Word97 {
+namespace Word97
+{
 
 // The fts enumeration specifies how the preferred width for a table, table
 // indent, table cell, cell margin, or cell spacing is defined.  MS-DOC, p.362
@@ -58,13 +59,14 @@ typedef enum {
     fbrcRight  = 0x08
 } GRFBRC;
 
-namespace SPRM {
+namespace SPRM
+{
 
 struct opcodeBits {
-U16 ispmd: 9;
-U16 fSpec: 1;
-U16 sgc: 3;
-U16 spra: 3;
+    U16 ispmd: 9;
+    U16 fSpec: 1;
+    U16 sgc: 3;
+    U16 spra: 3;
 };
 
 // Apart from all the SPRMs in the documentation I added some from the OOo code.
@@ -360,7 +362,7 @@ typedef enum {
 } opcodes;
 
 // The length of the SPRM parameter
-U16 determineParameterLength(U16 sprm, const U8* in, WordVersion version)
+U16 determineParameterLength(U16 sprm, const U8 *in, WordVersion version)
 {
     if (version == Word8) {
         static const char operandSizes[ 8 ] = { 1, 1, 2, 4, 2, 2, 0, 3 };
@@ -398,7 +400,7 @@ U16 determineParameterLength(U16 sprm, const U8* in, WordVersion version)
     } else { // Word67
         if (sprm > 255)
             wvlog << "Error: Trying to get the length of a flaky SPRM (" << sprm << ", 0x" << std::hex
-            << sprm << std::dec << ") via the Word 95 method!" << std::endl;
+                  << sprm << std::dec << ") via the Word 95 method!" << std::endl;
         return Word95::SPRM::determineParameterLength(static_cast<U8>(sprm), in);
     }
 }
@@ -407,10 +409,10 @@ U16 determineParameterLength(U16 sprm, const U8* in, WordVersion version)
 // This template function might be a bit sick, but it helps to
 // avoid duplicated code, so what ;)
 template<class T>
-void apply(T* const t,
-           S16(T::* applySPRM)(const U8*, const Style*, const StyleSheet*, OLEStreamReader*, WordVersion),
-           const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
-           OLEStreamReader* dataStream, WordVersion version)
+void apply(T *const t,
+           S16(T::* applySPRM)(const U8 *, const Style *, const StyleSheet *, OLEStreamReader *, WordVersion),
+           const U8 *grpprl, U16 count, const Style *style, const StyleSheet *styleSheet,
+           OLEStreamReader *dataStream, WordVersion version)
 {
     if (!grpprl)
         return;
@@ -541,15 +543,15 @@ U16 word6toWord8(U8 sprm)
 } // namespace SPRM
 
 
-ParagraphProperties* initPAPFromStyle(const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version)
+ParagraphProperties *initPAPFromStyle(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version)
 {
-    ParagraphProperties* properties = 0;
+    ParagraphProperties *properties = 0;
     if (exceptions == 0) {
         if (!styleSheet) {
             wvlog << "Warning: Couldn't read from the stylesheet." << std::endl;
             return new ParagraphProperties();
         }
-        const Style* normal = styleSheet->styleByID(0);    // stiNormal == 0x0000
+        const Style *normal = styleSheet->styleByID(0);    // stiNormal == 0x0000
         if (normal) {
             properties = new ParagraphProperties(normal->paragraphProperties());
         } else {
@@ -567,7 +569,7 @@ ParagraphProperties* initPAPFromStyle(const U8* exceptions, const StyleSheet* st
         U16 tmpIstd = readU16(exceptions);
         exceptions += 2;
 
-        const Style* style = 0;
+        const Style *style = 0;
         if (styleSheet) {
             style = styleSheet->styleByIndex(tmpIstd);
             if (style) {
@@ -591,9 +593,9 @@ ParagraphProperties* initPAPFromStyle(const U8* exceptions, const StyleSheet* st
     return properties;
 }
 
-Word97::TAP* initTAP(const U8* exceptions, OLEStreamReader* dataStream, WordVersion version)
+Word97::TAP *initTAP(const U8 *exceptions, OLEStreamReader *dataStream, WordVersion version)
 {
-    Word97::TAP* tap = new Word97::TAP;
+    Word97::TAP *tap = new Word97::TAP;
 
     if (exceptions == 0)
         return tap;
@@ -615,8 +617,8 @@ Word97::TAP* initTAP(const U8* exceptions, OLEStreamReader* dataStream, WordVers
 
 
 // Apply a PAP grpprl of a given size ("count" bytes long)
-void PAP::apply(const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
-                OLEStreamReader* dataStream, WordVersion version)
+void PAP::apply(const U8 *grpprl, U16 count, const Style *style, const StyleSheet *styleSheet,
+                OLEStreamReader *dataStream, WordVersion version)
 {
     // A PAP grpprl might contain TAP sprms, we just skip them
     SPRM::apply<PAP>(this, &PAP::applyPAPSPRM, grpprl, count, style, styleSheet, dataStream, version);
@@ -670,7 +672,8 @@ U32 icoToCOLORREF(U16 ico)
 }
 
 // Helper methods for the more complex sprms
-namespace {
+namespace
+{
 /**
  * Adds the tabs of the sprmPChgTabs* sprms.  Pass a pointer to the
  * itbdAddMax and the vector.
@@ -678,7 +681,7 @@ namespace {
  * @return the number of tabs added
  */
 typedef std::vector<Word97::TabDescriptor> TabDescVector;
-U8 addTabs(const U8* ptr, TabDescVector& rgdxaTab)
+U8 addTabs(const U8 *ptr, TabDescVector &rgdxaTab)
 {
     //wvlog << "Before adding the tabs: " << (int)rgdxaTab.size() << std::endl;
     // Remember where the end was
@@ -710,7 +713,7 @@ U8 addTabs(const U8* ptr, TabDescVector& rgdxaTab)
 
 // A zone where tabstops are forbidden, needed for sprmPChgTabs
 struct Zone {
-    Zone(const U8* ptr, U8 index, U8 itbdDelMax) {
+    Zone(const U8 *ptr, U8 index, U8 itbdDelMax) {
         m_center = readS16(ptr + index * sizeof(S16));
         // A negative value doesn't make sense here, right? Hmmm
         m_plusMinus = std::abs(readS16(ptr + itbdDelMax * sizeof(S16) + index * sizeof(S16)));
@@ -725,12 +728,12 @@ struct Zone {
 };
 
 struct InZone : public std::binary_function<TabDescriptor, Zone, bool> {
-    bool operator()(const TabDescriptor &tab, const Zone& zone) const {
+    bool operator()(const TabDescriptor &tab, const Zone &zone) const {
         return zone.contains(tab.dxaTab);
     }
 };
 
-U16 getSPRM(const U8** ptr, WordVersion version, U16& sprmLength)
+U16 getSPRM(const U8 **ptr, WordVersion version, U16 &sprmLength)
 {
     U16 sprm;
     if (version == Word8) {
@@ -746,7 +749,7 @@ U16 getSPRM(const U8** ptr, WordVersion version, U16& sprmLength)
     return sprm;
 }
 
-void readBRC(BRC& brc, const U8* ptr, WordVersion version)
+void readBRC(BRC &brc, const U8 *ptr, WordVersion version)
 {
     if (version == Word8)
         brc.readPtr(ptr);
@@ -757,7 +760,7 @@ void readBRC(BRC& brc, const U8* ptr, WordVersion version)
 
 // Returns -1 if this wasn't a PAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version)
+S16 PAP::applyPAPSPRM(const U8 *ptr, const Style *style, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version)
 {
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
@@ -781,7 +784,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         istd = readU16(ptr);
         break;
     case SPRM::sprmPIstdPermute: {
-        const U8* myPtr = ptr + 3; // cch, fLongg, fSpare
+        const U8 *myPtr = ptr + 3; // cch, fLongg, fSpare
         const U16 istdFirst = readU16(myPtr);
         myPtr += 2;
         const U16 istdLast = readU16(myPtr);
@@ -829,7 +832,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         fNoLnn = *ptr == 1;
         break;
     case SPRM::sprmPChgTabsPapx: {
-        const U8* myPtr = ptr;
+        const U8 *myPtr = ptr;
         U8 cch = *myPtr++;
         U8 itbdDelMax = *myPtr++;
         std::vector<Word97::TabDescriptor>::iterator tabIt = rgdxaTab.begin();
@@ -850,7 +853,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
 
         if (cch != 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax) {
             wvlog << "Offset problem in sprmPChgTabsPapx. cch=" << static_cast<int>(cch) <<
-            "data size=" << 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
+                  "data size=" << 1 + 2 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
         }
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "After applying sprmPChgTabsPapx : " << (int)rgdxaTab.size() << std::endl;
@@ -893,7 +896,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         dyaAfter = readU16(ptr);
         break;
     case SPRM::sprmPChgTabs: {
-        const U8* myPtr = ptr;
+        const U8 *myPtr = ptr;
         const U8 cch = *myPtr++;
         const U8 itbdDelMax = *myPtr++;
         // Remove the tabs within the deletion zones
@@ -908,7 +911,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
 
         if (cch != 255 && cch != 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax) {
             wvlog << "Offset problem in sprmPChgTabs. cch=" << static_cast<int>(cch) <<
-            "data size=" << 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
+                  "data size=" << 1 + 4 * itbdDelMax + 1 + 3 * itbdAddMax << std::endl;
         }
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "After applying sprmPChgTabs : " << (int)rgdxaTab.size() << std::endl;
@@ -1065,7 +1068,7 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             dataStream->push();
             dataStream->seek(readU32(ptr), WV2_SEEK_SET);
             const U16 count(dataStream->readU16());
-            U8* grpprl = new U8[ count ];
+            U8 *grpprl = new U8[ count ];
             dataStream->read(grpprl, count);
             dataStream->pop();
 
@@ -1123,15 +1126,15 @@ S16 PAP::applyPAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
 }
 
 // Apply a CHP grpprl of a given size ("count" bytes long)
-void CHP::apply(const U8* grpprl, U16 count, const Style* paragraphStyle, const StyleSheet* styleSheet,
-                OLEStreamReader* dataStream, WordVersion version)
+void CHP::apply(const U8 *grpprl, U16 count, const Style *paragraphStyle, const StyleSheet *styleSheet,
+                OLEStreamReader *dataStream, WordVersion version)
 {
     // There should be only CHP sprms in the grpprl we get
     SPRM::apply<CHP>(this, &CHP::applyCHPSPRM, grpprl, count, paragraphStyle, styleSheet, dataStream, version);
 }
 
-void CHP::applyExceptions(const U8* exceptions, const Style* paragraphStyle, const StyleSheet* styleSheet,
-                          OLEStreamReader* dataStream, WordVersion version)
+void CHP::applyExceptions(const U8 *exceptions, const Style *paragraphStyle, const StyleSheet *styleSheet,
+                          OLEStreamReader *dataStream, WordVersion version)
 {
     if (exceptions == 0)
         return;
@@ -1141,14 +1144,15 @@ void CHP::applyExceptions(const U8* exceptions, const Style* paragraphStyle, con
 }
 
 // Helper functions for more complex sprms
-namespace {
-const Word97::CHP* determineCHP(U16 istd, const Style* paragraphStyle, const StyleSheet* styleSheet)
+namespace
 {
-    const Word97::CHP* chp(0);
+const Word97::CHP *determineCHP(U16 istd, const Style *paragraphStyle, const StyleSheet *styleSheet)
+{
+    const Word97::CHP *chp(0);
     if (istd == 10 && paragraphStyle) {
         chp = &paragraphStyle->chp();
     } else if (istd != 10 && styleSheet) {
-        const Style* style(styleSheet->styleByIndex(istd));
+        const Style *style(styleSheet->styleByIndex(istd));
         chp = ((style != 0) && (style->type() == sgcChp)) ? &style->chp() : 0;
     } else {
         wvlog << "Warning: sprmCFxyz couldn't find a style" << std::endl;
@@ -1159,7 +1163,7 @@ const Word97::CHP* determineCHP(U16 istd, const Style* paragraphStyle, const Sty
 
 // Returns -1 if this wasn't a CHP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version)
+S16 CHP::applyCHPSPRM(const U8 *ptr, const Style *paragraphStyle, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version)
 {
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
@@ -1243,10 +1247,10 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
         istd = readS16(ptr);
         if (styleSheet) {
             wvlog << "Trying to change the character style to " << istd << std::endl;
-            const Style* style = styleSheet->styleByIndex(istd);
+            const Style *style = styleSheet->styleByIndex(istd);
             if (style && style->type() == sgcChp) {
                 wvlog << "got a character style!" << std::endl;
-                const UPECHPX& upechpx(style->upechpx());
+                const UPECHPX &upechpx(style->upechpx());
                 apply(upechpx.grpprl, upechpx.cb, paragraphStyle, styleSheet, dataStream, version);
             } else {
                 wvlog << "Warning: Couldn't find the character style with istd " << istd << std::endl;
@@ -1257,7 +1261,7 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
         break;
     }
     case SPRM::sprmCIstdPermute: {
-        const U8* myPtr = ptr + 3; // cch, fLongg, fSpare
+        const U8 *myPtr = ptr + 3; // cch, fLongg, fSpare
         const U16 istdFirst = readU16(myPtr);
         myPtr += 2;
         const U16 istdLast = readU16(myPtr);
@@ -1293,7 +1297,7 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
     case SPRM::sprmCFBold:
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "sprmCFBold operand: 0x" << std::hex << *ptr << "| istd: 0x" << std::hex << istd <<
-        "| paragraphStyle:" << paragraphStyle;
+              "| paragraphStyle:" << paragraphStyle;
 #endif
         if (*ptr < 128) {
             fBold = *ptr == 1;
@@ -1469,7 +1473,7 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
         tmpChp.ftc = 4; // the rest is default, looks a bit strange
         tmpChp.apply(ptr + 1, *ptr, paragraphStyle, styleSheet, dataStream, version);
         if (paragraphStyle) {
-            const CHP& pstyle(paragraphStyle->chp());
+            const CHP &pstyle(paragraphStyle->chp());
             if (tmpChp.fBold == fBold)
                 fBold = pstyle.fBold;
             if (tmpChp.fItalic == fItalic)
@@ -1714,22 +1718,22 @@ S16 CHP::applyCHPSPRM(const U8* ptr, const Style* paragraphStyle, const StyleShe
 
 
 // Apply a PICF grpprl of a given size ("count" bytes long)
-void PICF::apply(const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
-                 OLEStreamReader* dataStream, WordVersion version)
+void PICF::apply(const U8 *grpprl, U16 count, const Style *style, const StyleSheet *styleSheet,
+                 OLEStreamReader *dataStream, WordVersion version)
 {
     // There should be only PICF sprms in the grpprl we get
     SPRM::apply<PICF>(this, &PICF::applyPICFSPRM, grpprl, count, style, styleSheet, dataStream, version);
 }
 
-void PICF::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/)
+void PICF::applyExceptions(const U8 * /*exceptions*/, const StyleSheet * /*stylesheet*/, OLEStreamReader * /*dataStream*/, WordVersion /*version*/)
 {
     // ### CHECK: Do we need that at all?
 }
 
 // Returns -1 if this wasn't a PICF sprm and it returns the length
 // of the applied sprm if it was successful
-S16 PICF::applyPICFSPRM(const U8* ptr, const Style* /*style*/, const StyleSheet* /*styleSheet*/,
-                        OLEStreamReader* /*dataStream*/, WordVersion version)
+S16 PICF::applyPICFSPRM(const U8 *ptr, const Style * /*style*/, const StyleSheet * /*styleSheet*/,
+                        OLEStreamReader * /*dataStream*/, WordVersion version)
 {
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
@@ -1750,7 +1754,7 @@ S16 PICF::applyPICFSPRM(const U8* ptr, const Style* /*style*/, const StyleSheet*
     case SPRM::sprmPicScale:
         if (*ptr != 12)
             wvlog << "Warning: sprmPicScale has a different size (" << static_cast<int>(*ptr)
-            << ") than expected (12)." << std::endl;
+                  << ") than expected (12)." << std::endl;
         mx = readU16(ptr + 1);
         my = readU16(ptr + 3);
         dxaCropLeft = readU16(ptr + 5);
@@ -1779,14 +1783,14 @@ S16 PICF::applyPICFSPRM(const U8* ptr, const Style* /*style*/, const StyleSheet*
 
 
 // Apply a SEP grpprl of a given size ("count" bytes long)
-void SEP::apply(const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
-                OLEStreamReader* dataStream, WordVersion version)
+void SEP::apply(const U8 *grpprl, U16 count, const Style *style, const StyleSheet *styleSheet,
+                OLEStreamReader *dataStream, WordVersion version)
 {
     // There should be only SEP sprms in the grpprl we get
     SPRM::apply<SEP>(this, &SEP::applySEPSPRM, grpprl, count, style, styleSheet, dataStream, version);
 }
 
-void SEP::applyExceptions(const U8* exceptions, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version)
+void SEP::applyExceptions(const U8 *exceptions, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version)
 {
     if (exceptions == 0)
         return;
@@ -1797,7 +1801,7 @@ void SEP::applyExceptions(const U8* exceptions, const StyleSheet* styleSheet, OL
 
 // Returns -1 if this wasn't a SEP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 SEP::applySEPSPRM(const U8* ptr, const Style* /*style*/, const StyleSheet* /*styleSheet*/, OLEStreamReader* /*dataStream*/, WordVersion version)
+S16 SEP::applySEPSPRM(const U8 *ptr, const Style * /*style*/, const StyleSheet * /*styleSheet*/, OLEStreamReader * /*dataStream*/, WordVersion version)
 {
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
@@ -1997,21 +2001,22 @@ S16 SEP::applySEPSPRM(const U8* ptr, const Style* /*style*/, const StyleSheet* /
 
 // Apply a TAP grpprl (or at least the TAP properties of a PAP/TAP grpprl)
 // of a given size ("count" bytes long)
-void TAP::apply(const U8* grpprl, U16 count, const Style* style, const StyleSheet* styleSheet,
-                OLEStreamReader* dataStream, WordVersion version)
+void TAP::apply(const U8 *grpprl, U16 count, const Style *style, const StyleSheet *styleSheet,
+                OLEStreamReader *dataStream, WordVersion version)
 {
     // There should be mostly TAP sprms in the grpprl we get, and we
     // have to ignore the remaining PAP sprms, just what the template does
     SPRM::apply<TAP>(this, &TAP::applyTAPSPRM, grpprl, count, style, styleSheet, dataStream, version);
 }
 
-void TAP::applyExceptions(const U8* /*exceptions*/, const StyleSheet* /*stylesheet*/, OLEStreamReader* /*dataStream*/, WordVersion /*version*/)
+void TAP::applyExceptions(const U8 * /*exceptions*/, const StyleSheet * /*stylesheet*/, OLEStreamReader * /*dataStream*/, WordVersion /*version*/)
 {
     // ### TODO -- is that needed at all?
 }
 
-namespace {
-void cropIndices(U8& itcFirst, U8& itcLim, U8 size)
+namespace
+{
+void cropIndices(U8 &itcFirst, U8 &itcLim, U8 size)
 {
     if (itcFirst >= size) {
         wvlog << "Warning: itcFirst out of bounds" << std::endl;
@@ -2026,7 +2031,7 @@ void cropIndices(U8& itcFirst, U8& itcLim, U8 size)
 
 // Returns -1 if this wasn't a TAP sprm and it returns the length
 // of the applied sprm if it was successful
-S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* styleSheet, OLEStreamReader* dataStream, WordVersion version)
+S16 TAP::applyTAPSPRM(const U8 *ptr, const Style *style, const StyleSheet *styleSheet, OLEStreamReader *dataStream, WordVersion version)
 {
     U16 sprmLength;
     const U16 sprm(getSPRM(&ptr, version, sprmLength));
@@ -2043,7 +2048,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             (sprm != SPRM::sprmPTableProps)) {
 #ifdef WV2_DEBUG_SPRMS
         wvlog << "Warning: You're trying to apply a non TAP sprm to a TAP. Not necessarily bad."
-        << std::endl;
+              << std::endl;
 #endif
         return -1;
     }
@@ -2122,8 +2127,8 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             wvlog << "Bug: Not even enough space for the dxas!" << std::endl;
             break;
         }
-        const U8* myPtr = ptr + 3;
-        const U8* myLim = ptr + 3 + 2 * (itcMac + 1);
+        const U8 *myPtr = ptr + 3;
+        const U8 *myLim = ptr + 3 + 2 * (itcMac + 1);
         while (myPtr < myLim) {
             rgdxaCenter.push_back(readS16(myPtr));
             myPtr += 2;
@@ -2149,8 +2154,8 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         break;
     }
     case SPRM::sprmTDefTableShd80: {
-        const U8* myPtr = ptr + 1;
-        const U8* myLim = ptr + 1 + *ptr;
+        const U8 *myPtr = ptr + 1;
+        const U8 *myLim = ptr + 1 + *ptr;
         rgshd.clear();
         while (myPtr < myLim) {
             rgshd.push_back(SHD(myPtr));
@@ -2162,8 +2167,8 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         break;
     }
     case SPRM::sprmTDefTableShd: {
-        const U8* myPtr = ptr + 1;
-        const U8* myLim = ptr + 1 + *ptr;
+        const U8 *myPtr = ptr + 1;
+        const U8 *myLim = ptr + 1 + *ptr;
         rgshd.clear();
         while (myPtr < myLim) {
             SHD shd;
@@ -2221,7 +2226,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
         wvlog << "Warning: sprmTHTMLProps not implemented" << std::endl;
         break;
     case SPRM::sprmTSetBrc80: {
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);    // variable size byte for Word 8!
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);    // variable size byte for Word 8!
         U8 itcFirst = *myPtr;
         U8 itcLim = *(myPtr + 1);
         cropIndices(itcFirst, itcLim, rgtc.size());
@@ -2419,7 +2424,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     }
     case SPRM::sprmTSetBrc: {
         // variable size byte for Word 8!
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);
         U8 itcFirst = *myPtr;
         U8 itcLim = *(myPtr + 1);
         cropIndices(itcFirst, itcLim, rgtc.size());
@@ -2451,7 +2456,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     }
     case SPRM::sprmTBrcTopCv: {
         // variable size byte for Word 8!
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);
         for (uint i = 0 ; i < 64 && i < rgtc.size(); ++i) {
             rgtc[ i ].brcTop.cv = ((*(myPtr + i * 4)) << 16)  | ((*(myPtr + 1 + i * 4)) << 8) | (*(myPtr + 2 + i * 4)) ;
         }
@@ -2459,7 +2464,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     }
     case SPRM::sprmTBrcLeftCv: {
         // variable size byte for Word 8!
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);
         for (uint i = 0 ; i < 64 && i < rgtc.size(); ++i) {
             rgtc[ i ].brcLeft.cv = ((*(myPtr + i * 4)) << 16)  | ((*(myPtr + 1 + i * 4)) << 8) | (*(myPtr + 2 + i * 4)) ;
         }
@@ -2467,7 +2472,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     }
     case SPRM::sprmTBrcRightCv: {
         // variable size byte for Word 8!
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);
         for (uint i = 0 ; i < 64 && i < rgtc.size(); ++i) {
             rgtc[ i ].brcRight.cv = ((*(myPtr + i * 4)) << 16)  | ((*(myPtr + 1 + i * 4)) << 8) | (*(myPtr + 2 + i * 4)) ;
         }
@@ -2475,7 +2480,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
     }
     case SPRM::sprmTBrcBottomCv: {
         // variable size byte for Word 8!
-        const U8* myPtr(version == Word8 ? ptr + 1 : ptr);
+        const U8 *myPtr(version == Word8 ? ptr + 1 : ptr);
         for (uint i = 0 ; i < 64 && i < rgtc.size(); ++i) {
             rgtc[ i ].brcBottom.cv = ((*(myPtr + i * 4)) << 16)  | ((*(myPtr + 1 + i * 4)) << 8) | (*(myPtr + 2 + i * 4)) ;
         }
@@ -2531,7 +2536,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             }
         } else {
             wvlog << "Warning: sprmTCellPaddingDefault with unusual length=" <<
-            static_cast<int>(*ptr) << std::endl;
+                  static_cast<int>(*ptr) << std::endl;
         }
         break;
     case SPRM::sprmTUndocumented1:
@@ -2575,7 +2580,7 @@ S16 TAP::applyTAPSPRM(const U8* ptr, const Style* style, const StyleSheet* style
             dataStream->seek(readU32(ptr), WV2_SEEK_SET);
 
             const U16 count(dataStream->readU16());
-            U8* grpprl = new U8[ count ];
+            U8 *grpprl = new U8[ count ];
 
             dataStream->read(grpprl, count);
             dataStream->pop();

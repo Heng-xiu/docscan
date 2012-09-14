@@ -31,7 +31,8 @@
 namespace wvWare
 {
 
-namespace Word95 {
+namespace Word95
+{
 
 // This has been added to the template file, as the mapping is
 // non-trivial. Shaheed: Please check the implementation
@@ -109,7 +110,7 @@ Word97::ANLD toWord97(const Word95::ANLD &s)
     ret.fNumberAcross = s.fNumberAcross;
     ret.fRestartHdn = s.fRestartHdn;
     ret.fSpareX = s.fSpareX;
-    for (int i = 0;i < (32);++i)
+    for (int i = 0; i < (32); ++i)
         ret.rgxch[i] = s.rgchAnld[i];
 
     return ret;
@@ -647,13 +648,13 @@ Word97::OLST toWord97(const Word95::OLST &s)
 
     Word97::OLST ret;
 
-    for (int i = 0;i < (9);++i)
+    for (int i = 0; i < (9); ++i)
         ret.rganlv[i] = toWord97(s.rganlv[i]);
     ret.fRestartHdr = s.fRestartHdr;
     ret.fSpareOlst2 = s.fSpareOlst2;
     ret.fSpareOlst3 = s.fSpareOlst3;
     ret.fSpareOlst4 = s.fSpareOlst4;
-    for (int i = 0;i < (32);++i)
+    for (int i = 0; i < (32); ++i)
         ret.rgxch[i] = s.rgch[i];
 
     return ret;
@@ -801,7 +802,7 @@ Word97::PICF toWord97(const Word95::PICF &s)
     ret.lcb = s.lcb;
     ret.cbHeader = s.cbHeader;
     ret.mfp = toWord97(s.mfp);
-    for (int i = 0;i < (14);++i)
+    for (int i = 0; i < (14); ++i)
         ret.bm_rcWinMF[i] = s.bm_rcWinMF[i];
     ret.dxaGoal = s.dxaGoal;
     ret.dyaGoal = s.dyaGoal;
@@ -913,7 +914,7 @@ Word97::SEP toWord97(const Word95::SEP &s)
     ret.dmPaperReq = s.dmPaperReq;
     ret.fEvenlySpaced = s.fEvenlySpaced;
     ret.dxaColumnWidth = s.dxaColumnWidth;
-    for (int i = 0;i < (89);++i)
+    for (int i = 0; i < (89); ++i)
         ret.rgdxaColumnWidthSpacing[i] = s.rgdxaColumnWidthSpacing[i];
     ret.olstAnm = toWord97(s.olstAnm);
 
@@ -975,7 +976,7 @@ Word97::TAP toWord97(const Word95::TAP &s)
     ret.fOutline = s.fOutline;
     ret.itcMac = s.itcMac;
     ret.dxaAdjust = s.dxaAdjust;
-    for (int i = 0;i < (6);++i)
+    for (int i = 0; i < (6); ++i)
         ret.rgbrcTable[i] = toWord97(s.rgbrcTable[i]);
 
     return ret;

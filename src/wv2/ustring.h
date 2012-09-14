@@ -98,8 +98,8 @@ private:
     friend class UCharReference;
     friend class UString;
     friend bool operator==(const UChar &c1, const UChar &c2);
-    friend bool operator==(const UString& s1, const char *s2);
-    friend bool operator<(const UString& s1, const UString& s2);
+    friend bool operator==(const UString &s1, const char *s2);
+    friend bool operator<(const UString &s1, const UString &s2);
 
     unsigned short uc;
 };
@@ -130,11 +130,11 @@ public:
     /**
      * Set the referenced character to c.
      */
-    UCharReference& operator=(UChar c);
+    UCharReference &operator=(UChar c);
     /**
      * Same operator as above except the argument that it takes.
      */
-    UCharReference& operator=(char c) {
+    UCharReference &operator=(char c) {
         return operator=(UChar(c));
     }
     /**
@@ -171,7 +171,7 @@ private:
     // not implemented, can only be constructed from UString
     UCharReference();
 
-    UChar& ref() const;
+    UChar &ref() const;
     UString *str;
     int offset;
 };
@@ -206,7 +206,7 @@ private:
  */
 class WV2_EXPORT UString
 {
-    friend bool operator==(const UString&, const UString&);
+    friend bool operator==(const UString &, const UString &);
     friend class UCharReference;
     friend class UConstString;
     /**
@@ -214,7 +214,7 @@ class WV2_EXPORT UString
      */
     struct Rep {
         friend class UString;
-        friend bool operator==(const UString&, const UString&);
+        friend bool operator==(const UString &, const UString &);
         static Rep *create(UChar *d, int l);
         inline UChar *data() const {
             return dat;
@@ -321,7 +321,7 @@ public:
     /**
      * @return A pointer to the internal Unicode data.
      */
-    const UChar* data() const {
+    const UChar *data() const {
         return rep->data();
     }
     /**
@@ -366,7 +366,7 @@ public:
      * Returns NaN if the conversion failed.
      * @param tolerant if true, toDouble can tolerate garbage after the number.
      */
-    double toDouble(bool tolerant=false) const;
+    double toDouble(bool tolerant = false) const;
     /**
      * Attempts an conversion to an unsigned long integer. ok will be set
      * according to the success.
@@ -406,36 +406,36 @@ inline bool operator!=(const UChar &c1, const UChar &c2)
 {
     return !(c1 == c2);
 }
-bool operator==(const UString& s1, const UString& s2);
-inline bool operator!=(const UString& s1, const UString& s2)
+bool operator==(const UString &s1, const UString &s2);
+inline bool operator!=(const UString &s1, const UString &s2)
 {
     return !wvWare::operator==(s1, s2);
 }
-bool operator<(const UString& s1, const UString& s2);
-bool operator==(const UString& s1, const char *s2);
-inline bool operator!=(const UString& s1, const char *s2)
+bool operator<(const UString &s1, const UString &s2);
+bool operator==(const UString &s1, const char *s2);
+inline bool operator!=(const UString &s1, const char *s2)
 {
     return !wvWare::operator==(s1, s2);
 }
-inline bool operator==(const char *s1, const UString& s2)
+inline bool operator==(const char *s1, const UString &s2)
 {
     return operator==(s2, s1);
 }
-inline bool operator!=(const char *s1, const UString& s2)
+inline bool operator!=(const char *s1, const UString &s2)
 {
     return !wvWare::operator==(s1, s2);
 }
-bool operator==(const CString& s1, const CString& s2);
-UString operator+(const UString& s1, const UString& s2);
+bool operator==(const CString &s1, const CString &s2);
+UString operator+(const UString &s1, const UString &s2);
 
 
 class UConstString : private UString
 {
 public:
-    UConstString(UChar* data, unsigned int length);
+    UConstString(UChar *data, unsigned int length);
     ~UConstString();
 
-    const UString& string() const {
+    const UString &string() const {
         return *this;
     }
 };

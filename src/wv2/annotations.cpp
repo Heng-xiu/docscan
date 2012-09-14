@@ -26,16 +26,16 @@
 
 using namespace wvWare;
 
-Annotations::Annotations(OLEStreamReader* tableStream, const Word97::FIB& fib) :
-        m_annotationRef(0), m_annotationRefIt(0)
+Annotations::Annotations(OLEStreamReader *tableStream, const Word97::FIB &fib) :
+    m_annotationRef(0), m_annotationRefIt(0)
 {
 #ifdef WV2_DEBUG_ANNOTATIONS
     wvlog << std::endl << "footnotes" << std::endl
-    << "   fcPlcffndRef=" << fib.fcPlcffndRef << " lcbPlcffndRef=" << fib.lcbPlcffndRef << std::endl
-    << "   fcPlcffndTxt=" << fib.fcPlcffndTxt << " lcbPlcffndTxt=" << fib.lcbPlcffndTxt << std::endl
-    << "annotations" << std::endl
-    << "   fcPlcfandRef=" << fib.fcPlcfandRef << " lcbPlcfandRef=" << fib.lcbPlcfandRef << std::endl
-    << "   fcPlcfandTxt=" << fib.fcPlcfandTxt << " lcbPlcfandTxt=" << fib.lcbPlcfandTxt << std::endl;
+          << "   fcPlcffndRef=" << fib.fcPlcffndRef << " lcbPlcffndRef=" << fib.lcbPlcffndRef << std::endl
+          << "   fcPlcffndTxt=" << fib.fcPlcffndTxt << " lcbPlcffndTxt=" << fib.lcbPlcffndTxt << std::endl
+          << "annotations" << std::endl
+          << "   fcPlcfandRef=" << fib.fcPlcfandRef << " lcbPlcfandRef=" << fib.lcbPlcfandRef << std::endl
+          << "   fcPlcfandTxt=" << fib.fcPlcfandTxt << " lcbPlcfandTxt=" << fib.lcbPlcfandTxt << std::endl;
 #endif
     tableStream->push();
     // Annotations
@@ -50,7 +50,7 @@ Annotations::~Annotations()
     delete m_annotationRef;
 }
 
-AnnotationData Annotations::annotation(U32 globalCP, bool& ok)
+AnnotationData Annotations::annotation(U32 globalCP, bool &ok)
 {
 #ifdef WV2_DEBUG_ANNOTATIONS
     wvlog << "Annotations::annotation(): globalCP=" << globalCP << std::endl;
@@ -86,9 +86,9 @@ U32 Annotations::nextAnnotation() const
     return m_annotationRefIt && m_annotationRefIt->current() ? m_annotationRefIt->currentStart() : 0xffffffff;
 }
 
-void Annotations::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
-                       PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
-                       std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt)
+void Annotations::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader *tableStream,
+                       PLCF<Word97::FRD> **ref, PLCFIterator<Word97::FRD> **refIt,
+                       std::vector<U32> &txt, std::vector<U32>::const_iterator &txtIt)
 {
     if (lcbRef == 0) {
         return;

@@ -24,7 +24,8 @@
 
 namespace wvWare
 {
-namespace Word97 {
+namespace Word97
+{
 struct FIB;
 }
 template<class T> class PLCF;
@@ -33,11 +34,11 @@ class OLEStreamReader;
 
 struct FLD {
     FLD();
-    FLD(OLEStreamReader* stream, bool preservePos = false);
-    FLD(const U8* ptr);
+    FLD(OLEStreamReader *stream, bool preservePos = false);
+    FLD(const U8 *ptr);
 
-    bool read(OLEStreamReader* stream, bool preservePos = false);
-    bool readPtr(const U8* ptr);
+    bool read(OLEStreamReader *stream, bool preservePos = false);
+    bool readPtr(const U8 *ptr);
 
     void clear();
 
@@ -46,14 +47,14 @@ struct FLD {
     union {
         U8 flt;
         struct {
-        U8 fDiffer: 1;
-        U8 fZombieEmbed: 1;
-        U8 fResultDirty: 1;
-        U8 fResultEdited: 1;
-        U8 fLocked: 1;
-        U8 fPrivateResult: 1;
-        U8 fNested: 1;
-        U8 fHasSep: 1;
+            U8 fDiffer: 1;
+            U8 fZombieEmbed: 1;
+            U8 fResultDirty: 1;
+            U8 fResultEdited: 1;
+            U8 fLocked: 1;
+            U8 fPrivateResult: 1;
+            U8 fNested: 1;
+            U8 fHasSep: 1;
         } flags;
     };
 
@@ -68,27 +69,27 @@ bool operator!=(const FLD &lhs, const FLD &rhs);
 class Fields
 {
 public:
-    Fields(OLEStreamReader* tableStream, const Word97::FIB& fib);
+    Fields(OLEStreamReader *tableStream, const Word97::FIB &fib);
     ~Fields();
 
-    const FLD* fldForCP(Parser::SubDocument subDocument, U32 cp) const;
+    const FLD *fldForCP(Parser::SubDocument subDocument, U32 cp) const;
 
 private:
-    Fields(const Fields& rhs);
-    Fields& operator=(const Fields& rhs);
+    Fields(const Fields &rhs);
+    Fields &operator=(const Fields &rhs);
 
-    void read(U32 fc, U32 lcb, OLEStreamReader* tableStream, PLCFMap<FLD>** plcf);
-    void sanityCheck(const OLEStreamReader* tableStream, U32 nextFC, U32 lcb) const;
-    const FLD* fldForCP(const PLCFMap<FLD>* plcf, U32 cp) const;
+    void read(U32 fc, U32 lcb, OLEStreamReader *tableStream, PLCFMap<FLD> **plcf);
+    void sanityCheck(const OLEStreamReader *tableStream, U32 nextFC, U32 lcb) const;
+    const FLD *fldForCP(const PLCFMap<FLD> *plcf, U32 cp) const;
 
-    PLCFMap<FLD>* m_main;
-    PLCFMap<FLD>* m_header;
-    PLCFMap<FLD>* m_footnote;
-    PLCFMap<FLD>* m_annotation;
-    PLCFMap<FLD>* m_endnote;
-    PLCFMap<FLD>* m_textbox;
-    PLCFMap<FLD>* m_headerTextbox;
-    PLCFMap<FLD>* m_bookmark;
+    PLCFMap<FLD> *m_main;
+    PLCFMap<FLD> *m_header;
+    PLCFMap<FLD> *m_footnote;
+    PLCFMap<FLD> *m_annotation;
+    PLCFMap<FLD> *m_endnote;
+    PLCFMap<FLD> *m_textbox;
+    PLCFMap<FLD> *m_headerTextbox;
+    PLCFMap<FLD> *m_bookmark;
 };
 
 } // namespace wvWare

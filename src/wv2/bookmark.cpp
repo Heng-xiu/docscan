@@ -28,14 +28,14 @@
 
 using namespace wvWare;
 
-Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
-        m_start(0), m_startIt(0), m_end(0), m_endIt(0), m_nFib(fib.nFib)
+Bookmarks::Bookmarks(OLEStreamReader *tableStream, const Word97::FIB &fib) :
+    m_start(0), m_startIt(0), m_end(0), m_endIt(0), m_nFib(fib.nFib)
 {
 #ifdef WV2_DEBUG_BOOKMARK
     wvlog   << std::endl
-    << "   fcPlcfbkf=" << fib.fcPlcfbkf << " lcbPlcfbkf=" << fib.lcbPlcfbkf << std::endl
-    << "   fcPlcfbkl=" << fib.fcPlcfbkl << " lcbPlcfbkl=" << fib.lcbPlcfbkl << std::endl
-    << "   lcbSttbfbkmk=" << fib.fcSttbfbkmk << " lcbSttbfbkmk=" << fib.lcbSttbfbkmk << std::endl;
+            << "   fcPlcfbkf=" << fib.fcPlcfbkf << " lcbPlcfbkf=" << fib.lcbPlcfbkf << std::endl
+            << "   fcPlcfbkl=" << fib.fcPlcfbkl << " lcbPlcfbkl=" << fib.lcbPlcfbkl << std::endl
+            << "   lcbSttbfbkmk=" << fib.fcSttbfbkmk << " lcbSttbfbkmk=" << fib.lcbSttbfbkmk << std::endl;
 #endif
 
     tableStream->push();
@@ -59,7 +59,7 @@ Bookmarks::Bookmarks(OLEStreamReader* tableStream, const Word97::FIB& fib) :
         }
         // The bookmark names in the STTBF are always Unicode, the lid doesn't matter
         U16 usLid = 0x409;
-        STTBF* name = new STTBF(usLid, tableStream, false);
+        STTBF *name = new STTBF(usLid, tableStream, false);
 
 #ifdef WV2_DEBUG_BOOKMARK
         name->dumpStrings();
@@ -133,7 +133,7 @@ Bookmarks::~Bookmarks()
     delete m_start;
 }
 
-BookmarkData Bookmarks::bookmark(U32 globalCP, bool& ok)
+BookmarkData Bookmarks::bookmark(U32 globalCP, bool &ok)
 {
 #ifdef WV2_DEBUG_BOOKMARK
     wvlog << " globalCP=" << globalCP << std::endl;
@@ -308,7 +308,7 @@ bool Bookmarks::valid(U16 &num, const U32 ccpText)
                 num++;
 #ifdef WV2_DEBUG_BOOKMARK
                 wvlog << "bkmk" << n << ": startCP > endCP (" <<
-                startIt.currentStart() << "|" << m_endCP[ibkl] << ")";
+                      startIt.currentStart() << "|" << m_endCP[ibkl] << ")";
 #endif
             } else {
                 m_valid.append(true);

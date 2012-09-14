@@ -40,7 +40,7 @@ public:
      * This method will return 0 if it wasn't successful (e.g unknown
      * version, corrupted file,...).
      */
-    static SharedPtr<Parser> createParser(const std::string& fileName);
+    static SharedPtr<Parser> createParser(const std::string &fileName);
 };
 
 } // namespace wvWare

@@ -29,14 +29,16 @@
 
 namespace wvWare
 {
-namespace Word97 {
+namespace Word97
+{
 class PHE; class BTE;
 }
-namespace Word95 {
+namespace Word95
+{
 class PHE;
 class BTE;
-Word97::PHE toWord97(const Word95::PHE& phe);    // fake, to make gcc 3.4 happy :-(
-Word97::BTE toWord97(const Word95::BTE& s);     // fake, to make gcc 3.4 happy :-(
+Word97::PHE toWord97(const Word95::PHE &phe);    // fake, to make gcc 3.4 happy :-(
+Word97::BTE toWord97(const Word95::BTE &s);     // fake, to make gcc 3.4 happy :-(
 }
 
 class OLEStreamReader;
@@ -47,9 +49,9 @@ class UString;
 class STTBF
 {
 public:
-    STTBF(U16 lid, OLEStreamReader* reader, bool preservePos = false);
-    STTBF(U16 lid, const U8* ptr);
-    STTBF(const STTBF& rhs);
+    STTBF(U16 lid, OLEStreamReader *reader, bool preservePos = false);
+    STTBF(U16 lid, const U8 *ptr);
+    STTBF(const STTBF &rhs);
     ~STTBF();
 
     unsigned int count() const;
@@ -63,28 +65,28 @@ public:
     UString lastString() const;
     UString stringAt(unsigned int index) const;
 
-    const U8* firstExtra() const;
-    const U8* nextExtra() const;
-    const U8* prevExtra() const;
-    const U8* lastExtra() const;
-    const U8* extraAt(unsigned int index) const;
+    const U8 *firstExtra() const;
+    const U8 *nextExtra() const;
+    const U8 *prevExtra() const;
+    const U8 *lastExtra() const;
+    const U8 *extraAt(unsigned int index) const;
 
     void dumpStrings() const;
 
 private:
-    STTBF& operator=(const STTBF& rhs);
+    STTBF &operator=(const STTBF &rhs);
 
     // Internal helper methods to avoid code duplication in the CTORs
-    void init(U16 lid, OLEStreamReader* reader, const U8* ptr);
-    U16 readU16(OLEStreamReader* reader, const U8** ptr) const;
-    U8 readU8(OLEStreamReader* reader, const U8** ptr) const;
-    bool read(OLEStreamReader* reader, const U8** ptr, U8* buffer, size_t length) const;
+    void init(U16 lid, OLEStreamReader *reader, const U8 *ptr);
+    U16 readU16(OLEStreamReader *reader, const U8 **ptr) const;
+    U8 readU8(OLEStreamReader *reader, const U8 **ptr) const;
+    bool read(OLEStreamReader *reader, const U8 **ptr, U8 *buffer, size_t length) const;
 
     std::vector<UString> m_strings;
     mutable std::vector<UString>::const_iterator m_stringIt;
     U16 m_extraDataLength;
-    std::vector<U8*> m_extraData;
-    mutable std::vector<U8*>::const_iterator m_extraIt;
+    std::vector<U8 *> m_extraData;
+    mutable std::vector<U8 *>::const_iterator m_extraIt;
 };
 
 // Attention: structs used as template parameters for this class need to
@@ -95,40 +97,40 @@ private:
 template < class T, bool shortCount = false > class PLF
 {
 public:
-    PLF(OLEStreamReader* reader, bool preservePos = false);
-    PLF(const U8* ptr);
+    PLF(OLEStreamReader *reader, bool preservePos = false);
+    PLF(const U8 *ptr);
     ~PLF();
 
     size_t count() const {
         return m_items.size();
     }
 
-    const T* first() const {
+    const T *first() const {
         it = m_items.begin(); if (it != m_items.end()) return *it;  return 0;
     }
-    const T* next() const;
-    const T* prev() const;
-    const T* last() const {
+    const T *next() const;
+    const T *prev() const;
+    const T *last() const {
         it = m_items.end(); if (it == m_items.begin()) return 0; --it; return *it;
     }
-    const T* current() const {
+    const T *current() const {
         if (it != m_items.end()) return *it;  return 0;
     }
-    const T* at(unsigned int index) const {
+    const T *at(unsigned int index) const {
         if (index < m_items.size()) return m_items[ index ]; return 0;
     }
 
 private:
     // don't copy or assign it
-    PLF(const PLF<T, shortCount>& rhs);
-    PLF<T, shortCount>& operator=(const PLF<T, shortCount>& rhs);
+    PLF(const PLF<T, shortCount> &rhs);
+    PLF<T, shortCount> &operator=(const PLF<T, shortCount> &rhs);
 
-    std::vector<T*> m_items;
-    mutable typename std::vector<T*>::const_iterator it;
+    std::vector<T *> m_items;
+    mutable typename std::vector<T *>::const_iterator it;
 };
 
 template<class T, bool shortCount>
-PLF<T, shortCount>::PLF(OLEStreamReader* reader, bool preservePos)
+PLF<T, shortCount>::PLF(OLEStreamReader *reader, bool preservePos)
 {
     if (preservePos)
         reader->push();
@@ -147,7 +149,7 @@ PLF<T, shortCount>::PLF(OLEStreamReader* reader, bool preservePos)
 }
 
 template<class T, bool shortCount>
-PLF<T, shortCount>::PLF(const U8* ptr)
+PLF<T, shortCount>::PLF(const U8 *ptr)
 {
     U32 count = 0;
     if (shortCount) {   // work around a broken spec, e.g. for LSTF
@@ -171,7 +173,7 @@ PLF<T, shortCount>::~PLF()
 }
 
 template<class T, bool shortCount>
-const T* PLF<T, shortCount>::next() const
+const T *PLF<T, shortCount>::next() const
 {
     if (it == m_items.end())
         return 0;
@@ -182,7 +184,7 @@ const T* PLF<T, shortCount>::next() const
 }
 
 template<class T, bool shortCount>
-const T* PLF<T, shortCount>::prev() const
+const T *PLF<T, shortCount>::prev() const
 {
     if (m_items.size() == 0)
         return 0;
@@ -194,16 +196,16 @@ const T* PLF<T, shortCount>::prev() const
 
 template<class T> class PLCF;
 template<class T> class PLCFIterator;
-template<typename OldT, typename NewT> PLCF<NewT>* convertPLCF(const PLCF<OldT>& old);    // evil, eh? :-)
+template<typename OldT, typename NewT> PLCF<NewT> *convertPLCF(const PLCF<OldT> &old);    // evil, eh? :-)
 
 template<class T> class PLCF
 {
     friend class PLCFIterator<T>;
-    template<typename OldT, typename NewT> friend PLCF<NewT>* convertPLCF(const PLCF<OldT>& old);
+    template<typename OldT, typename NewT> friend PLCF<NewT> *convertPLCF(const PLCF<OldT> &old);
 public:
     PLCF(U32 length, OLEStreamReader *reader, bool preservePos = false);
-    PLCF(U32 length, const U8* ptr);
-    PLCF(const PLCF<T>& rhs);
+    PLCF(U32 length, const U8 *ptr);
+    PLCF(const PLCF<T> &rhs);
     ~PLCF();
 
     PLCFIterator<T> at(unsigned int index) const;
@@ -216,12 +218,12 @@ public:
 
     // Inserts the given index/item pair at the end of the PLCF (but before(!) the final n+1 index)
     // Normally you won't need that method. The ownership of the item is transferred.
-    void insert(U32 index, T* item);
+    void insert(U32 index, T *item);
 
     void dumpCPs() const;
 private:
     // don't assign it
-    PLCF<T>& operator=(const PLCF<T>& rhs);
+    PLCF<T> &operator=(const PLCF<T> &rhs);
 
     // An empty default constructor for the convertPLCF friend. Don't use it
     // unless you know what you are doing :-)
@@ -230,11 +232,11 @@ private:
     U32 calculateCount(U32 length);
 
     std::vector<U32> m_indices;
-    std::vector<T*> m_items;
+    std::vector<T *> m_items;
 };
 
 template<class T>
-PLCF<T>::PLCF(U32 length, OLEStreamReader* reader, bool preservePos)
+PLCF<T>::PLCF(U32 length, OLEStreamReader *reader, bool preservePos)
 {
     if (preservePos)
         reader->push();
@@ -248,7 +250,7 @@ PLCF<T>::PLCF(U32 length, OLEStreamReader* reader, bool preservePos)
 }
 
 template<class T>
-PLCF<T>::PLCF(U32 length, const U8* ptr)
+PLCF<T>::PLCF(U32 length, const U8 *ptr)
 {
     U32 count = calculateCount(length);
     for (U32 i = 0; i < count + 1; ++i, ptr += 4)    // n+1 CPs/FCs
@@ -258,10 +260,10 @@ PLCF<T>::PLCF(U32 length, const U8* ptr)
 }
 
 template<class T>
-PLCF<T>::PLCF(const PLCF<T>& rhs) : m_indices(rhs.m_indices)
+PLCF<T>::PLCF(const PLCF<T> &rhs) : m_indices(rhs.m_indices)
 {
-    typename std::vector<T*>::const_iterator it = rhs.m_items.begin();
-    typename std::vector<T*>::const_iterator end = rhs.m_items.end();
+    typename std::vector<T *>::const_iterator it = rhs.m_items.begin();
+    typename std::vector<T *>::const_iterator end = rhs.m_items.end();
     for (; it != end; ++it)
         m_items.push_back(new T(**it));
 }
@@ -269,7 +271,7 @@ PLCF<T>::PLCF(const PLCF<T>& rhs) : m_indices(rhs.m_indices)
 template<class T>
 PLCF<T>::~PLCF()
 {
-    typename std::vector<T*>::const_iterator it = m_items.begin();
+    typename std::vector<T *>::const_iterator it = m_items.begin();
     for (; it != m_items.end(); ++it)
         delete *it;
 }
@@ -284,7 +286,7 @@ PLCFIterator<T> PLCF<T>::at(unsigned int index) const
 }
 
 template<class T>
-void PLCF<T>::insert(U32 index, T* item)
+void PLCF<T>::insert(U32 index, T *item)
 {
     if (m_indices.empty()) {
         delete item;
@@ -322,13 +324,13 @@ U32 PLCF<T>::calculateCount(U32 length)
 // A method to "upgrade" the type of a PLCF from Word 6/7 to Word 8
 // data structures, using the generated conversion code. Tricky :-)
 // The ownership of the new PLCF is transferred to you!
-template<typename OldT, typename NewT> PLCF<NewT>* convertPLCF(const PLCF<OldT>& old)
+template<typename OldT, typename NewT> PLCF<NewT> *convertPLCF(const PLCF<OldT> &old)
 {
-    PLCF<NewT>* ret(new PLCF<NewT>);
+    PLCF<NewT> *ret(new PLCF<NewT>);
     ret->m_indices = old.m_indices;  // the indices remain the same
 
-    typename std::vector<OldT*>::const_iterator oldIt(old.m_items.begin());
-    typename std::vector<OldT*>::const_iterator oldEnd(old.m_items.end());
+    typename std::vector<OldT *>::const_iterator oldIt(old.m_items.begin());
+    typename std::vector<OldT *>::const_iterator oldEnd(old.m_items.end());
     for (; oldIt != oldEnd; ++oldIt)
         ret->m_items.push_back(new NewT(Word95::toWord97(**oldIt)));
     return ret;
@@ -339,7 +341,7 @@ template<class T> class PLCFIterator
 {
     friend PLCFIterator<T> PLCF<T>::at(unsigned int) const;
 public:
-    PLCFIterator(const PLCF<T>& plcf) : m_plcf(plcf) {
+    PLCFIterator(const PLCF<T> &plcf) : m_plcf(plcf) {
         m_itemIt = m_plcf.m_items.begin();
         m_indexIt = m_plcf.m_indices.begin();
     }
@@ -351,14 +353,14 @@ public:
         return m_plcf.m_items.empty();
     }
 
-    T* toFirst();
-    T* toLast();
+    T *toFirst();
+    T *toLast();
 
     U32 currentStart() const {
         if (m_itemIt != m_plcf.m_items.end()) return *m_indexIt; return 0;
     }
     U32 currentLim() const;
-    T* current() const {
+    T *current() const {
         if (m_itemIt != m_plcf.m_items.end()) return *m_itemIt; return 0;
     }
 
@@ -366,20 +368,20 @@ public:
         return currentLim() - currentStart();
     }
 
-    PLCFIterator& operator++();
-    PLCFIterator& operator--();
+    PLCFIterator &operator++();
+    PLCFIterator &operator--();
 
 private:
     // don't assign it
-    PLCFIterator<T>& operator=(const PLCFIterator<T>& rhs);
+    PLCFIterator<T> &operator=(const PLCFIterator<T> &rhs);
 
-    const PLCF<T>& m_plcf;
-    typename std::vector<T*>::const_iterator m_itemIt;
+    const PLCF<T> &m_plcf;
+    typename std::vector<T *>::const_iterator m_itemIt;
     std::vector<U32>::const_iterator m_indexIt;
 };
 
 template<class T>
-T* PLCFIterator<T>::toFirst()
+T *PLCFIterator<T>::toFirst()
 {
     m_itemIt = m_plcf.m_items.begin();
     m_indexIt = m_plcf.m_indices.begin();
@@ -390,7 +392,7 @@ T* PLCFIterator<T>::toFirst()
 
 // Note: m_indexIt-=2 as we have n+1 indices!
 template<class T>
-T* PLCFIterator<T>::toLast()
+T *PLCFIterator<T>::toLast()
 {
     m_itemIt = m_plcf.m_items.end();
     m_indexIt = m_plcf.m_indices.end();
@@ -412,7 +414,7 @@ U32 PLCFIterator<T>::currentLim() const
 }
 
 template<class T>
-PLCFIterator<T>& PLCFIterator<T>::operator++()
+PLCFIterator<T> &PLCFIterator<T>::operator++()
 {
     if (m_itemIt == m_plcf.m_items.end())
         return *this;
@@ -422,7 +424,7 @@ PLCFIterator<T>& PLCFIterator<T>::operator++()
 }
 
 template<class T>
-PLCFIterator<T>& PLCFIterator<T>::operator--()
+PLCFIterator<T> &PLCFIterator<T>::operator--()
 {
     if (m_plcf.m_items.size() != 0 && m_itemIt != m_plcf.m_items.begin()) {
         --m_itemIt;
@@ -438,15 +440,15 @@ public:
     PLCFMap(U32 length, OLEStreamReader *reader, bool preservePos = false);
     ~PLCFMap();
 
-    T* item(U32 index) const;
+    T *item(U32 index) const;
 private:
     U32 calculateCount(U32 length) const;
 
-    std::map<U32, T*> m_items;
+    std::map<U32, T *> m_items;
 };
 
 template<class T>
-PLCFMap<T>::PLCFMap(U32 length, OLEStreamReader* reader, bool preservePos)
+PLCFMap<T>::PLCFMap(U32 length, OLEStreamReader *reader, bool preservePos)
 {
     if (preservePos)
         reader->push();
@@ -463,15 +465,15 @@ PLCFMap<T>::PLCFMap(U32 length, OLEStreamReader* reader, bool preservePos)
 template<class T>
 PLCFMap<T>::~PLCFMap()
 {
-    typename std::map<U32, T*>::const_iterator it = m_items.begin();
+    typename std::map<U32, T *>::const_iterator it = m_items.begin();
     for (; it != m_items.end(); ++it)
         delete it->second;
 }
 
 template<class T>
-T* PLCFMap<T>::item(U32 index) const
+T *PLCFMap<T>::item(U32 index) const
 {
-    typename std::map<U32, T*>::const_iterator it(m_items.find(index));
+    typename std::map<U32, T *>::const_iterator it(m_items.find(index));
     return it != m_items.end() ? it->second : 0;
 }
 
@@ -490,16 +492,16 @@ U32 PLCFMap<T>::calculateCount(U32 length) const
 template<class PHE> struct BX;
 template<class Offset> class FKP;
 template<class Offset> class FKPIterator;
-FKP< BX<Word97::PHE> >* convertFKP(const FKP< BX<Word95::PHE> >& old);
+FKP< BX<Word97::PHE> > *convertFKP(const FKP< BX<Word95::PHE> > &old);
 
 template<class Offset> class FKP
 {
     friend class FKPIterator<Offset>;
-    friend FKP< BX<Word97::PHE> >* convertFKP(const FKP< BX<Word95::PHE> >& old);
+    friend FKP< BX<Word97::PHE> > *convertFKP(const FKP< BX<Word95::PHE> > &old);
 public:
-    FKP(OLEStreamReader* reader, bool preservePos = false);
-    FKP(const U8* ptr);
-    FKP(const FKP<Offset>& rhs);
+    FKP(OLEStreamReader *reader, bool preservePos = false);
+    FKP(const U8 *ptr);
+    FKP(const FKP<Offset> &rhs);
     ~FKP() {
         delete [] m_rgfc; delete [] m_rgb; delete [] m_fkp;
     }
@@ -513,21 +515,21 @@ public:
 
 private:
     // don't assign it
-    FKP<Offset>& operator=(const FKP<Offset>& rhs);
+    FKP<Offset> &operator=(const FKP<Offset> &rhs);
 
     // An empty default constructor for the convertFKP friend. Don't use it
     // unless you know what you are doing :-)
     FKP() {}
 
     U8 m_crun;
-    U32* m_rgfc;  // array of FCs (crun+1)
-    Offset* m_rgb;  // array of offsets/BXs
+    U32 *m_rgfc;  // array of FCs (crun+1)
+    Offset *m_rgb;  // array of offsets/BXs
     U16 m_internalOffset;  // offset to the start position of the "rest"
-    U8* m_fkp;  // the "rest" of the FKP
+    U8 *m_fkp;  // the "rest" of the FKP
 };
 
 template<class Offset>
-FKP<Offset>::FKP(OLEStreamReader* reader, bool preservePos)
+FKP<Offset>::FKP(OLEStreamReader *reader, bool preservePos)
 {
     if (preservePos)
         reader->push();
@@ -557,7 +559,7 @@ FKP<Offset>::FKP(OLEStreamReader* reader, bool preservePos)
 }
 
 template<class Offset>
-FKP<Offset>::FKP(const U8* ptr)
+FKP<Offset>::FKP(const U8 *ptr)
 {
     m_crun = ptr[ 511 ];
 
@@ -579,8 +581,8 @@ FKP<Offset>::FKP(const U8* ptr)
 }
 
 template<class Offset>
-FKP<Offset>::FKP(const FKP<Offset>& rhs) :
-        m_crun(rhs.m_crun), m_internalOffset(rhs.m_internalOffset)
+FKP<Offset>::FKP(const FKP<Offset> &rhs) :
+    m_crun(rhs.m_crun), m_internalOffset(rhs.m_internalOffset)
 {
     m_rgfc = new U32[ m_crun + 1 ];
     ::memcpy(m_rgfc, rhs.m_rgfc, sizeof(U32) * (m_crun + 1));
@@ -600,7 +602,7 @@ FKP<Offset>::FKP(const FKP<Offset>& rhs) :
 template<class Offset> class FKPIterator
 {
 public:
-    FKPIterator(const FKP<Offset>& fkp) : m_fkp(fkp), m_index(0) {}
+    FKPIterator(const FKP<Offset> &fkp) : m_fkp(fkp), m_index(0) {}
 
     void toFirst() {
         m_index = 0;
@@ -622,12 +624,12 @@ public:
     // Pointer to the start of the current CHPX/PAPX/..., 0 if we are at the end of the array
     // Attention: This iterator has a non standard behavior of the current()
     // method. Use it that way: for( ; !it.atEnd(); ++it)
-    const U8* current() const;
+    const U8 *current() const;
 
-    FKPIterator& operator++() {
+    FKPIterator &operator++() {
         if (m_index < m_fkp.m_crun) ++m_index; return *this;
     }
-    FKPIterator& operator--() {
+    FKPIterator &operator--() {
         if (m_index > 0) --m_index; return *this;
     }
 
@@ -644,15 +646,15 @@ public:
 
 private:
     // don't copy or assign it
-    FKPIterator(const FKPIterator<Offset>& rhs);
-    FKPIterator<Offset>& operator=(const FKPIterator<Offset>& rhs);
+    FKPIterator(const FKPIterator<Offset> &rhs);
+    FKPIterator<Offset> &operator=(const FKPIterator<Offset> &rhs);
 
-    const FKP<Offset>& m_fkp;
+    const FKP<Offset> &m_fkp;
     U8 m_index;
 };
 
 template<class Offset>
-const U8* FKPIterator<Offset>::current() const
+const U8 *FKPIterator<Offset>::current() const
 {
     if (m_index < m_fkp.m_crun) {
         // Note: The first byte of the "offset" types (BX or U8) is always
@@ -664,11 +666,11 @@ const U8* FKPIterator<Offset>::current() const
             const int pos = tmp * 2 - m_fkp.m_internalOffset;
             if (pos < 0) {
                 wvlog << "ERROR: FKP internalOffset (" << m_fkp.m_internalOffset << ") is bigger than " <<
-                "2*" << (int)tmp << ", FKP array index would be negative!" << std::endl;
+                      "2*" << (int)tmp << ", FKP array index would be negative!" << std::endl;
                 return 0;
             } else if (pos >= 511 - m_fkp.m_internalOffset) {
                 wvlog << "ERROR: FKP array index (" << pos << " is bigger than allocated size ("
-                << 511 - m_fkp.m_internalOffset << ")" << std::endl;
+                      << 511 - m_fkp.m_internalOffset << ")" << std::endl;
                 return 0;
             } else {
                 return &m_fkp.m_fkp[ pos ];
@@ -693,14 +695,14 @@ template<typename PHE> struct BX {
     /**
      * Simply calls read(...)
      */
-    BX(OLEStreamReader* stream, bool preservePos = false) {
+    BX(OLEStreamReader *stream, bool preservePos = false) {
         clear();
         read(stream, preservePos);
     }
     /**
      * Simply calls readPtr(...)
      */
-    BX(const U8* ptr) {
+    BX(const U8 *ptr) {
         clear();
         readPtr(ptr);
     }
@@ -711,7 +713,7 @@ template<typename PHE> struct BX {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-    bool read(OLEStreamReader* stream, bool preservePos = false) {
+    bool read(OLEStreamReader *stream, bool preservePos = false) {
         if (preservePos)
             stream->push();
         offset = stream->readU8();
@@ -723,7 +725,7 @@ template<typename PHE> struct BX {
     /**
      * This method reads the struct from a pointer
      */
-    void readPtr(const U8* ptr) {
+    void readPtr(const U8 *ptr) {
         offset = *ptr;
         ++ptr;
         phe.readPtr(ptr);
@@ -732,7 +734,7 @@ template<typename PHE> struct BX {
     /**
      * Same as reading :)
      */
-    bool write(OLEStreamWriter* stream, bool preservePos = false) const {
+    bool write(OLEStreamWriter *stream, bool preservePos = false) const {
         if (preservePos)
             stream->push();
         stream->write(offset);
@@ -770,12 +772,12 @@ template<typename PHE> struct BX {
 
 template<typename PHE> const unsigned int BX<PHE>::sizeOf = 1 + PHE::sizeOf;
 
-template<typename PHE> bool operator==(const BX<PHE>& lhs, const BX<PHE>& rhs)
+template<typename PHE> bool operator==(const BX<PHE> &lhs, const BX<PHE> &rhs)
 {
     return lhs.offset == rhs.offset && lhs.phe == rhs.phe;
 }
 
-template<typename PHE> bool operator!=(const BX<PHE>& lhs, const BX<PHE>& rhs)
+template<typename PHE> bool operator!=(const BX<PHE> &lhs, const BX<PHE> &rhs)
 {
     return !(lhs == rhs);
 }
@@ -792,11 +794,11 @@ struct CHPFKP_BX {
     /**
      * Simply calls read(...)
      */
-    CHPFKP_BX(OLEStreamReader* stream, bool preservePos = false);
+    CHPFKP_BX(OLEStreamReader *stream, bool preservePos = false);
     /**
      * Simply calls readPtr(...)
      */
-    CHPFKP_BX(const U8* ptr);
+    CHPFKP_BX(const U8 *ptr);
 
     /**
      * This method reads the CHPFKP_BX structure from the stream.
@@ -804,16 +806,16 @@ struct CHPFKP_BX {
      * the stream to save the state. If it's false the state
      * of stream will be changed!
      */
-    bool read(OLEStreamReader* stream, bool preservePos = false);
+    bool read(OLEStreamReader *stream, bool preservePos = false);
     /**
      * This method reads the struct from a pointer
      */
-    void readPtr(const U8* ptr);
+    void readPtr(const U8 *ptr);
 
     /**
      * Same as reading :)
      */
-    bool write(OLEStreamWriter* stream, bool preservePos = false) const;
+    bool write(OLEStreamWriter *stream, bool preservePos = false) const;
 
     /**
      * Set all the fields to the inital value (default is 0)
@@ -832,8 +834,8 @@ struct CHPFKP_BX {
     U8 offset;
 };
 
-bool operator==(const CHPFKP_BX& lhs, const CHPFKP_BX& rhs);
-bool operator!=(const CHPFKP_BX& lhs, const CHPFKP_BX& rhs);
+bool operator==(const CHPFKP_BX &lhs, const CHPFKP_BX &rhs);
+bool operator!=(const CHPFKP_BX &lhs, const CHPFKP_BX &rhs);
 
 
 // This enum is a "convenience enum" for reading the piece table

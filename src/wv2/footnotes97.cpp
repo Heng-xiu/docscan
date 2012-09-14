@@ -26,15 +26,15 @@
 
 using namespace wvWare;
 
-Footnotes97::Footnotes97(OLEStreamReader* tableStream, const Word97::FIB& fib) :
-        m_footnoteRef(0), m_footnoteRefIt(0), m_endnoteRef(0), m_endnoteRefIt(0)
+Footnotes97::Footnotes97(OLEStreamReader *tableStream, const Word97::FIB &fib) :
+    m_footnoteRef(0), m_footnoteRefIt(0), m_endnoteRef(0), m_endnoteRefIt(0)
 {
 #ifdef WV2_DEBUG_FOOTNOTES
     wvlog << "Footnotes97::Footnotes97()" << std::endl
-    << "   fcPlcffndRef=" << fib.fcPlcffndRef << " lcbPlcffndRef=" << fib.lcbPlcffndRef << std::endl
-    << "   fcPlcffndTxt=" << fib.fcPlcffndTxt << " lcbPlcffndTxt=" << fib.lcbPlcffndTxt << std::endl
-    << "   fcPlcfendRef=" << fib.fcPlcfendRef << " lcbPlcfendRef=" << fib.lcbPlcfendRef << std::endl
-    << "   fcPlcfendTxt=" << fib.fcPlcfendTxt << " lcbPlcfendTxt=" << fib.lcbPlcfendTxt << std::endl;
+          << "   fcPlcffndRef=" << fib.fcPlcffndRef << " lcbPlcffndRef=" << fib.lcbPlcffndRef << std::endl
+          << "   fcPlcffndTxt=" << fib.fcPlcffndTxt << " lcbPlcffndTxt=" << fib.lcbPlcffndTxt << std::endl
+          << "   fcPlcfendRef=" << fib.fcPlcfendRef << " lcbPlcfendRef=" << fib.lcbPlcfendRef << std::endl
+          << "   fcPlcfendTxt=" << fib.fcPlcfendTxt << " lcbPlcfendTxt=" << fib.lcbPlcfendTxt << std::endl;
 #endif
     tableStream->push();
 
@@ -62,7 +62,7 @@ Footnotes97::~Footnotes97()
     delete m_footnoteRef;
 }
 
-FootnoteData Footnotes97::footnote(U32 globalCP, bool& ok)
+FootnoteData Footnotes97::footnote(U32 globalCP, bool &ok)
 {
 #ifdef WV2_DEBUG_FOOTNOTES
     wvlog << "Footnotes97::footnote(): globalCP=" << globalCP << std::endl;
@@ -103,9 +103,9 @@ U32 Footnotes97::nextEndnote() const
     return m_endnoteRefIt && m_endnoteRefIt->current() ? m_endnoteRefIt->currentStart() : 0xffffffff;
 }
 
-void Footnotes97::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader* tableStream,
-                       PLCF<Word97::FRD>** ref, PLCFIterator<Word97::FRD>** refIt,
-                       std::vector<U32>& txt, std::vector<U32>::const_iterator& txtIt)
+void Footnotes97::init(U32 fcRef, U32 lcbRef, U32 fcTxt, U32 lcbTxt, OLEStreamReader *tableStream,
+                       PLCF<Word97::FRD> **ref, PLCFIterator<Word97::FRD> **refIt,
+                       std::vector<U32> &txt, std::vector<U32>::const_iterator &txtIt)
 {
     if (lcbRef == 0)
         return;

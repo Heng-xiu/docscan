@@ -36,7 +36,8 @@
 namespace wvWare
 {
 
-namespace Word95 {
+namespace Word95
+{
 
 
 // DTTM implementation
@@ -1531,11 +1532,11 @@ TAP::TAP(const TAP &rhs) : Shared()
     itcMac = rhs.itcMac;
     dxaAdjust = rhs.dxaAdjust;
     rgdxaCenter = new U16[itcMac + 1];
-    memcpy(rgdxaCenter, rhs.rgdxaCenter, sizeof(U16)*(itcMac + 1));
+    memcpy(rgdxaCenter, rhs.rgdxaCenter, sizeof(U16) * (itcMac + 1));
     rgtc = new TC[itcMac];
-    memcpy(rgtc, rhs.rgtc, sizeof(TC)*(itcMac));
+    memcpy(rgtc, rhs.rgtc, sizeof(TC) * (itcMac));
     rgshd = new SHD[itcMac];
-    memcpy(rgshd, rhs.rgshd, sizeof(SHD)*(itcMac));
+    memcpy(rgshd, rhs.rgshd, sizeof(SHD) * (itcMac));
     memcpy(&rgbrcTable, &rhs.rgbrcTable, sizeof(rgbrcTable));
 }
 
@@ -1568,13 +1569,13 @@ TAP &TAP::operator=(const TAP &rhs)
     dxaAdjust = rhs.dxaAdjust;
     delete [] rgdxaCenter;
     rgdxaCenter = new U16[itcMac + 1];
-    memcpy(rgdxaCenter, rhs.rgdxaCenter, sizeof(U16)*(itcMac + 1));
+    memcpy(rgdxaCenter, rhs.rgdxaCenter, sizeof(U16) * (itcMac + 1));
     delete [] rgtc;
     rgtc = new TC[itcMac];
-    memcpy(rgtc, rhs.rgtc, sizeof(TC)*(itcMac));
+    memcpy(rgtc, rhs.rgtc, sizeof(TC) * (itcMac));
     delete [] rgshd;
     rgshd = new SHD[itcMac];
-    memcpy(rgshd, rhs.rgshd, sizeof(SHD)*(itcMac));
+    memcpy(rgshd, rhs.rgshd, sizeof(SHD) * (itcMac));
     memcpy(&rgbrcTable, &rhs.rgbrcTable, sizeof(rgbrcTable));
 
     return *this;
@@ -5777,9 +5778,9 @@ PAP::PAP(const PAP &rhs) : Shared()
     anld = rhs.anld;
     itbdMac = rhs.itbdMac;
     rgdxaTab = new U16[itbdMac];
-    memcpy(rgdxaTab, rhs.rgdxaTab, sizeof(U16)*(itbdMac));
+    memcpy(rgdxaTab, rhs.rgdxaTab, sizeof(U16) * (itbdMac));
     rgtbd = new U8[itbdMac];
-    memcpy(rgtbd, rhs.rgtbd, sizeof(U8)*(itbdMac));
+    memcpy(rgtbd, rhs.rgtbd, sizeof(U8) * (itbdMac));
 }
 
 PAP::~PAP()
@@ -5844,10 +5845,10 @@ PAP &PAP::operator=(const PAP &rhs)
     itbdMac = rhs.itbdMac;
     delete [] rgdxaTab;
     rgdxaTab = new U16[itbdMac];
-    memcpy(rgdxaTab, rhs.rgdxaTab, sizeof(U16)*(itbdMac));
+    memcpy(rgdxaTab, rhs.rgdxaTab, sizeof(U16) * (itbdMac));
     delete [] rgtbd;
     rgtbd = new U8[itbdMac];
-    memcpy(rgtbd, rhs.rgtbd, sizeof(U8)*(itbdMac));
+    memcpy(rgtbd, rhs.rgtbd, sizeof(U8) * (itbdMac));
 
     return *this;
 }

@@ -37,11 +37,11 @@ public:
     /**
      * Construct a TextConverter
      */
-    TextConverter(const std::string& toCode, const std::string& fromCode);
+    TextConverter(const std::string &toCode, const std::string &fromCode);
     /**
      * Constructs a TextConverter which converts to UCS-2
      */
-    TextConverter(const std::string& fromCode);
+    TextConverter(const std::string &fromCode);
     /**
      * Constructs a TextConverter which converts from the proper
      * codepage for the given lid to UCS-2. This is probably what
@@ -62,13 +62,13 @@ public:
     /**
      * Change the converter to convert to that code
      */
-    void setToCode(const std::string& toCode);
+    void setToCode(const std::string &toCode);
     std::string toCode() const;
 
     /**
      * Change the converter to convert from that code
      */
-    void setFromCode(const std::string& fromCode);
+    void setFromCode(const std::string &fromCode);
     std::string fromCode() const;
 
     /**
@@ -76,14 +76,14 @@ public:
      * Note: No other conversions are really supported, as we don't
      * need them anyway.
      */
-    UString convert(const std::string& input) const;
+    UString convert(const std::string &input) const;
 
     /**
      * Convert the string to the specified encoding (most likely UCS-2).
      * Note: No other conversions are really supported, as we don't
      * need them anyway.
      */
-    UString convert(const char* input, unsigned int length) const;
+    UString convert(const char *input, unsigned int length) const;
 
     /**
      * "stolen" from wvWare, guesses a lid for some locales.
@@ -93,22 +93,22 @@ public:
     /**
      * "stolen" from the wvWare, guesses a lang for some lids.
      */
-    static const char* LID2lang(U16 lid);
+    static const char *LID2lang(U16 lid);
 
     /**
      * returns the appropriate codepage for the given lid.
      */
-    static const char* LID2Codepage(U16 lid);
+    static const char *LID2Codepage(U16 lid);
 
 private:
     /**
      * Don't copy us
      */
-    TextConverter(const TextConverter& rhs);
+    TextConverter(const TextConverter &rhs);
     /**
      * Don't assign us
      */
-    TextConverter& operator=(const TextConverter& rhs);
+    TextConverter &operator=(const TextConverter &rhs);
 
     /**
      * Closes the old converter
@@ -125,7 +125,7 @@ private:
     // We need this private impl. to hide the iconv_t in the source file. The
     // reason is that we can't #include <config.h> in the header file!
     class Private;
-    Private* d;
+    Private *d;
 };
 
 } // namespace wvWare

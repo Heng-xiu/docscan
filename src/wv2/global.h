@@ -69,42 +69,42 @@ typedef U32 FC;
 enum WordVersion { Word67, Word8 };
 const int Word8nFib = 193;
 
-inline U8 readU8(const U8* in)
+inline U8 readU8(const U8 *in)
 {
     return *in;
 }
 
-inline S8 readS8(const U8* in)
+inline S8 readS8(const U8 *in)
 {
     return static_cast<S8>(*in);
 }
 
 // reads a U16/S16 or U32/S32 from a little-endian byte
 // "array" in an endian-correct way
-inline U16 readU16(const U8* in)
+inline U16 readU16(const U8 *in)
 {
     return static_cast<U16>(in[0]) | (static_cast<U16>(in[1]) << 8);
 }
 
-inline S16 readS16(const U8* in)
+inline S16 readS16(const U8 *in)
 {
     return static_cast<S16>(readU16(in));
 }
 
 // writes a U16 to a little-endian byte "array" in an endian-correct way
-inline void write(U8* out, U16 data)
+inline void write(U8 *out, U16 data)
 {
     out[ 0 ] = data & 0x00ff;
     out[ 1 ] = data >> 8;
 }
 
-inline U32 readU32(const U8* in)
+inline U32 readU32(const U8 *in)
 {
     return static_cast<U32>(in[0]) | (static_cast<U32>(in[1]) << 8) |
            (static_cast<U32>(in[2]) << 16) | (static_cast<U32>(in[3]) << 24);
 }
 
-inline S32 readS32(const U8* in)
+inline S32 readS32(const U8 *in)
 {
     return static_cast<S32>(readU32(in));
 }
