@@ -58,7 +58,7 @@ private:
     } Filter;
 
     NetworkAccessManager *m_networkAccessManager;
-    QString m_baseUrl, m_startUrl;
+    QString m_baseUrl, m_baseHost, m_startUrl;
     QRegExp m_requiredContent;
     QList<Filter> m_filterSet;
     int m_runningDownloads;

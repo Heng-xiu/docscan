@@ -32,7 +32,7 @@
 #include "general.h"
 
 WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
-    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_runningDownloads(0)
+    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_baseHost(QUrl(baseUrl).host()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_runningDownloads(0)
 {
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
@@ -145,7 +145,7 @@ void WebCrawler::finishedDownload()
 
         /// check if HTML page ...
         if (text.left(256).toLower().contains("<html") && (m_requiredContent.isEmpty() || text.indexOf(m_requiredContent) >= 0)) {
-            emit report(QString(QLatin1String("<webcrawler url=\"%1\" status=\"success\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+            emit report(QString(QLatin1String("<webcrawler status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
 
             /// collect hits
             QSet<QString> hitCollection;
@@ -166,6 +166,9 @@ void WebCrawler::finishedDownload()
                     continue;
                 /// exclude multimedia files
                 if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3"))
+                    continue;
+                /// only files from domain
+                if (!QUrl(url).host().endsWith(m_baseHost))
                     continue;
 
                 m_knownUrls << url;
@@ -197,9 +200,9 @@ void WebCrawler::finishedDownload()
                 emit foundUrl(QUrl(url));
             }
         } else
-            emit report(QString(QLatin1String("<webcrawler url=\"%1\" detailed=\"Not an HTML page\" status=\"error\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+            emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
     } else
-        emit report(QString(QLatin1String("<webcrawler url=\"%1\" detailed=\"%2\" status=\"error\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())));
+        emit report(QString(QLatin1String("<webcrawler detailed=\"%2\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())));
 
     qApp->processEvents();
     --m_runningDownloads;
@@ -215,7 +218,7 @@ void WebCrawler::singleShotNextDownload()
 
     if (!downloadStarted && m_runningDownloads == 0) {
         /// web crawler has stopped as there are no downloads active
-        QString reportStr = QString(QLatin1String("<webcrawler numexpectedhits=\"%1\" numknownurls=\"%2\" numvisitedpages=\"%3\" maxvisitedpages=\"%4\">\n")).arg(m_numExpectedHits).arg(m_knownUrls.count()).arg(m_visitedPages).arg(m_maxVisitedPages);
+        QString reportStr = QString(QLatin1String("<webcrawler maxvisitedpages=\"%4\" numexpectedhits=\"%1\" numknownurls=\"%2\" numvisitedpages=\"%3\">\n")).arg(m_numExpectedHits).arg(m_knownUrls.count()).arg(m_visitedPages).arg(m_maxVisitedPages);
         for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
             reportStr += QString(QLatin1String("<filter numfoundhits=\"%1\" pattern=\"%2\" />\n")).arg(it->foundHits).arg(DocScan::xmlify(it->label));
         }
@@ -232,7 +235,7 @@ void WebCrawler::timeout(QObject *object)
         m_setRunningJobs->remove(reply);
         m_mutexRunningJobs->unlock();
         reply->close();
-        QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     } else
         m_mutexRunningJobs->unlock();
