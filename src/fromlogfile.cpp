@@ -96,7 +96,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
                     ++count;
                 }
             } else if (searchEngineNumResultsRegExp.indexIn(line) >= 0)
-                emit report(QString(QLatin1String("<searchengine\\b[^>]* numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
+                emit report(QString(QLatin1String("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
 
             line = textStream.readLine();
         }
