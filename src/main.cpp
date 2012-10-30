@@ -44,7 +44,7 @@ FileFinder *finder;
 Downloader *downloader;
 LogCollector *logCollector;
 FileAnalyzerAbstract *fileAnalyzer;
-int numHits;
+int numHits, webcrawlermaxvisitedpages;
 
 bool evaluateConfigfile(const QString &filename)
 {
@@ -89,9 +89,14 @@ bool evaluateConfigfile(const QString &filename)
                     springerLinkYear = value.toInt(&ok);
                     if (!ok) springerLinkYear = SearchEngineSpringerLink::AllYears;
                     qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::AllYears ? QLatin1String("No Year") : QString::number(springerLinkYear));
+                } else if (key == "webcrawler:maxvisitedpages") {
+                    bool ok = false;
+                    webcrawlermaxvisitedpages = value.toInt(&ok);
+                    if (!ok) webcrawlermaxvisitedpages = 1024;
+                    qDebug() << "webcrawler:maxvisitedpages =" << webcrawlermaxvisitedpages;
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
-                    finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, qMin(qMax(numHits * filter.count() * 256, 256), 4096));
+                    finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, webcrawlermaxvisitedpages == 0 ? qMin(qMax(numHits * filter.count() * 256, 256), 4096) : webcrawlermaxvisitedpages);
                 } else if (key == "searchenginegoogle" && finder == NULL) {
                     qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(&netAccMan, value);
@@ -168,6 +173,7 @@ int main(int argc, char *argv[])
     downloader = NULL;
     finder = NULL;
     numHits = 0;
+    webcrawlermaxvisitedpages = 0;
 
     if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
         WatchDog watchDog;
