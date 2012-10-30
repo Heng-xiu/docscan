@@ -154,13 +154,13 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         logText += QLatin1String("</fileanalysis>\n");
 
         qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-        logText.prepend(QString("<fileanalysis status=\"ok\" filename=\"%1\" time=\"%2\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime));
+        logText.prepend(QString("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime));
 
         emit analysisReport(logText);
 
         delete doc;
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(filename));
 
     m_isAlive = false;
 }

@@ -47,7 +47,7 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     RtfReader::Reader *reader = new RtfReader::Reader;
     bool openSuccess = reader->open(filename);
     if (!openSuccess) {
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"RTF reader could not open file\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"RTF reader could not open file\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
         return;
     }
 
@@ -55,11 +55,11 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     RtfReader::TextDocumentRtfOutput output(&doc);
     reader->parseTo(&output);
     if (doc.isEmpty()) {
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"RTF reader could not parse file\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"RTF reader could not parse file\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
         return;
     }
 
-    QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+    QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
     QString metaText = QLatin1String("<meta>\n");
     QString headerText = QLatin1String("<header>\n");
 

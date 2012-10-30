@@ -242,7 +242,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     result.paperSizeHeight = 0;
 
     if (isRTFfile(filename)) {
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"RTF file disguising as DOC\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"RTF file disguising as DOC\" status=\"error\" />\n").arg(filename));
         m_isAlive = false;
         return;
     }
@@ -252,14 +252,14 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// perform various file checks before starting the analysis
     wvWare::OLEStorage storage(cppFilename);
     if (!storage.open(wvWare::OLEStorage::ReadOnly)) {
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"OLEStorage cannot be opened\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"OLEStorage cannot be opened\" status=\"error\" />\n").arg(filename));
         m_isAlive = false;
         return;
     }
     wvWare::OLEStreamReader *document = storage.createStreamReader("WordDocument");
     if (document == NULL || !document->isValid()) {
         if (document != NULL)  delete document;
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"Not a valid Word document\" filename=\"%1\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n").arg(filename));
         m_isAlive = false;
         return;
     }
@@ -279,7 +279,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// analyze file with parser
     analyzeWithParser(cppFilename, result);
 
-    QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+    QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
     QString metaText = QLatin1String("<meta>\n");
     QString headerText = QLatin1String("<header>\n");
 
@@ -287,8 +287,8 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     metaText.append(QString(QLatin1String("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype).arg(result.versionNumber).arg(result.versionText));
 
     /// editor as stated in file format
-    metaText.append(QString("<tool origin=\"document\" type=\"editor\" subtype=\"creator\">\n%1</tool>\n").arg(guessTool(result.creatorText)));
-    metaText.append(QString("<tool origin=\"document\" type=\"editor\" subtype=\"revisor\">\n%1</tool>\n").arg(guessTool(result.revisorText)));
+    metaText.append(QString("<tool origin=\"document\" subtype=\"creator\" type=\"editor\">\n%1</tool>\n").arg(guessTool(result.creatorText)));
+    metaText.append(QString("<tool origin=\"document\" subtype=\"revisor\" type=\"editor\">\n%1</tool>\n").arg(guessTool(result.revisorText)));
 
     /// evaluate editor (a.k.a. creator)
     if (!result.authorInitial.isEmpty())

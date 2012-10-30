@@ -46,7 +46,7 @@ void SearchEngineBing::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString("<searchengine type=\"bing\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
+    emit report(QString("<searchengine search=\"%1\" type=\"bing\" />\n").arg(DocScan::xmlify(url.toString())));
 
     QNetworkRequest request(url);
     m_networkAccessManager->setRequestHeaders(request);

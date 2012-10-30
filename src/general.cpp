@@ -20,6 +20,7 @@
  */
 
 #include <QRegExp>
+#include <QStringList>
 
 #include "general.h"
 
@@ -29,8 +30,10 @@ namespace DocScan
 QString xmlNodeToText(const XMLNode &node)
 {
     QString result = QString(QChar('<')).append(node.name);
-    for (QHash<QString, QString>::ConstIterator it = node.attributes.constBegin(); it != node.attributes.constEnd(); ++it)
-        result.append(QString(QLatin1String(" %1=\"%2\"")).arg(it.key()).arg(xmlify(it.value())));
+    QStringList attributes = node.attributes.keys();
+    attributes.sort();
+    for (QStringList::ConstIterator it = attributes.constBegin(); it != attributes.constEnd(); ++it)
+        result.append(QString(QLatin1String(" %1=\"%2\"")).arg(*it).arg(xmlify(node.attributes[*it])));
 
     if (node.text.isEmpty())
         result.append(QLatin1String(" />\n"));
@@ -55,6 +58,6 @@ QString dexmlify(QString xml)
 
 QString formatDate(const QDate &date, const QString &base)
 {
-    return QString("<date epoch=\"%6\" base=\"%5\" year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
+    return QString("<date base=\"%5\" day=\"%3\" epoch=\"%6\" month=\"%2\" year=\"%1\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
 }
 }

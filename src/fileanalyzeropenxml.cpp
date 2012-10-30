@@ -273,29 +273,29 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         if (mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
             if (!processWordFile(zipFile, result)) {
-                emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-document\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+                emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-document\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
                 return;
             }
         }
 
         if (!processCore(zipFile, result)) {
-            emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-corefile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-corefile\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
             return;
         }
 
         if (!processApp(zipFile, result)) {
-            emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-appfile\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-appfile\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
             return;
         }
 
         if (!processSettings(zipFile, result)) {
             if (!processSlides(zipFile, result)) {
-                emit analysisReport(QString("<fileanalysis status=\"error\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+                emit analysisReport(QString("<fileanalysis filename=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
                 return;
             }
         }
 
-        QString logText = QString("<fileanalysis status=\"ok\" filename=\"%1\">\n").arg(DocScan::xmlify(filename));
+        QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
         QString metaText = QLatin1String("<meta>\n");
         QString headerText = QLatin1String("<header>\n");
 
@@ -363,7 +363,7 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         zipFile.close();
     } else
-        emit analysisReport(QString("<fileanalysis status=\"error\" message=\"invalid-fileformat\" filename=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
 
     m_isAlive = false;
 }
