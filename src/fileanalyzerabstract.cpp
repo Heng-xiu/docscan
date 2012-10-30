@@ -212,6 +212,11 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["manufacturer"] = "oracle";
             result["product"] = "openoffice";
         }
+    } else if (text == QLatin1String("writer") || text == QLatin1String("calc") || text == QLatin1String("impress")) {
+        /// for Creator/Editor string
+        result["manufacturer"] = "oracle;tdf";
+        result["product"] = "openoffice;libreoffice";
+        result["based-on"] = "openoffice";
     } else if (text.indexOf("framemaker") >= 0) {
         static const QRegExp framemakerVersion("\\b\\d+(\\.\\d+)+(\\b|\\.|p\\d+)");
         result["manufacturer"] = "adobe";
@@ -266,6 +271,39 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "acrobatcapture";
         if (acrobatCaptureVersion.indexIn(text) >= 0)
             result["version"] = acrobatCaptureVersion.cap(0);
+    } else if (text.indexOf("acrobat pro") >= 0) {
+        static const QRegExp acrobatProVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "acrobatpro";
+        if (acrobatProVersion.indexIn(text) >= 0)
+            result["version"] = acrobatProVersion.cap(0);
+    } else if (text.indexOf("acrobat") >= 0) {
+        static const QRegExp acrobatVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "acrobat";
+        if (acrobatVersion.indexIn(text) >= 0)
+            result["version"] = acrobatVersion.cap(0);
+    } else if (text.indexOf("livecycle designer") >= 0) {
+        static const QRegExp livecycleDesignerVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "livecycledesigner";
+        if (livecycleDesignerVersion.indexIn(text) >= 0)
+            result["version"] = livecycleDesignerVersion.cap(0);
+    } else if (text.indexOf("photoshop") >= 0) {
+        result["manufacturer"] = "adobe";
+        result["product"] = "photoshop";
+    } else if (text.indexOf("adobe") >= 0) {
+        /// some unknown Adobe product
+        result["manufacturer"] = "adobe";
+    } else if (text.contains("pages")) {
+        result["manufacturer"] = "apple";
+        result["product"] = "pages";
+    } else if (text.contains("keynote")) {
+        static const QRegExp keynoteVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "apple";
+        result["product"] = "keynote";
+        if (keynoteVersion.indexIn(text) >= 0)
+            result["version"] = keynoteVersion.cap(0);
     } else if (text.indexOf("quartz") >= 0) {
         static const QRegExp quartzVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "apple";
@@ -276,6 +314,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         static const QRegExp pscriptVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "microsoft";
         result["product"] = "pscript5";
+        result["opsys"] = QLatin1String("windows");
         if (pscriptVersion.indexIn(text) >= 0)
             result["version"] = pscriptVersion.cap(0);
     } else if (text.indexOf("quarkxpress") >= 0) {
@@ -288,6 +327,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         static const QRegExp pdfcreatorVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "pdfforge";
         result["product"] = "pdfcreator";
+        result["opsys"] = QLatin1String("windows");
         if (pdfcreatorVersion.indexIn(text) >= 0)
             result["version"] = pdfcreatorVersion.cap(0);
     } else if (text.contains("aspose") && text.contains("words")) {
@@ -308,11 +348,40 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "ocad";
         if (ocadVersion.indexIn(text) >= 0)
             result["version"] = ocadVersion.cap(0);
+    } else if (text.contains("gnostice")) {
+        static const QRegExp gnosticeVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "gnostice";
+        if (gnosticeVersion.indexIn(text) >= 0)
+            result["version"] = gnosticeVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("gnostice", "").replace(gnosticeVersion.cap(0), "").replace(" ", "");
     } else if (text.contains("canon")) {
-        static const QRegExp canonVersion("\\b([a-zA-Z]+[ ])?[A-Za-z0-9]+\\b");
+        static const QRegExp canonVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "canon";
         if (canonVersion.indexIn(text) >= 0)
             result["version"] = canonVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("canon", "").replace(canonVersion.cap(0), "").replace(" ", "");
+    } else if (text.contains("konica") || text.contains("minolta")) {
+        static const QRegExp konicaMinoltaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "konica;minolta";
+        if (konicaMinoltaVersion.indexIn(text) >= 0)
+            result["version"] = konicaMinoltaVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("konica", "").replace("minolta", "").replace(konicaMinoltaVersion.cap(0), "").replace(" ", "");
+    } else if (text.contains("corel")) {
+        static const QRegExp corelVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "corel";
+        if (corelVersion.indexIn(text) >= 0)
+            result["version"] = corelVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("corel", "").replace(corelVersion.cap(0), "").replace(" ", "");
+    } else if (text.contains("scansoft pdf create")) {
+        static const QRegExp scansoftVersion("\\b([a-zA-Z]+[ ])?[A-Za-z0-9]+\\b");
+        result["manufacturer"] = "scansoft";
+        result["product"] = "pdfcreate";
+        if (scansoftVersion.indexIn(text) >= 0)
+            result["version"] = scansoftVersion.cap(0);
     } else if (!text.contains("words")) {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
         static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
@@ -346,6 +415,13 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["opsys"] = QLatin1String("bsd");
     }
 
+    if (!result.contains("opsys")) {
+        if (text.contains(QLatin1String("Macint")))
+            result["opsys"] = QLatin1String("macosx");
+        else if (text.contains(QLatin1String("Windows")))
+            result["opsys"] = QLatin1String("windows");
+    }
+
     return result;
 }
 
@@ -376,6 +452,7 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
 
     if (fontName.contains("Libertine")) {
         license["type"] = "open";
+        license["name"] = "SIL Open Font License;GNU General Public License";
     } else if (fontName.contains("Nimbus")) {
         license["type"] = "open";
     } else if (fontName.contains("Liberation")) {
@@ -384,23 +461,24 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
         license["type"] = "open";
     } else if (fontName.contains("Ubuntu")) {
         license["type"] = "open";
+        license["name"] = "Ubuntu Font Licence";
     } else if (fontName.contains("Gentium")) {
+        license["type"] = "open";
+    } else if (fontName.startsWith("FreeSans") || fontName.startsWith("FreeSerif") || fontName.startsWith("FreeMono")) {
         license["type"] = "open";
     } else if (fontName.contains("Vera") || fontName.contains("Bera")) {
         license["type"] = "open";
     } else if (fontName.contains("Computer Modern") || fontName.startsWith("CM")) {
         license["type"] = "open";
-        license["name"] = "Open Font License";
+        license["name"] = "SIL Open Font License";
     } else if (fontName.contains("Marvosym")) {
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
-    } else if (fontName.startsWith("Zapf")) {
-        license["type"] = "proprietary";
-    } else if (fontName.startsWith("Times") || fontName.startsWith("Courier")) {
+    } else if (fontName.startsWith("Zapf") || fontName.startsWith("Frutiger")) {
         license["type"] = "proprietary";
     } else if (fontName.startsWith("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
         license["type"] = "proprietary"; // Microsoft
-    } else if (fontName.contains("Helvetica")) {
+    } else if (fontName.startsWith("Times") || fontName.startsWith("Courier") || fontName.contains("Helvetica")) {
         license["type"] = "proprietary";
     } else
         license["type"] = "unknown";
