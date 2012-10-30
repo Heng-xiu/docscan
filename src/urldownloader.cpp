@@ -113,9 +113,9 @@ void UrlDownloader::startNextDownload()
 
 void UrlDownloader::finalReport()
 {
-    QString logText = QString("<download count-success=\"%1\" count-fail=\"%2\">\n").arg(m_countSuccessfulDownloads).arg(m_countFaileDownloads);
+    QString logText = QString("<download count-fail=\"%2\" count-success=\"%1\">\n").arg(m_countSuccessfulDownloads).arg(m_countFaileDownloads);
     for (QMap<QString, int>::ConstIterator it = m_domainCount.constBegin(); it != m_domainCount.constEnd(); ++it)
-        logText += QString(QLatin1String("<domain-count domain=\"%1\" count=\"%2\" />\n")).arg(it.key()).arg(it.value());
+        logText += QString(QLatin1String("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
     logText += QLatin1String("</download>\n");
     emit report(logText);
 }
@@ -146,7 +146,7 @@ void UrlDownloader::finished()
             filename = filename.replace("%{d}", host);
 
         QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
-        QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
+        static const QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
         int p = -1;
         while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
             if (md5sumRegExp.cap(1).isEmpty())
@@ -167,6 +167,11 @@ void UrlDownloader::finished()
         foreach(const QString &fileExt, fileExtList) {
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
+
+        static const QRegExp fileExtensionRegExp(QLatin1String("/.+[.](.{2,4})$"));
+        QString fileExtension = QString::null;
+        if (fileExtensionRegExp.indexIn(filename) >= 0 && !(fileExtension = fileExtensionRegExp.cap(1)).isEmpty())
+            filename = filename.replace("%{x}", fileExtension);
 
         if ((p = filename.indexOf("%{")) >= 0)
             qDebug() << "gap was not filled:" << filename.mid(p);
@@ -222,7 +227,7 @@ void UrlDownloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download url=\"%2\" message=\"download-failed\" detailed=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(reply->errorString())).arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<download detailed=\"%1\" message=\"download-failed\" status=\"error\" url=\"%2\" />\n").arg(DocScan::xmlify(reply->errorString())).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         ++m_countFaileDownloads;
     } else
@@ -242,7 +247,7 @@ void UrlDownloader::timeout(QObject *object)
         m_setRunningJobs->remove(reply);
         m_internalMutex->unlock();
         reply->close();
-        QString logText = QString("<download url=\"%1\" message=\"timeout\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n").arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     } else
         m_internalMutex->unlock();
