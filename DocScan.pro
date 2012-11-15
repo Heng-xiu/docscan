@@ -1,5 +1,5 @@
-QT += network xml
-QT -= gui webkit
+QT += network xml gui
+QT -= webkit
 SUBDIRS = wv2
 WARNINGS += -Wall
 TARGET = DocScan
