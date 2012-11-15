@@ -56,7 +56,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         doc->getPdfVersion(&majorVersion, &minorVersion);
-        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n</fileformat>").arg(majorVersion).arg(minorVersion));
+        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n</fileformat>\n").arg(majorVersion).arg(minorVersion));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);

@@ -168,7 +168,7 @@ void UrlDownloader::finished()
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
 
-        static const QRegExp fileExtensionRegExp(QLatin1String("/.+[.](.{2,4})$"));
+        static const QRegExp fileExtensionRegExp(QLatin1String("/.+[.](.{2,4})([?].+)?$"));
         QString fileExtension = QString::null;
         if (fileExtensionRegExp.indexIn(filename) >= 0 && !(fileExtension = fileExtensionRegExp.cap(1)).isEmpty())
             filename = filename.replace("%{x}", fileExtension);
@@ -255,6 +255,6 @@ void UrlDownloader::timeout(QObject *object)
 
 
 const int UrlDownloader::maxParallelDownloads = 8;
-const int UrlDownloader::maxParallelDownloadsPerHost = 1;
+const int UrlDownloader::maxParallelDownloadsPerHost = 2;
 const QRegExp UrlDownloader::domainRegExp = QRegExp("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqstwxz]|aero|arpa|((com|edu|gob|gov|int|mil|net|org|tur)\\.)?ar|((com|net|org|edu|gov|csiro|asn|id)\\.)?au)|(((adm|adv|agr|am|arq|art|ato|b|bio|blog|bmd|cim|cng|cnt|com|coop|ecn|edu|eng|esp|etc|eti|far|flog|fm|fnd|fot|fst||ggf|gov|imb|ind|inf|jor|jus|lel|mat|med|mil|mus|net|nom|not|ntr|odo|org|ppg|pro|psc|psi|qsl|radio|rec|slg|srv|taxi|teo|tmp|trd|tur|tv|vet|vlog|wiki|zlg)\\.)?br|b[abdefghijmnorstvwyz]|biz)|(((ab|bc|mb|nb|nf|nl|ns|nt|nu|on|pe|qc|sk|yk)\\.)?ca|c[cdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emo]|jobs|((ac|ad|co|ed|go|gr|lg|ne|or)\\.)?jp)|(k[eghimnpwyz]|((co|ne|or|re|pe|go|mil|ac|hs|ms|es|sc|kg)\\.)?kr)|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghkmnrstwy]|pro|((com|biz|net|art|edu|org|ngo|gov|info|mil)\\.)?pl)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|((ac|co|gov|ltd|me|mod|org|sch)\\.uk)|(((dni|fed|isa|kids|nsn|ak|al|ar|as|az|ca|co|ct|dc|de|fl|ga|gu|hi|ia|id|il|in|ks|ky|la|ma|md|me|mi|mn|mo|mp|ms|mt|nc|nd|ne|nh|nj|nm|nv|ny|oh|ok|or|pa|pr|ri|sc|sd|tn|tx|um|ut|va|vi|vt|wa|wi|wv|wy)\\.)?us|u[agmyz])|v[aceginu]|w[fs]|y[etu]|z[amw])$");
 

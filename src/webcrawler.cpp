@@ -46,7 +46,7 @@ WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QString
         filter.foundHits = 0;
         QString rpl = label;
         rpl = rpl.replace(".", "\\.").replace("?", ".").replace("*", "[^/ \"]*");
-        filter.regExp = QRegExp(QString(QLatin1String("(^|/)(%1)$")).arg(rpl));
+        filter.regExp = QRegExp(QString(QLatin1String("(^|/)(%1)([?].+)?$")).arg(rpl));
         m_filterSet.append(filter);
     }
 }
@@ -199,6 +199,8 @@ void WebCrawler::finishedDownload()
                 emit report(QString(QLatin1String("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url)));
                 emit foundUrl(QUrl(url));
             }
+        } else if (text.startsWith("%PDF-1.")) {
+            emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page, but PDF instead\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
         } else
             emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
     } else

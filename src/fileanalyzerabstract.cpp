@@ -283,18 +283,27 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "acrobat";
         if (acrobatVersion.indexIn(text) >= 0)
             result["version"] = acrobatVersion.cap(0);
-    } else if (text.indexOf("livecycle designer") >= 0) {
-        static const QRegExp livecycleDesignerVersion("\\b\\d+(\\.\\d+)+\\b");
+    } else if (text.indexOf("livecycle") >= 0) {
+        static const QRegExp livecycleVersion("\\b\\d+(\\.\\d+)+[a-z]?\\b");
         result["manufacturer"] = "adobe";
-        result["product"] = "livecycledesigner";
-        if (livecycleDesignerVersion.indexIn(text) >= 0)
-            result["version"] = livecycleDesignerVersion.cap(0);
+        int regExpPos;
+        if ((regExpPos = livecycleVersion.indexIn(text)) >= 0)
+            result["version"] = livecycleVersion.cap(0);
+        if (regExpPos <= 0)
+            regExpPos = 1024;
+        QString product = text;
+        result["product"] = product.left(regExpPos - 1).replace("adobe", "").replace(livecycleVersion.cap(0), "").replace(" ", "");
     } else if (text.indexOf("photoshop") >= 0) {
         result["manufacturer"] = "adobe";
         result["product"] = "photoshop";
     } else if (text.indexOf("adobe") >= 0) {
         /// some unknown Adobe product
+        static const QRegExp adobeVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
+        if (adobeVersion.indexIn(text) >= 0)
+            result["version"] = adobeVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("adobe", "").replace(adobeVersion.cap(0), "").replace(" ", "");
     } else if (text.contains("pages")) {
         result["manufacturer"] = "apple";
         result["product"] = "pages";
@@ -330,6 +339,9 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["opsys"] = QLatin1String("windows");
         if (pdfcreatorVersion.indexIn(text) >= 0)
             result["version"] = pdfcreatorVersion.cap(0);
+    } else if (text.indexOf("pdf printer") >= 0) {
+        result["manufacturer"] = "bullzip";
+        result["product"] = "pdfprinter";
     } else if (text.contains("aspose") && text.contains("words")) {
         static const QRegExp asposewordsVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "aspose";
@@ -362,6 +374,13 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["version"] = canonVersion.cap(0);
         QString product = text;
         result["product"] = product.replace("canon", "").replace(canonVersion.cap(0), "").replace(" ", "");
+    } else if (text.contains("toshiba") || text.contains("mfpimglib")) {
+        static const QRegExp toshibaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "toshiba";
+        if (toshibaVersion.indexIn(text) >= 0)
+            result["version"] = toshibaVersion.cap(0);
+        QString product = text;
+        result["product"] = product.replace("toshiba", "").replace(toshibaVersion.cap(0), "").replace(" ", "");
     } else if (text.contains("konica") || text.contains("minolta")) {
         static const QRegExp konicaMinoltaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "konica;minolta";
@@ -384,12 +403,14 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["version"] = scansoftVersion.cap(0);
     } else if (!text.contains("words")) {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
-        static const QRegExp microsoftVersion("\\b(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
+        static const QRegExp microsoftVersion("\\b(starter )?(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
         if (microsoftProducts.indexIn(text) >= 0) {
             result["manufacturer"] = "microsoft";
             result["product"] = microsoftProducts.cap(0);
             if (!result.contains("version") && microsoftVersion.indexIn(text) >= 0)
-                result["version"] = microsoftVersion.cap(0);
+                result["version"] = microsoftVersion.cap(2);
+            if (!result.contains("subversion") && !microsoftVersion.cap(1).isEmpty())
+                result["subversion"] = microsoftVersion.cap(1);
 
             if (text.indexOf(QLatin1String("Macintosh")) >= 0)
                 result["opsys"] = QLatin1String("macosx");
