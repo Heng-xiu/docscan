@@ -48,7 +48,7 @@ QString xmlNodeToText(const XMLNode &node)
 
 QString xmlify(QString text)
 {
-    return text.replace(QRegExp(QLatin1String("[^'a-z0-9,;.:-_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), "").replace(QChar('&'), QLatin1String("&amp;")).replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;")).replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;")).simplified();
+    return text.replace(QRegExp(QLatin1String("[^-'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), "").replace(QChar('&'), QLatin1String("&amp;")).replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;")).replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;")).simplified();
 }
 
 QString dexmlify(QString xml)

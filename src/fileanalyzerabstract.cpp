@@ -401,6 +401,16 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "pdfcreate";
         if (scansoftVersion.indexIn(text) >= 0)
             result["version"] = scansoftVersion.cap(0);
+    } else if (text.contains("alivepdf")) {
+        static const QRegExp alivepdfVersion("\\b\\d+(\\.\\d+)+( RC)?\\b");
+        result["manufacturer"] = "thibault.imbert";
+        result["product"] = "alivepdf";
+        if (alivepdfVersion.indexIn(text) >= 0)
+            result["version"] = alivepdfVersion.cap(0);
+        result["opsys"] = QLatin1String("flash");
+    } else if (text == QLatin1String("google")) {
+        result["manufacturer"] = "google";
+        result["product"] = "docs";
     } else if (!text.contains("words")) {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
         static const QRegExp microsoftVersion("\\b(starter )?(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
@@ -412,10 +422,10 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             if (!result.contains("subversion") && !microsoftVersion.cap(1).isEmpty())
                 result["subversion"] = microsoftVersion.cap(1);
 
-            if (text.indexOf(QLatin1String("Macintosh")) >= 0)
+            if (text.contains(QLatin1String("Macintosh")) || text.contains(QLatin1String("Mac OS X")))
                 result["opsys"] = QLatin1String("macosx");
             else
-                result["opsys"] = QLatin1String("windows");
+                result["opsys"] = QLatin1String("windows?");
         }
     }
 
