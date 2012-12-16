@@ -68,10 +68,11 @@ void SearchEngineBing::finished()
         QString htmlText = tsAll.readAll();
 
         if (m_currentPage == 0) {
-            const QRegExp countHitsRegExp("of.{,10} ([0-9 ]+) result");
-            if (countHitsRegExp.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(countHitsRegExp.cap(1).replace(QRegExp("[, .]"), "")));
-            else
+            const QRegExp countHitsRegExp(QLatin1String("([0-9]+(&#160;[0-9]+)*) result"), Qt::CaseInsensitive);
+            if (countHitsRegExp.indexIn(htmlText) >= 0) {
+                const QString hits = countHitsRegExp.cap(1).replace(QLatin1String("&#160;"), QString());
+                emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(hits));
+            } else
                 emit report(QLatin1String("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));
         }
 
