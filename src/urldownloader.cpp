@@ -145,9 +145,30 @@ void UrlDownloader::finished()
         } else
             filename = filename.replace("%{d}", host);
 
+        static const QRegExp dateTimeRegExp("%\\{D:([-_%a-zA-Z0-9]+)\\}");
+        int p = -1;
+        QDateTime dateTime = QDateTime::currentDateTime();
+        while ((p = dateTimeRegExp.indexIn(filename)) >= 0) {
+            QString dateTimeStr = dateTime.toString(dateTimeRegExp.cap(1));
+            /// support "ww" for zero-padded, two-digit week numbers
+            dateTimeStr = dateTimeStr.replace(QLatin1String("ww"), QLatin1String("%1"));
+            if (dateTimeStr.contains(QLatin1String("%1")))
+                dateTimeStr = dateTimeStr.arg(dateTime.date().weekNumber(), 2, 10, QChar('0'));
+            /// support "w" for plain week numbers (one or two digits)
+            dateTimeStr = dateTimeStr.replace(QLatin1String("ww"), QString::number(dateTime.date().weekNumber()));
+            /// support "DDD" for zero-padded, three-digit day-of-the-year numbers
+            dateTimeStr = dateTimeStr.replace(QLatin1String("DDD"), QLatin1String("%1"));
+            if (dateTimeStr.contains(QLatin1String("%1")))
+                dateTimeStr = dateTimeStr.arg(dateTime.date().dayOfYear(), 3, 10, QChar('0'));
+            /// support "D" for plain day-of-the-year numbers (one, two, or three digits)
+            dateTimeStr = dateTimeStr.replace(QLatin1String("D"), QString::number(dateTime.date().dayOfYear()));
+            /// insert date/time into filename
+            filename = filename.replace(dateTimeRegExp.cap(0), dateTimeStr);
+        }
+
         QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
         static const QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
-        int p = -1;
+        p = -1;
         while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
             if (md5sumRegExp.cap(1).isEmpty())
                 filename = filename.replace(md5sumRegExp.cap(0), md5sum);
