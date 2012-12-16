@@ -85,39 +85,41 @@ bool WebCrawler::isAlive()
 
 bool WebCrawler::startNextDownload()
 {
-    if (m_runningDownloads >= maxParallelDownloads || m_queuedUrls.isEmpty())
-        return false;
-    bool numExpectedHitsReached = true;
-    for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
-        numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
+    int startedDownloads = 0;
+
+    while (m_runningDownloads < maxParallelDownloads) {
+        if (m_runningDownloads >= maxParallelDownloads || m_queuedUrls.isEmpty())
+            break;
+        bool numExpectedHitsReached = true;
+        for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
+            numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
+        }
+        if (numExpectedHitsReached)
+            break;
+
+        ++m_visitedPages;
+        if (m_visitedPages > m_maxVisitedPages)
+            break;
+
+        ++m_runningDownloads;
+        ++startedDownloads;
+        const QString url = m_queuedUrls.first();
+        m_queuedUrls.removeFirst();
+        qDebug() << "Crawling page on " << url << "(" << m_visitedPages << ")";
+
+        QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(QUrl(url)));
+        connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
+
+        m_mutexRunningJobs->lock();
+        m_setRunningJobs->insert(reply);
+        m_mutexRunningJobs->unlock();
+        QTimer *timer = new QTimer(reply);
+        connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
+        m_signalMapperTimeout->setMapping(timer, reply);
+        timer->start(10000 + m_runningDownloads * 1000);
     }
-    if (numExpectedHitsReached)
-        return false;
 
-    ++m_visitedPages;
-    if (m_visitedPages > m_maxVisitedPages)
-        return false;
-
-    ++m_runningDownloads;
-    const QString url = m_queuedUrls.first();
-    m_queuedUrls.removeFirst();
-    qDebug() << "Crawling page on " << url << "(" << m_visitedPages << ")";
-
-    QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(QUrl(url)));
-    connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
-
-    m_mutexRunningJobs->lock();
-    m_setRunningJobs->insert(reply);
-    m_mutexRunningJobs->unlock();
-    QTimer *timer = new QTimer(reply);
-    connect(timer, SIGNAL(timeout()), m_signalMapperTimeout, SLOT(map()));
-    m_signalMapperTimeout->setMapping(timer, reply);
-    timer->start(10000 + m_runningDownloads * 1000);
-
-    if (m_runningDownloads < maxParallelDownloads)
-        startNextDownload();
-
-    return true;
+    return startedDownloads > 0;
 }
 
 void WebCrawler::finishedDownload()
