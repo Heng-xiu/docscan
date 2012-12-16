@@ -32,8 +32,8 @@ class StyleSheetTableEntry
 {
 public:
     StyleSheetTableEntry() : m_textAlignment(LeftAligned),
-            m_leftIndent(0), m_rightIndent(0),
-            m_layoutDirection(Qt::LeftToRight) {}
+        m_leftIndent(0), m_rightIndent(0),
+        m_layoutDirection(Qt::LeftToRight) {}
 
     enum TextAlignment textAlignment() const {
         return m_textAlignment;

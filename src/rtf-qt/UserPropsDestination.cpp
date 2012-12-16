@@ -22,8 +22,8 @@
 namespace RtfReader
 {
 UserPropsDestination::UserPropsDestination(Reader *reader, AbstractRtfOutput *output, const QString &name) :
-        Destination(reader, output, name), m_nextPlainTextIsPropertyName(true),
-        m_propertyType(QVariant::String)
+    Destination(reader, output, name), m_nextPlainTextIsPropertyName(true),
+    m_propertyType(QVariant::String)
 {
 }
 

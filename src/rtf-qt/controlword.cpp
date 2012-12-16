@@ -1858,7 +1858,7 @@ namespace RtfReader
 {
 
 ControlWord::ControlWord(const QString &name) :
-        m_name(name)
+    m_name(name)
 {}
 
 /**

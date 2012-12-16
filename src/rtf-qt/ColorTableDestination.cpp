@@ -22,7 +22,7 @@
 namespace RtfReader
 {
 ColorTableDestination::ColorTableDestination(Reader *reader, AbstractRtfOutput *output, const QString &name) :
-        Destination(reader, output, name)
+    Destination(reader, output, name)
 {
     m_currentColor = Qt::black; // this is our default color
 }

@@ -24,7 +24,7 @@ namespace RtfReader
 {
 
 StyleSheetDestination::StyleSheetDestination(Reader *reader, AbstractRtfOutput *output, const QString &name) :
-        Destination(reader, output, name)
+    Destination(reader, output, name)
 {
     m_currentStyleHandleNumber = 0; /* default */
 }

@@ -142,7 +142,7 @@ private:
     AbstractRtfOutput *m_output;
 
     // The destination stack
-    QStack<Destination*> m_destinationStack;
+    QStack<Destination *> m_destinationStack;
 
     bool m_nextSymbolMightBeDestination;
 

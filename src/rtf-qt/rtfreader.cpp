@@ -149,7 +149,7 @@ bool Reader::headerFormatIsKnown(const QString &tokenName, int tokenValue)
     return true;
 }
 
-Destination* Reader::makeDestination(const QString &destinationName)
+Destination *Reader::makeDestination(const QString &destinationName)
 {
     if (destinationName == "colortbl") {
         return new ColorTableDestination(this, m_output, destinationName);

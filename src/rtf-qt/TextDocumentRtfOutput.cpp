@@ -26,7 +26,7 @@
 namespace RtfReader
 {
 TextDocumentRtfOutput::TextDocumentRtfOutput(QTextDocument *document) : AbstractRtfOutput(),
-        m_document(document), m_haveSetFont(false), m_pageHeight(0), m_pageWidth(0), m_editingTool(ToolUnknown)
+    m_document(document), m_haveSetFont(false), m_pageHeight(0), m_pageWidth(0), m_editingTool(ToolUnknown)
 {
     m_cursor = new QTextCursor(m_document);
     QTextCharFormat defaultCharFormat;

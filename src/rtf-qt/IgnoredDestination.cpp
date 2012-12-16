@@ -22,7 +22,7 @@
 namespace RtfReader
 {
 IgnoredDestination::IgnoredDestination(Reader *reader, AbstractRtfOutput *output, const QString &name) :
-        Destination(reader, output, name)
+    Destination(reader, output, name)
 {
 }
 

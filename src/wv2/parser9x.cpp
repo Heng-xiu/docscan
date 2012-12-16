@@ -1014,11 +1014,11 @@ void Parser9x::emitSpecialCharacter(UChar character, U32 globalCP, SharedPtr<con
     case TextHandler::FootnoteAuto:
         if (m_subDocument == Footnote || m_subDocument == Endnote) {
             m_textHandler->footnoteAutoNumber(chp);
-    } else {
-        emitFootnote(UString(character), globalCP, chp);
-    }
-    break;
-case TextHandler::FieldBegin: {
+        } else {
+            emitFootnote(UString(character), globalCP, chp);
+        }
+        break;
+    case TextHandler::FieldBegin: {
         const FLD *fld(m_fields->fldForCP(m_subDocument, toLocalCP(globalCP)));
         if (fld) {
             m_textHandler->fieldStart(fld, chp);
@@ -1027,7 +1027,7 @@ case TextHandler::FieldBegin: {
         }
         break;
     }
-case TextHandler::FieldSeparator: {
+    case TextHandler::FieldSeparator: {
         const FLD *fld(m_fields->fldForCP(m_subDocument, toLocalCP(globalCP)));
         if (fld) {
             m_textHandler->fieldSeparator(fld, chp);
@@ -1036,7 +1036,7 @@ case TextHandler::FieldSeparator: {
         }
         break;
     }
-case TextHandler::FieldEnd: {
+    case TextHandler::FieldEnd: {
         const FLD *fld(m_fields->fldForCP(m_subDocument, toLocalCP(globalCP)));
         if (fld) {
             m_textHandler->fieldEnd(fld, chp);
@@ -1045,25 +1045,25 @@ case TextHandler::FieldEnd: {
         }
         break;
     }
-case TextHandler::AnnotationRef: {
+    case TextHandler::AnnotationRef: {
         //comment reference characters are only in the Main Document
         if (m_subDocument == Main) {
             emitAnnotation(UString(character), globalCP, chp);
         }
     }
-case TextHandler::FieldEscapeChar:
-    wvlog << "Found an escape character ++++++++++++++++++++?" << std::endl;
-    break;
-case TextHandler::Symbol: {
+    case TextHandler::FieldEscapeChar:
+        wvlog << "Found an escape character ++++++++++++++++++++?" << std::endl;
+        break;
+    case TextHandler::Symbol: {
         //NOTE: MS Word 2k/2k3/2k7 ignores chp->ftcSym (font for the symbol).
         m_textHandler->runOfText(UString(reinterpret_cast<const wvWare::UChar *>(&chp->xchSym), 1), chp);
         break;
     }
-default:
-    wvlog << "Parser9x::processSpecialCharacter(): Support for character " << character.unicode()
-          << " not implemented yet." << std::endl;
-    break;
-}
+    default:
+        wvlog << "Parser9x::processSpecialCharacter(): Support for character " << character.unicode()
+              << " not implemented yet." << std::endl;
+        break;
+    }
 }
 
 void Parser9x::emitFootnote(UString characters, U32 globalCP,
