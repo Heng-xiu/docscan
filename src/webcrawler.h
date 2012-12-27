@@ -72,7 +72,7 @@ private:
     QStringList m_knownUrls;
     QStringList m_queuedUrls;
 
-    bool startNextDownload();
+    bool visitNextPage();
     QString normalizeUrl(const QString &partialUrl, const QUrl &baseUrl);
     bool isSubAddress(const QUrl &query, const QUrl &baseUrl);
 

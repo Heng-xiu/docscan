@@ -73,9 +73,9 @@ void WebCrawler::startSearch(int numExpectedHits)
     m_knownUrls.clear();
     m_knownUrls << m_startUrl;
 
-    emit report(QString("<webcrawler><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(regExpList.join(QChar('|')))));
+    emit report(QString("<webcrawler numexpectedhits=\"%2\"><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(regExpList.join(QChar('|')))).arg(m_numExpectedHits));
 
-    startNextDownload();
+    visitNextPage();
 }
 
 bool WebCrawler::isAlive()
@@ -83,7 +83,7 @@ bool WebCrawler::isAlive()
     return m_runningDownloads > 0;
 }
 
-bool WebCrawler::startNextDownload()
+bool WebCrawler::visitNextPage()
 {
     int startedDownloads = 0;
 
@@ -218,7 +218,7 @@ void WebCrawler::finishedDownload()
 
 void WebCrawler::singleShotNextDownload()
 {
-    bool downloadStarted = startNextDownload();
+    bool downloadStarted = visitNextPage();
 
     if (!downloadStarted && m_runningDownloads == 0) {
         /// web crawler has stopped as there are no downloads active
