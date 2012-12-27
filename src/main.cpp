@@ -69,9 +69,9 @@ bool evaluateConfigfile(const QString &filename)
                 if (key == "requiredcontent") {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
-                } else if (key == "starturl") {
+                } else if (key == "webcrawler:starturl") {
                     startUrl = QUrl(value);
-                    qDebug() << "startUrl =" << startUrl.toString();
+                    qDebug() << "webcrawler:startUrl =" << startUrl.toString();
                 } else if (key == "filter") {
                     qDebug() << "filter =" << value;
                     filter = value.split(QChar('|'), QString::SkipEmptyParts);

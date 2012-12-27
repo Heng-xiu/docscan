@@ -279,10 +279,8 @@ bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
 {
     if (query.host() == baseUrl.host() || (baseUrl.path().length() <= 1 && query.host().contains(QChar('.') + baseUrl.host()))) {
         bool test = query.path().startsWith(baseUrl.path());
-        // if (!test) qDebug() << "path mismatch" << query.path() << baseUrl.path();
         return test;
     } else {
-        // qDebug() << "host mismatch: " << query.host() << "!=" << baseUrl.host() << baseUrl.path().length() << (QChar('.') + baseUrl.host()) << query.host().contains(QChar('.') + baseUrl.host());
         return false;
     }
 }
