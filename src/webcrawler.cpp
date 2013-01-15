@@ -47,7 +47,7 @@ WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QString
         filter.label = label;
         filter.foundHits = 0;
         QString rpl = label;
-        rpl = rpl.replace(".", "\\.").replace("?", ".").replace("*", "[^/ \"]*");
+        rpl = rpl.replace(".", "\\.").replace("?", ".").replace("*", "[^/ \"']*");
         filter.regExp = QRegExp(QString(QLatin1String("(^|/)(%1)([?].+)?$")).arg(rpl));
         m_filterSet.append(filter);
     }
