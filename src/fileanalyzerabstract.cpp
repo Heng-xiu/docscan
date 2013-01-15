@@ -478,7 +478,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
 QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &typeName) const
 {
-    QMap<QString, QString> name, license, technology;
+    QMap<QString, QString> name, beautifiedName, license, technology;
     name[""] = DocScan::xmlify(fontName);
 
     if (fontName.contains("Libertine")) {
@@ -505,14 +505,34 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     } else if (fontName.contains("Marvosym")) {
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
+    } else if (fontName.startsWith("Gotham") || fontName.startsWith("NewLibrisSerif")) {
+        license["type"] = "proprietary"; // fonts used by Forsakringskassan
     } else if (fontName.startsWith("Zapf") || fontName.startsWith("Frutiger")) {
         license["type"] = "proprietary";
     } else if (fontName.startsWith("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
         license["type"] = "proprietary"; // Microsoft
+    } else if (fontName.startsWith("Calibri") || fontName.startsWith("Cambria")  || fontName.startsWith("Constantia") || fontName.startsWith("Candara") || fontName.startsWith("Corbel") || fontName.startsWith("Consolas")) {
+        license["type"] = "proprietary"; // Microsoft ClearType Font Collection
+    } else if (fontName.contains("Helvetica") && fontName.contains("Neue")) {
+        license["type"] = "proprietary"; // Neue Helvetica by Linotype
     } else if (fontName.startsWith("Times") || fontName.startsWith("Courier") || fontName.contains("Helvetica")) {
         license["type"] = "proprietary";
+    } else if (fontName.startsWith("SymbolMT")) {
+        license["type"] = "proprietary"; // MonoType's font as shipped with Windows
+    } else if (fontName.startsWith("Bembo") || fontName.startsWith("Rockwell")) {
+        license["type"] = "proprietary"; // MonoType
+    } else if (fontName.startsWith("ACaslon")) {
+        license["type"] = "proprietary"; // Adobe
     } else
         license["type"] = "unknown";
+
+    /// rumor: "MT" stands for MonoType's variant of a font
+    QString bName = fontName;
+    bName = bName.replace(QRegExp(QLatin1String("((Arial|Times|Courier)\\S*)(PS)?MT")), QLatin1String("\\1"));
+    bool keepRomanAsSuffix = bName.startsWith(QLatin1String("TimesNewRoman"));
+    bName = bName.replace(QRegExp(QLatin1String("(PS|FK)?[_-,.+]?(Semibold(It)?|Medium(It(alic)?|Oblique)?|Bold(It(alic)?|Oblique)?|Ital(ic)?|Light(It(alic)?|Oblique)?|Heavy(It(alic)?|Oblique)?|Roman|Upright|Regu(lar)?(It(alic)?|Oblique)?|Book(It(alic)?|Oblique)?|SC)(H|MT|[T]?OsF)?")), QLatin1String(""));
+    if (keepRomanAsSuffix) bName = bName.replace(QLatin1String("TimesNew"), QLatin1String("TimesNewRoman"));
+    beautifiedName[""] = DocScan::xmlify(bName);
 
     QString text = typeName.toLower();
     if (text.indexOf("truetype") >= 0)
@@ -522,7 +542,7 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     else if (text.indexOf("type3") >= 0)
         technology["type"] = "type3";
 
-    return formatMap("name", name) + formatMap("technology", technology) + formatMap("license", license);
+    return formatMap("name", name) + formatMap("beautified", beautifiedName) + formatMap("technology", technology) + formatMap("license", license);
 }
 
 QString FileAnalyzerAbstract::formatDate(const QDate &date, const QString &base) const
