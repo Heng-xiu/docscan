@@ -74,7 +74,7 @@ private:
     QStringList m_queuedUrls;
 
     bool visitNextPage();
-    QString normalizeUrl(const QString &partialUrl, const QUrl &baseUrl);
+    QUrl normalizeUrl(const QString &partialUrl, const QUrl &baseUrl) const;
     bool isSubAddress(const QUrl &query, const QUrl &baseUrl);
 
 private slots:

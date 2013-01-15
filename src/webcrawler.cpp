@@ -163,16 +163,17 @@ void WebCrawler::finishedDownload()
             QSet<QString> hitCollection;
 
             /// for each anchor in the HTML code
-            QRegExp anchorRegExp("<a\\b[^>]*href=\"([^\" \t><]+)\"");
+            QRegExp anchorRegExp("<a\\b[^>]*href=[\"']?([^'\" \t><]+)");
             int p = -1;
             while ((p = text.indexOf(anchorRegExp, p + 1)) >= 0) {
-                QString url = normalizeUrl(anchorRegExp.cap(1), reply->url());
+                const QUrl url = normalizeUrl(anchorRegExp.cap(1), reply->url());
+                const QString urlStr = url.toString();
 
                 if (url.isEmpty()) continue;
-                if (m_knownUrls.contains(url)) continue;
+                if (m_knownUrls.contains(urlStr)) continue;
 
                 /// simplification: extension (with or without dot) is four chars long
-                QString extension = url.right(4).toLower();
+                QString extension = urlStr.right(4).toLower();
                 /// exclude images
                 if (extension == QLatin1String(".jpg") || extension == QLatin1String("jpeg") || extension == QLatin1String(".png") || extension == QLatin1String(".gif") || extension == QLatin1String(".eps") || extension == QLatin1String(".bmp"))
                     continue;
@@ -180,14 +181,14 @@ void WebCrawler::finishedDownload()
                 if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3") || extension == QLatin1String(".wmv") || extension == QLatin1String(".wma"))
                     continue;
                 /// only files from domain
-                if (!QUrl(url).host().endsWith(m_baseHost))
+                if (!url.host().endsWith(m_baseHost))
                     continue;
 
-                m_knownUrls << url;
+                m_knownUrls << urlStr;
 
                 bool regExpMatches = false;
                 for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
-                    if (it->regExp.indexIn(url) >= 0) {
+                    if (it->regExp.indexIn(urlStr) >= 0) {
                         /// link matches requested file type
                         regExpMatches = true;
                         it->foundHits += 1;
@@ -196,13 +197,15 @@ void WebCrawler::finishedDownload()
                 }
 
                 if (regExpMatches) {
-                    hitCollection.insert(url);
+                    emit report(QString(QLatin1String("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
+                    hitCollection.insert(urlStr);
                 } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                     // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
-                } else if (!url.endsWith("/") && validFileExtRegExp.indexIn(url) == 0) {
+                } else if (validFileExtRegExp.indexIn(urlStr) == 0) {
                     // qDebug() << "Path or extension is not wanted" << url;
                 } else {
-                    m_queuedUrls << url;
+                    emit report(QString(QLatin1String("<webcrawler detailed=\"Found follow-up link\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
+                    m_queuedUrls << urlStr;
                 }
             }
 
@@ -232,7 +235,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
 
     /// Log all SSL/TLS errors
     foreach(const QSslError &error, list) {
-        const QString logText = QString("<webcrawler detailed=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(error.errorString()));
+        const QString logText = QString("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" />\n").arg(DocScan::xmlify(error.errorString()));
         emit report(logText);
         qWarning() << "Ignoring SSL error: " << error.errorString();
     }
@@ -269,34 +272,27 @@ void WebCrawler::timeout(QObject *object)
         m_mutexRunningJobs->unlock();
 }
 
-QString WebCrawler::normalizeUrl(const QString &partialUrl, const QUrl &baseUrl)
+QUrl WebCrawler::normalizeUrl(const QString &partialUrl, const QUrl &baseUrl) const
 {
-    static QRegExp protocol("^([^:]{2,10}):");
-    static QRegExp encodedCharHex("%([0-9a-fA-F]{2})");
+    /// Ignore "mailto:" links
+    if (partialUrl.startsWith(QLatin1String("mailto:")))
+        return QUrl();
+
+    /// Fix some HTML-encodings
+    QString text = QString(partialUrl).replace(QLatin1String("&amp;"), QChar('&'));
 
     /// complete URL to absolute URL
-    QUrl urlObj = baseUrl.resolved(QUrl(partialUrl));
+    QUrl urlObj = baseUrl.resolved(QUrl::fromPercentEncoding(text.toAscii()));
     if (urlObj.path().isEmpty()) urlObj.setPath(QChar('/'));
-    QString result = urlObj.toString();
 
-    if (protocol.indexIn(result) >= 0 && !protocol.cap(1).startsWith(QLatin1String("http")))
-        return QString::null;
+    /// URL has to start with "http"
+    if (!urlObj.scheme().startsWith(QLatin1String("http")))
+        return QUrl();
 
     /// remove JavaScript links or links pointed in page-internal anchors
-    result = result.replace(QRegExp("#.*$"), "");
+    urlObj.setFragment(QString::null);
 
-    /// resolve mime-encoded parts of the URL
-    int p = -1;
-    while ((p = encodedCharHex.indexIn(result, p + 1)) >= 0) {
-        bool ok = false;
-        QChar c(encodedCharHex.cap(1).toInt(&ok, 16));
-        if (ok) {
-            result = result.replace(encodedCharHex.cap(0), c);
-        }
-    }
-    result = result.replace(QLatin1String("&amp;"), QChar('&'));
-
-    return result;
+    return urlObj;
 }
 
 bool WebCrawler::isSubAddress(const QUrl &query, const QUrl &baseUrl)
