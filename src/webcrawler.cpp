@@ -21,6 +21,8 @@
 
 #include <QCoreApplication>
 #include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QSslConfiguration>
 #include <QTimer>
 #include <QRegExp>
 #include <QSignalMapper>
@@ -107,8 +109,16 @@ bool WebCrawler::visitNextPage()
         m_queuedUrls.removeFirst();
         qDebug() << "Crawling page on " << url << "(" << m_visitedPages << ")";
 
-        QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(QUrl(url)));
+        QNetworkRequest request = QNetworkRequest(QUrl(url));
+
+        /// Enable TLSv1
+        QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+        config.setProtocol(QSsl::TlsV1);
+        request.setSslConfiguration(config);
+
+        QNetworkReply *reply = m_networkAccessManager->get(request);
         connect(reply, SIGNAL(finished()), this, SLOT(finishedDownload()));
+        connect(reply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(gotSslErrors(QList<QSslError>)));
 
         m_mutexRunningJobs->lock();
         m_setRunningJobs->insert(reply);
@@ -206,7 +216,7 @@ void WebCrawler::finishedDownload()
         } else
             emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
     } else
-        emit report(QString(QLatin1String("<webcrawler detailed=\"%2\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())));
+        emit report(QString(QLatin1String("<webcrawler detailed=\"%2\" status=\"error\" code=\"%3\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())).arg(reply->error()));
 
     qApp->processEvents();
     --m_runningDownloads;
@@ -214,6 +224,20 @@ void WebCrawler::finishedDownload()
     QTimer::singleShot(10, this, SLOT(singleShotNextDownload()));
 
     reply->deleteLater();
+}
+
+void WebCrawler::gotSslErrors(const QList<QSslError> &list)
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+
+    /// Log all SSL/TLS errors
+    foreach(const QSslError &error, list) {
+        const QString logText = QString("<webcrawler detailed=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(error.errorString()));
+        emit report(logText);
+        qWarning() << "Ignoring SSL error: " << error.errorString();
+    }
+    /// Ignore all SSL/TLS errors
+    reply->ignoreSslErrors(list);
 }
 
 void WebCrawler::singleShotNextDownload()

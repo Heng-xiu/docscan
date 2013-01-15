@@ -25,6 +25,7 @@
 #include <QList>
 #include <QSet>
 #include <QStringList>
+#include <QSslError>
 
 #include "filefinder.h"
 
@@ -78,6 +79,7 @@ private:
 
 private slots:
     void finishedDownload();
+    void gotSslErrors(const QList<QSslError> &list);
     void timeout(QObject *object);
     void singleShotNextDownload();
 };
