@@ -174,10 +174,10 @@ void WebCrawler::finishedDownload()
                 /// simplification: extension (with or without dot) is four chars long
                 QString extension = url.right(4).toLower();
                 /// exclude images
-                if (extension == QLatin1String(".jpg") || extension == QLatin1String("jpeg") || extension == QLatin1String(".png") || extension == QLatin1String(".gif"))
+                if (extension == QLatin1String(".jpg") || extension == QLatin1String("jpeg") || extension == QLatin1String(".png") || extension == QLatin1String(".gif") || extension == QLatin1String(".eps") || extension == QLatin1String(".bmp"))
                     continue;
                 /// exclude multimedia files
-                if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3"))
+                if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3") || extension == QLatin1String(".wmv") || extension == QLatin1String(".wma"))
                     continue;
                 /// only files from domain
                 if (!QUrl(url).host().endsWith(m_baseHost))
