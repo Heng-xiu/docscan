@@ -38,7 +38,7 @@
 #include "logcollector.h"
 #include "fromlogfile.h"
 
-NetworkAccessManager netAccMan;
+NetworkAccessManager *netAccMan;
 QStringList filter;
 FileFinder *finder;
 Downloader *downloader;
@@ -96,16 +96,16 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "webcrawler:maxvisitedpages =" << webcrawlermaxvisitedpages;
                 } else if (key == "webcrawler" && finder == NULL) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
-                    finder = new WebCrawler(&netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, webcrawlermaxvisitedpages == 0 ? qMin(qMax(numHits * filter.count() * 256, 256), 4096) : webcrawlermaxvisitedpages);
+                    finder = new WebCrawler(netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, webcrawlermaxvisitedpages == 0 ? qMin(qMax(numHits * filter.count() * 256, 256), 4096) : webcrawlermaxvisitedpages);
                 } else if (key == "searchenginegoogle" && finder == NULL) {
                     qDebug() << "searchenginegoogle =" << value;
-                    finder = new SearchEngineGoogle(&netAccMan, value);
+                    finder = new SearchEngineGoogle(netAccMan, value);
                 } else if (key == "searchenginebing" && finder == NULL) {
                     qDebug() << "searchenginebing =" << value;
-                    finder = new SearchEngineBing(&netAccMan, value);
+                    finder = new SearchEngineBing(netAccMan, value);
                 } else if (key == "searchenginespringerlink" && finder == NULL) {
                     qDebug() << "searchenginespringerlink =" << value;
-                    finder = new SearchEngineSpringerLink(&netAccMan, value, springerLinkCategory, springerLinkContentType, springerLinkSubject, springerLinkYear);
+                    finder = new SearchEngineSpringerLink(netAccMan, value, springerLinkCategory, springerLinkContentType, springerLinkSubject, springerLinkYear);
                 } else if (key == "filesystemscan" && finder == NULL) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
@@ -117,7 +117,7 @@ bool evaluateConfigfile(const QString &filename)
                     downloader = new FromLogFileDownloader(value, filter);
                 } else if (key == "urldownloader" && downloader == NULL) {
                     qDebug() << "urldownloader =" << value;
-                    downloader = new UrlDownloader(&netAccMan, value);
+                    downloader = new UrlDownloader(netAccMan, value);
                 } else if (key == "logcollector" && logCollector == NULL) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
@@ -164,10 +164,30 @@ bool evaluateConfigfile(const QString &filename)
     return true;
 }
 
+void myMessageOutput(QtMsgType type, const char *msg)
+{
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stdout, "%s\n", msg);
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s\n", msg);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s\n", msg);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s\n", msg);
+        break;
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    qInstallMsgHandler(myMessageOutput);
     QCoreApplication a(argc, argv);
 
+    netAccMan = new NetworkAccessManager(&a);
     fileAnalyzer = NULL;
     logCollector = NULL;
     downloader = NULL;
@@ -175,7 +195,7 @@ int main(int argc, char *argv[])
     numHits = 0;
     webcrawlermaxvisitedpages = 0;
 
-    if (evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
+    if (argc == 2 && evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
         WatchDog watchDog;
         if (fileAnalyzer != NULL) watchDog.addWatchable(fileAnalyzer);
         if (downloader != NULL) watchDog.addWatchable(downloader);
