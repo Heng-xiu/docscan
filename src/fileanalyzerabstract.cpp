@@ -106,7 +106,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
 {
     const QString text = program.toLower();
     QMap<QString, QString> result;
-    result[""] = DocScan::xmlify(program);
+    result[""] = program;
     bool checkOOoVersion = false;
 
     if (text.indexOf("dvips") >= 0) {
@@ -120,6 +120,12 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "ghostscript";
         if (ghostscriptVersion.indexIn(text) >= 0)
             result["version"] = ghostscriptVersion.cap(0);
+    } else if (text.startsWith("cairo ")) {
+        static const QRegExp cairoVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "cairo ";
+        result["product"] = "cairo";
+        if (cairoVersion.indexIn(text) >= 0)
+            result["version"] = cairoVersion.cap(0);
     } else if (text.indexOf("pdftex") >= 0) {
         static const QRegExp pdftexVersion("\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "pdftex ";
@@ -229,6 +235,18 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "distiller";
         if (distillerVersion.indexIn(text) >= 0)
             result["version"] = distillerVersion.cap(0);
+    } else if (text.startsWith("pdflib plop")) {
+        static const QRegExp plopVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "pdflib";
+        result["product"] = "plop";
+        if (plopVersion.indexIn(text) >= 0)
+            result["version"] = plopVersion.cap(0);
+    } else if (text.startsWith("pdflib")) {
+        static const QRegExp pdflibVersion("\\b\\d+(\\.[0-9p]+)+\\b");
+        result["manufacturer"] = "pdflib";
+        result["product"] = "pdflib";
+        if (pdflibVersion.indexIn(text) >= 0)
+            result["version"] = pdflibVersion.cap(0);
     } else if (text.indexOf("pdf library") >= 0) {
         static const QRegExp pdflibraryVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
@@ -253,6 +271,88 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "pdfmaker";
         if (pdfmakerVersion.indexIn(text) >= 0)
             result["version"] = pdfmakerVersion.cap(0);
+    } else if (text.startsWith("fill-in ")) {
+        static const QRegExp fillInVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "textcenter";
+        result["product"] = "fill-in";
+        if (fillInVersion.indexIn(text) >= 0)
+            result["version"] = fillInVersion.cap(0);
+    } else if (text.startsWith("itext ")) {
+        static const QRegExp iTextVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "itext";
+        result["product"] = "itext";
+        if (iTextVersion.indexIn(text) >= 0)
+            result["version"] = iTextVersion.cap(0);
+    } else if (text.startsWith("amyuni pdf converter ")) {
+        static const QRegExp amyunitVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "amyuni";
+        result["product"] = "pdfconverter";
+        if (amyunitVersion.indexIn(text) >= 0)
+            result["version"] = amyunitVersion.cap(0);
+    } else if (text.indexOf("pdfout v") >= 0) {
+        static const QRegExp pdfoutVersion("v(\\d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "verypdf";
+        result["product"] = "docconverter";
+        if (pdfoutVersion.indexIn(text) >= 0)
+            result["version"] = pdfoutVersion.cap(1);
+    } else if (text.indexOf("jaws pdf creator") >= 0) {
+        static const QRegExp pdfcreatorVersion("v(\\d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "jaws";
+        result["product"] = "pdfcreator";
+        if (pdfcreatorVersion.indexIn(text) >= 0)
+            result["version"] = pdfcreatorVersion.cap(1);
+    } else if (text.startsWith("arbortext ")) {
+        static const QRegExp arbortextVersion("\\d+(\\.\\d+)+)");
+        result["manufacturer"] = "ptc";
+        result["product"] = "arbortext";
+        if (arbortextVersion.indexIn(text) >= 0)
+            result["version"] = arbortextVersion.cap(0);
+    } else if (text.contains("3b2")) {
+        static const QRegExp threeB2Version("\\d+(\\.[0-9a-z]+)+)");
+        result["manufacturer"] = "ptc";
+        result["product"] = "3b2";
+        if (threeB2Version.indexIn(text) >= 0)
+            result["version"] = threeB2Version.cap(0);
+    } else if (text.startsWith("3-heights")) {
+        static const QRegExp threeHeightsVersion("\\b\\d+(\\.\\d+)+)");
+        result["manufacturer"] = "pdftoolsag";
+        result["product"] = "3-heights";
+        if (threeHeightsVersion.indexIn(text) >= 0)
+            result["version"] = threeHeightsVersion.cap(0);
+    } else if (text.contains("abcpdf")) {
+        result["manufacturer"] = "websupergoo";
+        result["product"] = "abcpdf";
+    } else if (text.indexOf("primopdf") >= 0) {
+        result["manufacturer"] = "nitro";
+        result["product"] = "primopdf";
+        result["based-on"] = "nitropro";
+    } else if (text.indexOf("nitro") >= 0) {
+        result["manufacturer"] = "nitro";
+        result["product"] = "nitropro";
+    } else if (text.indexOf("pdffactory") >= 0) {
+        static const QRegExp pdffactoryVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "softwarelabs";
+        result["product"] = "pdffactory";
+        if (pdffactoryVersion.indexIn(text) >= 0)
+            result["version"] = pdffactoryVersion.cap(0);
+    } else if (text.startsWith("ibex pdf")) {
+        static const QRegExp ibexVersion("\\b\\d+(\\.\\[0-9/]+)+\\b");
+        result["manufacturer"] = "visualprogramming";
+        result["product"] = "ibexpdfcreator";
+        if (ibexVersion.indexIn(text) >= 0)
+            result["version"] = ibexVersion.cap(0);
+    } else if (text.startsWith("arc/info") || text.startsWith("arcinfo")) {
+        static const QRegExp arcinfoVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "esri";
+        result["product"] = "arcinfo";
+        if (arcinfoVersion.indexIn(text) >= 0)
+            result["version"] = arcinfoVersion.cap(0);
+    } else if (text.startsWith("paperport ")) {
+        static const QRegExp paperportVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "nuance";
+        result["product"] = "paperport";
+        if (paperportVersion.indexIn(text) >= 0)
+            result["version"] = paperportVersion.cap(0);
     } else if (text.indexOf("indesign") >= 0) {
         static const QRegExp indesignVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
@@ -319,10 +419,10 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "quartz";
         if (quartzVersion.indexIn(text) >= 0)
             result["version"] = quartzVersion.cap(0);
-    } else if (text.indexOf("pscript5.dll") >= 0) {
+    } else if (text.indexOf("pscript5.dll") >= 0 || text.indexOf("pscript.dll") >= 0) {
         static const QRegExp pscriptVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "microsoft";
-        result["product"] = "pscript5";
+        result["product"] = "pscript";
         result["opsys"] = QLatin1String("windows");
         if (pscriptVersion.indexIn(text) >= 0)
             result["version"] = pscriptVersion.cap(0);
@@ -339,6 +439,30 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["opsys"] = QLatin1String("windows");
         if (pdfcreatorVersion.indexIn(text) >= 0)
             result["version"] = pdfcreatorVersion.cap(0);
+    } else if (text.startsWith("stamppdf batch")) {
+        static const QRegExp stamppdfbatchVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "appligent";
+        result["product"] = "stamppdfbatch";
+        if (stamppdfbatchVersion.indexIn(text) >= 0)
+            result["version"] = stamppdfbatchVersion.cap(0);
+    } else if (text.startsWith("xyenterprise ")) {
+        static const QRegExp xyVersion("\b\\d+(\\.\\[0-9a-z])+)( patch \\S*\\d)\\b");
+        result["manufacturer"] = "dakota";
+        result["product"] = "xyenterprise";
+        if (xyVersion.indexIn(text) >= 0)
+            result["version"] = xyVersion.cap(1);
+    } else if (text.startsWith("edocprinter ")) {
+        static const QRegExp edocprinterVersion("ver (\\d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "itek";
+        result["product"] = "edocprinter";
+        if (edocprinterVersion.indexIn(text) >= 0)
+            result["version"] = edocprinterVersion.cap(1);
+    } else if (text.startsWith("pdf code ")) {
+        static const QRegExp pdfcodeVersion("\\b(\\d{8}}|d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "europeancommission";
+        result["product"] = "pdfcode";
+        if (pdfcodeVersion.indexIn(text) >= 0)
+            result["version"] = pdfcodeVersion.cap(1);
     } else if (text.indexOf("pdf printer") >= 0) {
         result["manufacturer"] = "bullzip";
         result["product"] = "pdfprinter";
@@ -374,6 +498,18 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["version"] = canonVersion.cap(0);
         QString product = text;
         result["product"] = product.replace("canon", "").replace(canonVersion.cap(0), "").replace(" ", "");
+    } else if (text.startsWith("creo")) {
+        result["manufacturer"] = "creo";
+        QString product = text;
+        result["product"] = product.replace("creo", "").replace(" ", "");
+    } else if (text.contains("apogee")) {
+        result["manufacturer"] = "agfa";
+        result["product"] = "apogee";
+    } else if (text.contains("ricoh")) {
+        result["manufacturer"] = "ricoh";
+        const int i = text.indexOf(QLatin1String("aficio"));
+        if (i >= 0)
+            result["product"] = text.mid(i).replace(QLatin1Char(' '), QString::null);
     } else if (text.contains("toshiba") || text.contains("mfpimglib")) {
         static const QRegExp toshibaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "toshiba";
@@ -381,6 +517,14 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["version"] = toshibaVersion.cap(0);
         QString product = text;
         result["product"] = product.replace("toshiba", "").replace(toshibaVersion.cap(0), "").replace(" ", "");
+    } else if (text.startsWith("hp ") || text.startsWith("hewlett packard ")) {
+        result["manufacturer"] = "hewlettpackard";
+        QString product = text;
+        result["product"] = product.replace("hp ", "").replace("hewlett packard", "").replace(" ", "");
+    } else if (text.startsWith("xerox ")) {
+        result["manufacturer"] = "xerox";
+        QString product = text;
+        result["product"] = product.replace("xerox ", "").replace(" ", "");
     } else if (text.contains("konica") || text.contains("minolta")) {
         static const QRegExp konicaMinoltaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "konica;minolta";
@@ -412,7 +556,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["manufacturer"] = "google";
         result["product"] = "docs";
     } else if (!text.contains("words")) {
-        static const QRegExp microsoftProducts("powerpoint|excel|word|outlook");
+        static const QRegExp microsoftProducts("powerpoint|excel|word|outlook|visio|access");
         static const QRegExp microsoftVersion("\\b(starter )?(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
         if (microsoftProducts.indexIn(text) >= 0) {
             result["manufacturer"] = "microsoft";
@@ -430,7 +574,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     }
 
     if (checkOOoVersion) {
-        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_Beta|pre)?[$a-z]", Qt::CaseInsensitive);
+        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_beta|pre)?[$a-z]", Qt::CaseInsensitive);
         if (OOoVersion.indexIn(text) >= 0)
             result["version"] = OOoVersion.cap(1);
 
@@ -447,9 +591,14 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     }
 
     if (!result.contains("opsys")) {
-        if (text.contains(QLatin1String("Macint")))
+        /// automatically guess operating system
+        if (text.contains(QLatin1String("macint")))
             result["opsys"] = QLatin1String("macosx");
-        else if (text.contains(QLatin1String("Windows")))
+        else if (text.contains(QLatin1String("solaris")))
+            result["opsys"] = QLatin1String("solaris");
+        else if (text.contains(QLatin1String("linux")))
+            result["opsys"] = QLatin1String("linux");
+        else if (text.contains(QLatin1String("windows")) || text.contains(QLatin1String("win32")) || text.contains(QLatin1String("win64")))
             result["opsys"] = QLatin1String("windows");
     }
 
@@ -479,7 +628,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &typeName) const
 {
     QMap<QString, QString> name, beautifiedName, license, technology;
-    name[""] = DocScan::xmlify(fontName);
+    name[""] = fontName;
 
     if (fontName.contains("Libertine")) {
         license["type"] = "open";
@@ -542,7 +691,9 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     else if (text.indexOf("type3") >= 0)
         technology["type"] = "type3";
 
-    return formatMap("name", name) + formatMap("beautified", beautifiedName) + formatMap("technology", technology) + formatMap("license", license);
+    const QString result = formatMap("name", name) + formatMap("beautified", beautifiedName) + formatMap("technology", technology) + formatMap("license", license);
+
+    return result;
 }
 
 QString FileAnalyzerAbstract::formatDate(const QDate &date, const QString &base) const
