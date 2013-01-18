@@ -39,6 +39,11 @@ bool FileAnalyzerMultiplexer::isAlive()
     return m_fileAnalyzerODF.isAlive() || m_fileAnalyzerPDF.isAlive() || m_fileAnalyzerOpenXML.isAlive();
 }
 
+void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QString &configFile)
+{
+    m_fileAnalyzerPDF.setupJhove(shellscript, configFile);
+}
+
 void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
     static QRegExp odfExtension(".od[pst]$");

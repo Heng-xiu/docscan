@@ -43,6 +43,8 @@ public:
 
     virtual bool isAlive();
 
+    void setupJhove(const QString &shellscript, const QString &configFile);
+
 public slots:
     virtual void analyzeFile(const QString &filename);
 

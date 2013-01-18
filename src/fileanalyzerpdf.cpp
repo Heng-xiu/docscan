@@ -24,13 +24,14 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QDateTime>
+#include <QProcess>
 
 #include "fileanalyzerpdf.h"
 #include "watchdog.h"
 #include "general.h"
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), m_isAlive(false)
+    : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null)
 {
     // nothing
 }
@@ -40,23 +41,69 @@ bool FileAnalyzerPDF::isAlive()
     return m_isAlive;
 }
 
+void FileAnalyzerPDF::setupJhove(const QString &shellscript, const QString &configFile)
+{
+    m_jhoveShellscript = shellscript;
+    m_jhoveConfigFile = configFile;
+}
+
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
     m_isAlive = true;
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    Poppler::Document *doc = Poppler::Document::load(filename);
 
+    bool jhoveIsPDF = false;
+    bool jhoveWellformedAndValid = false;
+    QString jhovePDFversion = QString::null;
+    QString jhovePDFprofile = QString::null;
+    if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
+        QProcess jhove(this);
+        const QStringList arguments = QStringList() << m_jhoveShellscript << QLatin1String("-c") << m_jhoveConfigFile << QLatin1String("-m") << QLatin1String("PDF-hul") << filename;
+        jhove.start(QLatin1String("/bin/bash"), arguments, QIODevice::ReadOnly);
+        if (jhove.waitForStarted()) {
+            jhove.waitForFinished();
+            const QString jhoveOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1Char('#'));
+            if (!jhoveOutput.isEmpty()) {
+                jhoveIsPDF = jhoveOutput.contains(QLatin1String("Format: PDF"));
+                jhoveWellformedAndValid = jhoveOutput.contains(QLatin1String("Status: Well-Formed and valid"));
+                static const QRegExp pdfVersionRegExp(QLatin1String("\\bVersion: ([^#]+)#"));
+                jhovePDFversion = pdfVersionRegExp.indexIn(jhoveOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
+                static const QRegExp pdfProfileRegExp(QLatin1String("\\bProfile: ([^#]+)#"));
+                jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
+            } else
+                qWarning() << "Output of jhove is empty, stderr is " << QString::fromUtf8(jhove.readAllStandardError().data());
+        } else
+            qWarning() << "Failed to start jhove with as" << arguments.join("_");
+    }
+
+    Poppler::Document *doc = Poppler::Document::load(filename);
     if (doc != NULL) {
         QString guess;
 
         QString logText;
-        QString metaText = QLatin1String("<meta>\n");
-        QString headerText = QLatin1String("<header>\n");
+        QString metaText = QString::null;
+        QString headerText = QString::null;
+        QString bodyText = QString::null;
 
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         doc->getPdfVersion(&majorVersion, &minorVersion);
-        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n</fileformat>\n").arg(majorVersion).arg(minorVersion));
+        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n").arg(majorVersion).arg(minorVersion).arg(doc->isLocked() ? QLatin1String("yes") : QLatin1String("no")).arg(doc->isEncrypted() ? QLatin1String("yes") : QLatin1String("no")));
+
+        if (jhoveIsPDF) {
+            /// insert data from jHove
+            metaText.append(QString(QLatin1String("<jhove wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QLatin1String("yes") : QLatin1String("no")));
+            if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty())
+                metaText.append(QLatin1String(" />\n"));
+            else {
+                metaText.append(QLatin1String(">\n"));
+                if (!jhovePDFversion.isEmpty())
+                    metaText.append(QString(QLatin1String("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
+                if (!jhovePDFprofile.isEmpty())
+                    metaText.append(QString(QLatin1String("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QLatin1String("Linearized PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("Tagged PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level A")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level B")) ? QLatin1String("yes") : QLatin1String("no")));
+                metaText.append(QLatin1String("</jhove>\n"));
+            }
+        }
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
@@ -77,16 +124,20 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!guess.isEmpty())
             metaText.append(QString("<tool type=\"producer\">\n%1</tool>\n").arg(guess));
 
-        /// retrieve font information
+        if (!doc->isLocked() && !doc->isEncrypted()) {
+            /// some functions are sensitive if PDF is locked
 
-        QList<Poppler::FontInfo> fontList = doc->fonts();
-        static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
-        QSet<QString> knownFonts;
-        foreach(Poppler::FontInfo fi, fontList) {
-            const QString fontName = fi.name().replace(fontNameNormalizer, "");
-            if (fontName.isEmpty()) continue;
-            if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-            metaText.append(QString("<font>\n%1</font>").arg(guessFont(fontName, fi.typeName())));
+            /// retrieve font information
+            QList<Poppler::FontInfo> fontList = doc->fonts();
+            static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
+            QSet<QString> knownFonts;
+            foreach(Poppler::FontInfo fi, fontList) {
+                const QString fontName = fi.name().replace(fontNameNormalizer, "");
+                if (fontName.isEmpty()) continue;
+                if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
+                metaText.append(QString("<font>\n%1</font>").arg(guessFont(fontName, fi.typeName())));
+            }
+
         }
 
         /// format creation date
@@ -121,36 +172,41 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!keywords.isEmpty())
             headerText.append(QString("<keyword>%1</keyword>\n").arg(DocScan::xmlify(keywords)));
 
-        /// guess language using aspell
-        const QString text = plainText(doc);
-        /* Disabling aspell, computationally expensive
-        QString language = guessLanguage(text);
-        if (!language.isEmpty())
-            headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
-         */
+        if (!doc->isLocked() && !doc->isEncrypted()) {
+            /// some functions are sensitive if PDF is locked or encrypted
 
-        /// look into first page for info
-        int numPages = doc->numPages();
-        headerText.append(QString("<num-pages>%1</num-pages>\n").arg(numPages));
-        if (numPages > 0) {
-            Poppler::Page *page = doc->page(0);
-            /// retrieve and evaluate paper size
-            QSize size = page->pageSize();
-            int mmw = size.width() * 0.3527778;
-            int mmh = size.height() * 0.3527778;
-            if (mmw > 0 && mmh > 0) {
-                headerText += evaluatePaperSize(mmw, mmh);
+            /// guess language using aspell
+            const QString text = plainText(doc);
+            /* Disabling aspell, computationally expensive
+            QString language = guessLanguage(text);
+            if (!language.isEmpty())
+                headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
+             */
+            bodyText = QString("<body length=\"%1\" />\n").arg(text.length());
+
+            /// look into first page for info
+            int numPages = doc->numPages();
+            headerText.append(QString("<num-pages>%1</num-pages>\n").arg(numPages));
+            if (numPages > 0) {
+                Poppler::Page *page = doc->page(0);
+                /// retrieve and evaluate paper size
+                QSize size = page->pageSize();
+                int mmw = size.width() * 0.3527778;
+                int mmh = size.height() * 0.3527778;
+                if (mmw > 0 && mmh > 0) {
+                    headerText += evaluatePaperSize(mmw, mmh);
+                }
             }
+
         }
 
-        QString bodyText = QString("<body length=\"%1\" />\n").arg(text.length());
-
         /// close all tags, merge text
-        metaText += QLatin1String("</meta>\n");
-        logText.append(metaText);
-        headerText += QLatin1String("</header>\n");
-        logText.append(headerText);
-        logText.append(bodyText);
+        if (!metaText.isEmpty())
+            logText.append(QLatin1String("<meta>\n")).append(metaText).append(QLatin1String("</meta>\n"));
+        if (!headerText.isEmpty())
+            logText.append(QLatin1String("<header>\n")).append(headerText).append(QLatin1String("</header>\n"));
+        if (!bodyText.isEmpty())
+            logText.append(bodyText);
         logText += QLatin1String("</fileanalysis>\n");
 
         qint64 endTime = QDateTime::currentMSecsSinceEpoch();

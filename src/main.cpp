@@ -45,6 +45,7 @@ Downloader *downloader;
 LogCollector *logCollector;
 FileAnalyzerAbstract *fileAnalyzer;
 int numHits, webcrawlermaxvisitedpages;
+QString jhoveShellscript, jhoveConfigFile;
 
 bool evaluateConfigfile(const QString &filename)
 {
@@ -69,6 +70,14 @@ bool evaluateConfigfile(const QString &filename)
                 if (key == "requiredcontent") {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
+                } else if (key == "jhove") {
+                    const QStringList param = value.split(QChar('|'));
+                    if (param.count() == 2) {
+                        jhoveShellscript = param[0];
+                        jhoveConfigFile = param[1];
+                        qDebug() << "jhoveShellscript =" << jhoveShellscript;
+                        qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
+                    }
                 } else if (key == "webcrawler:starturl") {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -201,6 +210,17 @@ int main(int argc, char *argv[])
         if (downloader != NULL) watchDog.addWatchable(downloader);
         if (finder != NULL) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
+
+        if (!jhoveShellscript.isEmpty() && !jhoveConfigFile.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != NULL)
+                fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile);
+            else {
+                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
+                if (fileAnalyzerMultiplexer != NULL)
+                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile);
+            }
+        }
 
         if (downloader != NULL && finder != NULL) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
         if (downloader != NULL && fileAnalyzer != NULL) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));

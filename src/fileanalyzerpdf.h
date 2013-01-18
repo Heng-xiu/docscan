@@ -44,11 +44,14 @@ public:
 
     virtual bool isAlive();
 
+    void setupJhove(const QString &shellscript, const QString &configFile);
+
 public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
     bool m_isAlive;
+    QString m_jhoveShellscript, m_jhoveConfigFile;
 
     QString plainText(Poppler::Document *doc);
 };
