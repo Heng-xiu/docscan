@@ -151,6 +151,22 @@ void WebCrawler::finishedDownload()
         }
     }
 
+    if (reply->error() == QNetworkReply::HostNotFoundError) {
+        /// schwaebischhall.de does not resolve, but www.schwaebischhall.de does
+        QString hostname = reply->url().host();
+        if (hostname.startsWith(QLatin1String("www.")))
+            /// try removing leading "www."
+            hostname = hostname.mid(4);
+        else
+            /// try prepending missing "www."
+            hostname = hostname.prepend(QLatin1String("www."));
+        QUrl redirUrl = reply->url();
+        redirUrl.setHost(hostname);
+        const QString redirUrlStr = redirUrl.toString();
+        m_knownUrls << redirUrlStr;
+        m_queuedUrls << redirUrlStr;
+    }
+
     if (reply->error() == QNetworkReply::NoError) {
         QByteArray data(reply->readAll());
         QString text(data);
