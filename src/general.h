@@ -47,7 +47,7 @@ QString xmlNodeToText(const XMLNode &node);
  * @param text plain text
  * @return text encoded as XML
  */
-QString xmlify(QString text);
+QString xmlify(const QString &text);
 
 /**
  * Rewrite XML encodings like &aml; back to plain text like &.
@@ -55,7 +55,7 @@ QString xmlify(QString text);
  * @param xml text encoded as XML
  * @return decoded plain text
  */
-QString dexmlify(QString xml);
+QString dexmlify(const QString &xml);
 
 /**
  * Create an XML representation like

@@ -46,14 +46,33 @@ QString xmlNodeToText(const XMLNode &node)
     return result;
 }
 
-QString xmlify(QString text)
+QString xmlify(const QString &text)
 {
-    return text.replace(QRegExp(QLatin1String("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), "").replace(QChar('&'), QLatin1String("&amp;")).replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;")).replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;")).simplified();
+    QString result = text;
+    result = result.replace(QRegExp(QLatin1String("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), QLatin1String(""));
+
+    /// remove unprintable or control characters
+    for (int i = 0; i < result.length(); ++i)
+        if (result[i].unicode() < 0x0020 || result[i].unicode() >= 0x0100 || !result[i].isPrint()) {
+            result = result.left(i) + result.mid(i + 1);
+            --i;
+        }
+
+    result = result.replace(QChar('&'), QLatin1String("&amp;"));
+    result = result.replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;"));
+    result = result.replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;"));
+    result = result.simplified();
+    return result;
 }
 
-QString dexmlify(QString xml)
+QString dexmlify(const QString &xml)
 {
-    return xml.replace(QLatin1String("&lt;"), QChar('<')).replace(QLatin1String("&gt;"), QChar('>')).replace(QLatin1String("&quot;"), QChar('"')).replace(QLatin1String("&apos;"), QChar('\'')).replace(QLatin1String("&amp;"), QChar('&'));
+    QString result = xml;
+    result = result.replace(QLatin1String("&lt;"), QChar('<')).replace(QLatin1String("&gt;"), QChar('>'));
+    result = result.replace(QLatin1String("&quot;"), QChar('"'));
+    result = result.replace(QLatin1String("&apos;"), QChar('\''));
+    result = result.replace(QLatin1String("&amp;"), QChar('&'));
+    return result;
 }
 
 QString formatDate(const QDate &date, const QString &base)
