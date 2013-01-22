@@ -181,6 +181,9 @@ void UrlDownloader::finished()
         }
 
         QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
+        /// enforce .pdf file name extension if not exists but file name contains "pdf"
+        if (urlString.contains(QLatin1String("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+            urlString = urlString.append(QLatin1String(".pdf"));
         filename = filename.replace("%{s}", urlString);
 
         /// make known file extensions lower-case
