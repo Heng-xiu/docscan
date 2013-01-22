@@ -135,7 +135,7 @@ bool WebCrawler::visitNextPage()
 void WebCrawler::finishedDownload()
 {
     QRegExp fileExtRegExp = QRegExp(QLatin1String("[.].{1,4}$"), Qt::CaseInsensitive);
-    QRegExp validFileExtRegExp = QRegExp(QLatin1String("([.](htm[l]?|jsp|asp[x]?|php)|[^.]{5,})([?].+)?$"), Qt::CaseInsensitive);
+    QRegExp validFileExtRegExp = QRegExp(QLatin1String("([.]([sp]?htm[l]?|jsp|asp[x]?|php)|[^.]{5,})([?].+)?$"), Qt::CaseInsensitive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     m_mutexRunningJobs->lock();
     m_setRunningJobs->remove(reply);
@@ -163,7 +163,7 @@ void WebCrawler::finishedDownload()
             QSet<QString> hitCollection;
 
             /// for each anchor in the HTML code
-            QRegExp anchorRegExp("<a\\b[^>]*href=[\"']?([^'\" \t><]+)");
+            QRegExp anchorRegExp("<a\\b[^>]*href=[\"']?([^'\" \t><]+)", Qt::CaseInsensitive);
             int p = -1;
             while ((p = text.indexOf(anchorRegExp, p + 1)) >= 0) {
                 const QUrl url = normalizeUrl(anchorRegExp.cap(1), reply->url());
@@ -200,9 +200,9 @@ void WebCrawler::finishedDownload()
                     emit report(QString(QLatin1String("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
                     hitCollection.insert(urlStr);
                 } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
-                    // qDebug() << "Is not a sub-address:" << url << "of" << m_baseUrl;
+                    // qDebug() << "Is not a sub-address:" << urlStr << "of" << m_baseUrl;
                 } else if (validFileExtRegExp.indexIn(urlStr) == 0) {
-                    // qDebug() << "Path or extension is not wanted" << url;
+                    // qDebug() << "Path or extension is not wanted" << urlStr;
                 } else {
                     emit report(QString(QLatin1String("<webcrawler detailed=\"Found follow-up link\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
                     m_queuedUrls << urlStr;
@@ -215,7 +215,19 @@ void WebCrawler::finishedDownload()
                 emit foundUrl(QUrl(url));
             }
         } else if (text.startsWith("%PDF-1.")) {
-            emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page, but PDF instead\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+            const QString urlStr = reply->url().toString();
+            bool regExpLookingForPDF = false;
+            for (QList<Filter>::Iterator it = m_filterSet.begin(); !regExpLookingForPDF && it != m_filterSet.end(); ++it)
+                regExpLookingForPDF = it->regExp.pattern().contains(QLatin1String(".pdf"));
+            if (regExpLookingForPDF) {
+                /// Found an URL that does not match regular expression, but points
+                /// to an PDF file which the regular expression is looking for.
+                /// So, keep this URL...
+                emit report(QString(QLatin1String("<webcrawler detailed=\"Found URL pointing to PDF\" status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
+                emit report(QString(QLatin1String("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
+                emit foundUrl(reply->url());
+            } else
+                emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page, but PDF instead\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
         } else
             emit report(QString(QLatin1String("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
     } else
