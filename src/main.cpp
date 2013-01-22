@@ -52,6 +52,7 @@ bool evaluateConfigfile(const QString &filename)
     QFile configFile(filename);
     if (configFile.open(QFile::ReadOnly)) {
         QTextStream ts(&configFile);
+        ts.setCodec("utf-8");
         QString line(QString::null);
         QUrl startUrl;
         QRegExp requiredContent;
