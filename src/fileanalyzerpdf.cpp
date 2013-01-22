@@ -58,8 +58,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString jhovePDFprofile = QString::null;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
-        const QStringList arguments = QStringList() << m_jhoveShellscript << QLatin1String("-c") << m_jhoveConfigFile << QLatin1String("-m") << QLatin1String("PDF-hul") << filename;
-        jhove.start(QLatin1String("/bin/bash"), arguments, QIODevice::ReadOnly);
+        const QStringList arguments = QStringList() << QLatin1String("-n") << QLatin1String("17") << QLatin1String("/bin/bash") << m_jhoveShellscript << QLatin1String("-c") << m_jhoveConfigFile << QLatin1String("-m") << QLatin1String("PDF-hul") << filename;
+        jhove.start(QLatin1String("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
             const QString jhoveOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1Char('#'));
