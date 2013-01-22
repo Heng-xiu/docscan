@@ -359,6 +359,38 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "indesign";
         if (indesignVersion.indexIn(text) >= 0)
             result["version"] = indesignVersion.cap(0);
+        else {
+            static const QRegExp csVersion(QLatin1String("\\bCS(\\d*)\\b"));
+            if (csVersion.indexIn(text) >= 0) {
+                bool ok = false;
+                double versionNumber = csVersion.cap(1).toDouble(&ok);
+                if (csVersion.cap(0) == QLatin1String("CS"))
+                    result["version"] = QLatin1String("3.0");
+                else if (ok && versionNumber > 1) {
+                    versionNumber += 2;
+                    result["version"] = QString::number(versionNumber, 'f', 1);
+                }
+            }
+        }
+    } else if (text.indexOf("illustrator") >= 0) {
+        static const QRegExp illustratorVersion("\\b\\d+(\\.\\d+)+\\b");
+        result["manufacturer"] = "adobe";
+        result["product"] = "illustrator";
+        if (illustratorVersion.indexIn(text) >= 0)
+            result["version"] = illustratorVersion.cap(0);
+        else {
+            static const QRegExp csVersion(QLatin1String("\\bCS(\\d*)\\b"));
+            if (csVersion.indexIn(text) >= 0) {
+                bool ok = false;
+                double versionNumber = csVersion.cap(1).toDouble(&ok);
+                if (csVersion.cap(0) == QLatin1String("CS"))
+                    result["version"] = QLatin1String("11.0");
+                else if (ok && versionNumber > 1) {
+                    versionNumber += 10;
+                    result["version"] = QString::number(versionNumber, 'f', 1);
+                }
+            }
+        }
     } else if (text.indexOf("pagemaker") >= 0) {
         static const QRegExp pagemakerVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
@@ -392,10 +424,16 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (regExpPos <= 0)
             regExpPos = 1024;
         QString product = text;
-        result["product"] = product.left(regExpPos - 1).replace("adobe", "").replace(livecycleVersion.cap(0), "").replace(" ", "");
-    } else if (text.indexOf("photoshop") >= 0) {
+        result["product"] = product.left(regExpPos - 1).replace("adobe", "").replace(livecycleVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
+    } else if (text.startsWith("adobe photoshop elements")) {
+        result["manufacturer"] = "adobe";
+        result["product"] = "photoshopelements";
+    } else if (text.startsWith("adobe photoshop")) {
+        static const QRegExp photoshopVersion("\\bCS|(CS)?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
         result["product"] = "photoshop";
+        if (photoshopVersion.indexIn(text) >= 0)
+            result["version"] = photoshopVersion.cap(0);
     } else if (text.indexOf("adobe") >= 0) {
         /// some unknown Adobe product
         static const QRegExp adobeVersion("\\b\\d+(\\.\\d+)+\\b");
@@ -403,7 +441,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (adobeVersion.indexIn(text) >= 0)
             result["version"] = adobeVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("adobe", "").replace(adobeVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("adobe", "").replace(adobeVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("pages")) {
         result["manufacturer"] = "apple";
         result["product"] = "pages";
@@ -490,18 +528,18 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (gnosticeVersion.indexIn(text) >= 0)
             result["version"] = gnosticeVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("gnostice", "").replace(gnosticeVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("gnostice", "").replace(gnosticeVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("canon")) {
         static const QRegExp canonVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "canon";
         if (canonVersion.indexIn(text) >= 0)
             result["version"] = canonVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("canon", "").replace(canonVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("canon", "").replace(canonVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.startsWith("creo")) {
         result["manufacturer"] = "creo";
         QString product = text;
-        result["product"] = product.replace("creo", "").replace(" ", "");
+        result["product"] = product.replace("creo", "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("apogee")) {
         result["manufacturer"] = "agfa";
         result["product"] = "apogee";
@@ -516,29 +554,29 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (toshibaVersion.indexIn(text) >= 0)
             result["version"] = toshibaVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("toshiba", "").replace(toshibaVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("toshiba", "").replace(toshibaVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.startsWith("hp ") || text.startsWith("hewlett packard ")) {
         result["manufacturer"] = "hewlettpackard";
         QString product = text;
-        result["product"] = product.replace("hp ", "").replace("hewlett packard", "").replace(" ", "");
+        result["product"] = product.replace("hp ", "").replace("hewlett packard", "").replace(" ", "") + QLatin1Char('?');
     } else if (text.startsWith("xerox ")) {
         result["manufacturer"] = "xerox";
         QString product = text;
-        result["product"] = product.replace("xerox ", "").replace(" ", "");
+        result["product"] = product.replace("xerox ", "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("konica") || text.contains("minolta")) {
         static const QRegExp konicaMinoltaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "konica;minolta";
         if (konicaMinoltaVersion.indexIn(text) >= 0)
             result["version"] = konicaMinoltaVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("konica", "").replace("minolta", "").replace(konicaMinoltaVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("konica", "").replace("minolta", "").replace(konicaMinoltaVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("corel")) {
         static const QRegExp corelVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "corel";
         if (corelVersion.indexIn(text) >= 0)
             result["version"] = corelVersion.cap(0);
         QString product = text;
-        result["product"] = product.replace("corel", "").replace(corelVersion.cap(0), "").replace(" ", "");
+        result["product"] = product.replace("corel", "").replace(corelVersion.cap(0), "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("scansoft pdf create")) {
         static const QRegExp scansoftVersion("\\b([a-zA-Z]+[ ])?[A-Za-z0-9]+\\b");
         result["manufacturer"] = "scansoft";
@@ -574,9 +612,16 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
     }
 
     if (checkOOoVersion) {
-        static const QRegExp OOoVersion("[a-z]/(\\d(\\.\\d+)+)(_beta|pre)?[$a-z]", Qt::CaseInsensitive);
-        if (OOoVersion.indexIn(text) >= 0)
-            result["version"] = OOoVersion.cap(1);
+        /// Looks like "Win32/2.3.1"
+        static const QRegExp OOoVersion1("[a-z]/(\\d(\\.\\d+)+)(_beta|pre)?[$a-z]", Qt::CaseInsensitive);
+        if (OOoVersion1.indexIn(text) >= 0)
+            result["version"] = OOoVersion1.cap(1);
+        else {
+            /// Fallback: conventional version string like "3.0"
+            static const QRegExp OOoVersion2("\\b(\\d+(\\.\\d+)+)\\b", Qt::CaseInsensitive);
+            if (OOoVersion2.indexIn(text) >= 0)
+                result["version"] = OOoVersion2.cap(1);
+        }
 
         if (text.indexOf(QLatin1String("unix")) >= 0)
             result["opsys"] = QLatin1String("generic-unix");
@@ -654,6 +699,9 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     } else if (fontName.contains("Marvosym")) {
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
+    } else if (fontName.contains("OpenSymbol")) {
+        license["type"] = "open";
+        license["name"] = "LGPLv3?";
     } else if (fontName.startsWith("Gotham") || fontName.startsWith("NewLibrisSerif")) {
         license["type"] = "proprietary"; // fonts used by Forsakringskassan
     } else if (fontName.startsWith("Zapf") || fontName.startsWith("Frutiger")) {
@@ -662,16 +710,20 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
         license["type"] = "proprietary"; // Microsoft
     } else if (fontName.startsWith("Calibri") || fontName.startsWith("Cambria")  || fontName.startsWith("Constantia") || fontName.startsWith("Candara") || fontName.startsWith("Corbel") || fontName.startsWith("Consolas")) {
         license["type"] = "proprietary"; // Microsoft ClearType Font Collection
+    } else if (fontName.contains("Univers")) {
+        license["type"] = "proprietary"; // Linotype
     } else if (fontName.contains("Helvetica") && fontName.contains("Neue")) {
         license["type"] = "proprietary"; // Neue Helvetica by Linotype
-    } else if (fontName.startsWith("Times") || fontName.startsWith("Courier") || fontName.contains("Helvetica")) {
+    } else if (fontName.startsWith("Times") || fontName.startsWith("Tahoma") ||  fontName.startsWith("Courier") || fontName.contains("Helvetica") || fontName.contains("Wingdings")) {
         license["type"] = "proprietary";
     } else if (fontName.startsWith("SymbolMT")) {
         license["type"] = "proprietary"; // MonoType's font as shipped with Windows
     } else if (fontName.startsWith("Bembo") || fontName.startsWith("Rockwell")) {
         license["type"] = "proprietary"; // MonoType
-    } else if (fontName.startsWith("ACaslon")) {
+    } else if (fontName.startsWith("ACaslon") || fontName.contains("EuroSans")) {
         license["type"] = "proprietary"; // Adobe
+    } else if (fontName.contains("Officina")) {
+        license["type"] = "proprietary"; // ITC
     } else
         license["type"] = "unknown";
 
