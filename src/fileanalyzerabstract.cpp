@@ -635,6 +635,9 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
             result["opsys"] = QLatin1String("bsd");
     }
 
+    if (!result.contains("manufacturer") && (text.contains("adobe") || text.contains("acrobat")))
+        result["manufacturer"] = "adobe";
+
     if (!result.contains("opsys")) {
         /// automatically guess operating system
         if (text.contains(QLatin1String("macint")))
