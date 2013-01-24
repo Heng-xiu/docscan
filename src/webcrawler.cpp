@@ -220,7 +220,7 @@ void WebCrawler::finishedDownload()
                 } else if (validFileExtRegExp.indexIn(urlStr) == 0) {
                     // qDebug() << "Path or extension is not wanted" << urlStr;
                 } else {
-                    emit report(QString(QLatin1String("<webcrawler detailed=\"Found follow-up link\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
+                    // emit report(QString(QLatin1String("<webcrawler detailed=\"Found follow-up link\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
                     m_queuedUrls << urlStr;
                 }
             }
