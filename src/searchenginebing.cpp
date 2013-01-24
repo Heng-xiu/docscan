@@ -64,13 +64,12 @@ void SearchEngineBing::finished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        QTextStream tsAll(reply);
-        QString htmlText = tsAll.readAll();
+        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QLatin1String("&#160;"), QLatin1String(" "));
 
         if (m_currentPage == 0) {
-            const QRegExp countHitsRegExp(QLatin1String("([0-9]+(&#160;[0-9]+)*) result"), Qt::CaseInsensitive);
+            const QRegExp countHitsRegExp(QLatin1String("([0-9]+([ ,][0-9]+)*) result"), Qt::CaseInsensitive);
             if (countHitsRegExp.indexIn(htmlText) >= 0) {
-                const QString hits = countHitsRegExp.cap(1).replace(QLatin1String("&#160;"), QString());
+                const QString hits = countHitsRegExp.cap(1).replace(QRegExp(QLatin1String("[, ]+")), QString());
                 emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(hits));
             } else
                 emit report(QLatin1String("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));

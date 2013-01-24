@@ -65,18 +65,17 @@ void SearchEngineGoogle::finished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        QTextStream tsAll(reply);
-        QString htmlText = tsAll.readAll();
+        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QLatin1String("&#160;"), QLatin1String(" "));
 
         if (m_currentPage == 0) {
             /// Google has different layouts for web result pages, so different regular expressions are necessary
             const QRegExp countHitsRegExp1("of (about )?<b>([0-9][0-9,. ]*)</b> for");
             if (countHitsRegExp1.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp1.cap(2).replace(QRegExp("[, .]"), "")));
+                emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp1.cap(2).replace(QRegExp("[, .]+"), QString())));
             else {
                 const QRegExp countHitsRegExp2("\\b([0-9][0-9,. ]*) results");
                 if (countHitsRegExp2.indexIn(htmlText) >= 0)
-                    emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp2.cap(1).replace(QRegExp("[, .]"), "")));
+                    emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp2.cap(1).replace(QRegExp("[, .]+"), QString())));
                 else
                     emit report(QLatin1String("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
             }
