@@ -137,7 +137,7 @@ void UrlDownloader::finished()
         QByteArray data(reply->readAll());
         QString filename = m_filePattern;
 
-        QString host = reply->url().host().replace(QRegExp("[^.0-9a-z-]", Qt::CaseInsensitive), "X");
+        const QString host = reply->url().host().replace(QRegExp("[^.0-9a-z-]", Qt::CaseInsensitive), "X");
         QString domain = QString::null;
         if (domainRegExp.indexIn(host) >= 0) {
             domain = domainRegExp.cap(0);
@@ -194,11 +194,69 @@ void UrlDownloader::finished()
 
         static const QRegExp fileExtensionRegExp(QLatin1String("/.+[.](.{2,4})([?].+)?$"));
         QString fileExtension = QString::null;
-        if (fileExtensionRegExp.indexIn(filename) >= 0 && !(fileExtension = fileExtensionRegExp.cap(1)).isEmpty())
-            filename = filename.replace("%{x}", fileExtension);
+        if (fileExtensionRegExp.indexIn(filename) == 0 || (fileExtension = fileExtensionRegExp.cap(1)).isEmpty()) {
+            const QString url = reply->url().toString().toLower();
+
+            /// Filename has no extension, so test data which extension would be fitting
+            if ((data[0] == '%' && data[1] == 'P' && data[2] == 'D' && data[3] == 'F') || url.contains(QLatin1String("application/pdf")) || url.contains(QLatin1String(".pdf"))) {
+                fileExtension = QLatin1String("pdf");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if ((data[0] == '\\' && data[1] == '{' && data[2] == 'r' && data[3] == 't' && data[4] == 'f') || url.contains(QLatin1String(".rtf"))) {
+                fileExtension = QLatin1String("rtf");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".odt"))) {
+                /// Open Document Format text
+                fileExtension = QLatin1String("odt");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".ods"))) {
+                /// Open Document Format spreadsheet
+                fileExtension = QLatin1String("ods");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".odp"))) {
+                /// Open Document Format spreadsheet
+                fileExtension = QLatin1String("odp");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".docx"))) {
+                /// Office Open XML text
+                fileExtension = QLatin1String("docx");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".pptx"))) {
+                /// Office Open XML presentation
+                fileExtension = QLatin1String("pptx");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".xlsx"))) {
+                /// Office Open XML spreadsheet
+                fileExtension = QLatin1String("xlsx");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".doc"))) {
+                /// archaic .doc
+                fileExtension = QLatin1String("doc");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".ppt"))) {
+                /// archaic .ppt
+                fileExtension = QLatin1String("ppt");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (url.contains(QLatin1String(".xls"))) {
+                /// archaic .xls
+                fileExtension = QLatin1String("xls");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (data[0] == 0xd0 && data[1] == 0xcf && data[2] == 0x11) {
+                /// some kind of archaic Microsoft format, assuming .doc as most popular
+                fileExtension = QLatin1String("doc");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else if (data[0] == 'P' && data[1] == 'K' && data[2] < 10) {
+                /// .zip file, could be ODF or 00XML (further testing required)
+                fileExtension = QLatin1String("zip");
+                filename = filename.append(QLatin1String(".")).append(fileExtension);
+            } else {
+                /// fallback
+                fileExtension = QLatin1String("xxx");
+            }
+        }
+        filename = filename.replace("%{x}", fileExtension);
 
         if ((p = filename.indexOf("%{")) >= 0)
-            qDebug() << "gap was not filled:" << filename.mid(p);
+            qWarning() << "gap was not filled:" << filename.mid(p);
 
         QFileInfo fi(filename);
         if (!fi.absoluteDir().mkpath(fi.absolutePath())) {
