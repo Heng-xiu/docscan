@@ -223,13 +223,19 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["manufacturer"] = "oracle;tdf";
         result["product"] = "openoffice;libreoffice";
         result["based-on"] = "openoffice";
+    } else if (text.startsWith("pdfscanlib ")) {
+        static const QRegExp pdfscanlibVersion("v(\\d+(\\.\\d+)+)\\b");
+        result["manufacturer"] = "???";
+        result["product"] = "pdfscanlib";
+        if (pdfscanlibVersion.indexIn(text) >= 0)
+            result["version"] = pdfscanlibVersion.cap(1);
     } else if (text.indexOf("framemaker") >= 0) {
         static const QRegExp framemakerVersion("\\b\\d+(\\.\\d+)+(\\b|\\.|p\\d+)");
         result["manufacturer"] = "adobe";
         result["product"] = "framemaker";
         if (framemakerVersion.indexIn(text) >= 0)
             result["version"] = framemakerVersion.cap(0);
-    } else if (text.indexOf("distiller") >= 0) {
+    } else if (text.contains("distiller")) {
         static const QRegExp distillerVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
         result["product"] = "distiller";
@@ -265,7 +271,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["product"] = "easypdf";
         if (easypdfVersion.indexIn(text) >= 0)
             result["version"] = easypdfVersion.cap(0);
-    } else if (text.indexOf("pdfmaker") >= 0) {
+    } else if (text.contains("pdfmaker")) {
         static const QRegExp pdfmakerVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "adobe";
         result["product"] = "pdfmaker";
@@ -278,11 +284,20 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         if (fillInVersion.indexIn(text) >= 0)
             result["version"] = fillInVersion.cap(0);
     } else if (text.startsWith("itext ")) {
-        static const QRegExp iTextVersion("\\b\\d+(\\.\\d+)+\\b");
+        static const QRegExp iTextVersion("\\b((\\d+)(\\.\\d+)+)\\b");
         result["manufacturer"] = "itext";
         result["product"] = "itext";
-        if (iTextVersion.indexIn(text) >= 0)
+        if (iTextVersion.indexIn(text) >= 0) {
             result["version"] = iTextVersion.cap(0);
+            bool ok = false;
+            const int majorVersion = iTextVersion.cap(2).toInt(&ok);
+            if (ok && majorVersion > 0) {
+                if (majorVersion <= 4)
+                    result["license"] = "MPL;LGPL";
+                else if (majorVersion >= 5)
+                    result["license"] = "commercial;AGPLv3";
+            }
+        }
     } else if (text.startsWith("amyuni pdf converter ")) {
         static const QRegExp amyunitVersion("\\b\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "amyuni";
@@ -563,6 +578,10 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["manufacturer"] = "xerox";
         QString product = text;
         result["product"] = product.replace("xerox ", "").replace(" ", "") + QLatin1Char('?');
+    } else if (text.startsWith("kodak ")) {
+        result["manufacturer"] = "kodak";
+        QString product = text;
+        result["product"] = product.replace("kodak ", "").replace("scanner: ", "").replace(" ", "") + QLatin1Char('?');
     } else if (text.contains("konica") || text.contains("minolta")) {
         static const QRegExp konicaMinoltaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         result["manufacturer"] = "konica;minolta";
@@ -734,7 +753,7 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     QString bName = fontName;
     bName = bName.replace(QRegExp(QLatin1String("((Arial|Times|Courier)\\S*)(PS)?MT")), QLatin1String("\\1"));
     bool keepRomanAsSuffix = bName.startsWith(QLatin1String("TimesNewRoman"));
-    bName = bName.replace(QRegExp(QLatin1String("(PS|FK)?[_-,.+]?(Semibold(It)?|Medium(It(alic)?|Oblique)?|Bold(It(alic)?|Oblique)?|Ital(ic)?|Light(It(alic)?|Oblique)?|Heavy(It(alic)?|Oblique)?|Roman|Upright|Regu(lar)?(It(alic)?|Oblique)?|Book(It(alic)?|Oblique)?|SC)(H|MT|[T]?OsF)?")), QLatin1String(""));
+    bName = bName.replace(QRegExp(QLatin1String("(PS|FK)?[_-,.+]?(Semi(bold(It)?)?|Medium(It(alic)?|Oblique)?|Bold(It(alic)?|Oblique)?|Ital(ic)?|Light(It(alic)?|Oblique)?|Heavy(It(alic)?|Oblique)?|Roman|Upright|Regu(lar)?(It(alic)?|Oblique)?|Book(It(alic)?|Oblique)?|SC)(H|MT|[T]?OsF)?")), QLatin1String(""));
     if (keepRomanAsSuffix) bName = bName.replace(QLatin1String("TimesNew"), QLatin1String("TimesNewRoman"));
     beautifiedName[""] = DocScan::xmlify(bName);
 
