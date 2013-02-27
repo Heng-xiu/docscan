@@ -52,8 +52,6 @@ public slots:
 private:
     bool m_isAlive;
     QString m_jhoveShellscript, m_jhoveConfigFile;
-
-    QString plainText(Poppler::Document *doc);
 };
 
 #endif // FILEANALYZERPDF_H
