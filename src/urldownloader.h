@@ -52,7 +52,7 @@ public:
      * @param filePattern pattern used to rename downloaded files to make it easier to store and categorize them
      * @param parent parent object
      */
-    explicit UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent = 0);
+    explicit UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, int maxDownloads = 0x0fffffff, QObject *parent = 0);
     ~UrlDownloader();
 
     virtual bool isAlive();
@@ -76,12 +76,13 @@ private:
     QSignalMapper *m_signalMapperTimeout;
     NetworkAccessManager *m_networkAccessManager;
     const QString m_filePattern;
+    int m_maxDownloads;
     int m_runningDownloads;
     QHash<QString, int> m_runningdownloadsPerHostname;
     static const int maxParallelDownloads, maxParallelDownloadsPerHost;
     QSet<QString> m_knownUrls;
     static const QRegExp domainRegExp;
-    int m_countSuccessfulDownloads, m_countFaileDownloads;
+    int m_countSuccessfulDownloads, m_countFailedDownloads;
     GeoIP *m_geoip;
     QMap<QString, int> m_domainCount;
 

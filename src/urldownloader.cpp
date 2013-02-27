@@ -36,10 +36,10 @@
 #include "general.h"
 #include "networkaccessmanager.h"
 
-UrlDownloader::UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, QObject *parent)
-    : Downloader(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern)
+UrlDownloader::UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, int maxDownloads, QObject *parent)
+    : Downloader(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_maxDownloads(maxDownloads)
 {
-    m_runningDownloads = m_countSuccessfulDownloads = m_countFaileDownloads = 0;
+    m_runningDownloads = m_countSuccessfulDownloads = m_countFailedDownloads = 0;
     m_runningdownloadsPerHostname.clear();
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
@@ -66,6 +66,13 @@ void UrlDownloader::download(const QUrl &url)
     if (url.scheme() == QLatin1String("ftp")) {
         /// Qt 4.7.3 seems to have a bug with FTP downloads
         /// see https://bugreports.qt.nokia.com/browse/QTBUG-22820
+        qDebug() << "FTP protocol not supported for URL " << url.toString();
+        return;
+    }
+
+    if (m_countSuccessfulDownloads > m_maxDownloads) {
+        /// already reached limit of maximum downloads
+        qDebug() << "Reached maximum download of " << m_maxDownloads << " > " << m_countSuccessfulDownloads << " for URL " << url.toString();
         return;
     }
 
@@ -113,11 +120,20 @@ void UrlDownloader::startNextDownload()
 
 void UrlDownloader::finalReport()
 {
-    QString logText = QString("<download count-fail=\"%2\" count-success=\"%1\">\n").arg(m_countSuccessfulDownloads).arg(m_countFaileDownloads);
+    QString logText = QString("<download count-fail=\"%2\" count-success=\"%1\">\n").arg(m_countSuccessfulDownloads).arg(m_countFailedDownloads);
     for (QMap<QString, int>::ConstIterator it = m_domainCount.constBegin(); it != m_domainCount.constEnd(); ++it)
         logText += QString(QLatin1String("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
     logText += QLatin1String("</download>\n");
     emit report(logText);
+}
+
+void ensureExtension(QString &filename, const QString &extension)
+{
+    if (filename.isEmpty() || extension.isEmpty())
+        return;
+    const QString internalExt = extension.startsWith(QLatin1Char('.')) ? extension : QLatin1Char('.') + extension;
+    if (!filename.endsWith(internalExt, Qt::CaseInsensitive))
+        filename = filename.append(internalExt);
 }
 
 void UrlDownloader::finished()
@@ -181,9 +197,6 @@ void UrlDownloader::finished()
         }
 
         QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
-        /// enforce .pdf file name extension if not exists but file name contains "pdf"
-        if (urlString.contains(QLatin1String("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
-            urlString = urlString.append(QLatin1String(".pdf"));
         filename = filename.replace("%{s}", urlString);
 
         /// make known file extensions lower-case
@@ -191,8 +204,11 @@ void UrlDownloader::finished()
         foreach(const QString &fileExt, fileExtList) {
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
+        /// enforce .pdf file name extension if not exists but file name contains "pdf"
+        if (urlString.contains(QLatin1String("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+            urlString = urlString.append(QLatin1String(".pdf"));
 
-        static const QRegExp fileExtensionRegExp(QLatin1String("/.+[.](.{2,4})([?].+)?$"));
+        static const QRegExp fileExtensionRegExp(QLatin1String("[.](.{2,4})([?].+)?$"));
         QString fileExtension = QString::null;
         if (fileExtensionRegExp.indexIn(filename) == 0 || (fileExtension = fileExtensionRegExp.cap(1)).isEmpty()) {
             const QString url = reply->url().toString().toLower();
@@ -200,60 +216,45 @@ void UrlDownloader::finished()
             /// Filename has no extension, so test data which extension would be fitting
             if ((data[0] == '%' && data[1] == 'P' && data[2] == 'D' && data[3] == 'F') || url.contains(QLatin1String("application/pdf")) || url.contains(QLatin1String(".pdf"))) {
                 fileExtension = QLatin1String("pdf");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if ((data[0] == '\\' && data[1] == '{' && data[2] == 'r' && data[3] == 't' && data[4] == 'f') || url.contains(QLatin1String(".rtf"))) {
                 fileExtension = QLatin1String("rtf");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".odt"))) {
                 /// Open Document Format text
                 fileExtension = QLatin1String("odt");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".ods"))) {
                 /// Open Document Format spreadsheet
                 fileExtension = QLatin1String("ods");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".odp"))) {
                 /// Open Document Format spreadsheet
                 fileExtension = QLatin1String("odp");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".docx"))) {
                 /// Office Open XML text
                 fileExtension = QLatin1String("docx");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".pptx"))) {
                 /// Office Open XML presentation
                 fileExtension = QLatin1String("pptx");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".xlsx"))) {
                 /// Office Open XML spreadsheet
                 fileExtension = QLatin1String("xlsx");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".doc"))) {
                 /// archaic .doc
                 fileExtension = QLatin1String("doc");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".ppt"))) {
                 /// archaic .ppt
                 fileExtension = QLatin1String("ppt");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
             } else if (url.contains(QLatin1String(".xls"))) {
                 /// archaic .xls
                 fileExtension = QLatin1String("xls");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
-            } else if (data[0] == 0xd0 && data[1] == 0xcf && data[2] == 0x11) {
+            } else if ((data[0] == (char)0xd0 && data[1] == (char)0xcf && data[2] == (char)0x11) || (url.contains(QLatin1String(".doc")) && !url.contains(QLatin1String(".docx")))) {
                 /// some kind of archaic Microsoft format, assuming .doc as most popular
                 fileExtension = QLatin1String("doc");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
-            } else if (data[0] == 'P' && data[1] == 'K' && data[2] < 10) {
+            } else if ((data[0] == (char)'P' && data[1] == (char)'K' && (int)data[2] < 10) || url.contains(QLatin1String(".zip"))) {
                 /// .zip file, could be ODF or 00XML (further testing required)
                 fileExtension = QLatin1String("zip");
-                filename = filename.append(QLatin1String(".")).append(fileExtension);
-            } else {
-                /// fallback
-                fileExtension = QLatin1String("xxx");
             }
         }
         filename = filename.replace("%{x}", fileExtension);
+        ensureExtension(filename, fileExtension);
 
         if ((p = filename.indexOf("%{")) >= 0)
             qWarning() << "gap was not filled:" << filename.mid(p);
@@ -311,7 +312,7 @@ void UrlDownloader::finished()
     if (!succeeded) {
         QString logText = QString("<download detailed=\"%1\" message=\"download-failed\" status=\"error\" url=\"%2\" />\n").arg(DocScan::xmlify(reply->errorString())).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
-        ++m_countFaileDownloads;
+        ++m_countFailedDownloads;
     } else
         ++m_countSuccessfulDownloads;
 

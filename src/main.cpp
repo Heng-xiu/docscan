@@ -126,8 +126,13 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "fromlogfiledownloader =" << value;
                     downloader = new FromLogFileDownloader(value, filter);
                 } else if (key == "urldownloader" && downloader == NULL) {
-                    qDebug() << "urldownloader =" << value;
-                    downloader = new UrlDownloader(netAccMan, value);
+                    if (numHits > 0) {
+                        qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
+                        downloader = new UrlDownloader(netAccMan, value, numHits);
+                    } else {
+                        qDebug() << "urldownloader =" << value;
+                        downloader = new UrlDownloader(netAccMan, value);
+                    }
                 } else if (key == "logcollector" && logCollector == NULL) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
