@@ -62,6 +62,7 @@ private:
     QString m_baseUrl, m_baseHost, m_startUrl;
     QRegExp m_requiredContent;
     QList<Filter> m_filterSet;
+    bool m_terminating;
     int m_runningDownloads;
     int m_numExpectedHits, m_visitedPages, m_maxVisitedPages;
     static const int maxParallelDownloads;
