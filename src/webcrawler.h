@@ -66,6 +66,8 @@ private:
     int m_runningDownloads;
     int m_numExpectedHits, m_visitedPages, m_maxVisitedPages;
     static const int maxParallelDownloads;
+    int m_maxParallelDownloads;
+    int m_interDownloadDelay;
 
     QSet<QNetworkReply *> *m_setRunningJobs;
     QMutex *m_mutexRunningJobs;

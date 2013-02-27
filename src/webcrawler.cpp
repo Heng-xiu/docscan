@@ -42,6 +42,8 @@ WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QString
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
     m_setRunningJobs = new QSet<QNetworkReply *>();
     m_mutexRunningJobs = new QMutex();
+    m_maxParallelDownloads = maxParallelDownloads;
+    m_interDownloadDelay = 10; /// milliseconds
     m_maxVisitedPages = qMin(maxVisitedPages, WebCrawler::maxVisitedPages);
 
     foreach(const QString &label, filters) {
@@ -65,6 +67,11 @@ WebCrawler::~WebCrawler()
 void WebCrawler::startSearch(int numExpectedHits)
 {
     m_numExpectedHits = numExpectedHits;
+    if (m_startUrl.contains("transportstyrelsen.se")) {
+        /// Transportstyrelsen has a download-per-time limit
+        m_maxParallelDownloads = 1;
+        m_interDownloadDelay = 1750; /// milliseconds
+    }
     m_visitedPages = 0;
     QStringList regExpList;
     for (QList<Filter>::Iterator it = m_filterSet.begin(); it != m_filterSet.end(); ++it) {
@@ -91,8 +98,8 @@ bool WebCrawler::visitNextPage()
 {
     int startedDownloads = 0;
 
-    while (m_runningDownloads < maxParallelDownloads) {
-        if (m_runningDownloads >= maxParallelDownloads || m_queuedUrls.isEmpty())
+    while (m_runningDownloads < m_maxParallelDownloads) {
+        if (m_runningDownloads >= m_maxParallelDownloads || m_queuedUrls.isEmpty())
             break;
         bool numExpectedHitsReached = true;
         for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
@@ -268,7 +275,7 @@ void WebCrawler::finishedDownload()
     qApp->processEvents();
     --m_runningDownloads;
 
-    QTimer::singleShot(10, this, SLOT(singleShotNextDownload()));
+    QTimer::singleShot(m_interDownloadDelay, this, SLOT(singleShotNextDownload()));
 
     reply->deleteLater();
 }
