@@ -24,6 +24,7 @@
 #include <QRegExp>
 #include <QDebug>
 #include <QTimer>
+#include <QDebug>
 
 #include "general.h"
 #include "fromlogfile.h"
@@ -48,6 +49,8 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
                 m_urlSet.insert(url);
             }
         }
+        if (m_urlSet.isEmpty())
+            qWarning() << "No URLs found in" << logfilename;
     } else
         qWarning() << "Could not find or open old log file" << logfilename;
 }
@@ -101,6 +104,9 @@ void FromLogFileDownloader::startParsingAndEmitting()
             line = textStream.readLine();
         }
         input.close();
+
+        if (count == 0)
+            qWarning() << "No filenames found in" << m_logfilename;
 
         const QString s = QString("<downloader count=\"%1\" type=\"fromlogfiledownloader\" />\n").arg(count);
         emit report(s);
