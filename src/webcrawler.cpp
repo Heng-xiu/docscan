@@ -105,8 +105,10 @@ bool WebCrawler::visitNextPage()
         for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
             numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
         }
-        if (numExpectedHitsReached)
+        if (numExpectedHitsReached) {
+            emit report(QString(QLatin1String("<webcrawler numexpectedhitsreached=\"%1\" />\n")).arg(m_numExpectedHits));
             break;
+        }
 
         const QString url = m_queuedUrls.first();
         m_queuedUrls.removeFirst();
@@ -213,6 +215,9 @@ void WebCrawler::finishedDownload()
                     /// exclude multimedia files
                     if (extension == QLatin1String(".avi") || extension == QLatin1String("mpeg") || extension == QLatin1String(".mpg") || extension == QLatin1String(".mp4") || extension == QLatin1String(".mp3") || extension == QLatin1String(".wmv") || extension == QLatin1String(".wma"))
                         continue;
+                    /// exclude Microsoft Office files
+                    //if (extension == QLatin1String(".doc") || extension == QLatin1String("docx") || extension == QLatin1String(".ppt") || extension == QLatin1String("pptx") || extension == QLatin1String(".xls") || extension == QLatin1String("xlsx"))
+                    //    continue;
                     /// only files from domain
                     if (!url.host().endsWith(m_baseHost))
                         continue;
@@ -332,7 +337,7 @@ void WebCrawler::timeout(QObject *object)
 QUrl WebCrawler::normalizeUrl(const QString &partialUrl, const QUrl &baseUrl) const
 {
     /// Ignore "mailto:" links
-    if (partialUrl.startsWith(QLatin1String("mailto:")))
+    if (partialUrl.contains(QLatin1String("mailto:")))
         return QUrl();
 
     /// Fix some HTML-encodings
