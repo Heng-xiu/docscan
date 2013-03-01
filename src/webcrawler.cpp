@@ -36,7 +36,7 @@
 static const QStringList blacklistHosts = QStringList() << QLatin1String("www.nad.riksarkivet.se") << QLatin1String("nad.riksarkivet.se");
 
 WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
-    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_baseHost(QUrl(baseUrl).host()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_terminating(false), m_runningDownloads(0)
+    : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_baseHost(QUrl(baseUrl).host()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_terminating(false), m_shootingNextDownload(false), m_runningDownloads(0)
 {
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
@@ -91,25 +91,25 @@ void WebCrawler::startSearch(int numExpectedHits)
 
 bool WebCrawler::isAlive()
 {
-    return !m_terminating && m_runningDownloads > 0;
+    return !m_terminating || m_shootingNextDownload || m_runningDownloads > 0;
 }
 
 bool WebCrawler::visitNextPage()
 {
     int startedDownloads = 0;
 
+    bool numExpectedHitsReached = true;
+    for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
+        numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
+    }
+    if (numExpectedHitsReached) {
+        emit report(QString(QLatin1String("<webcrawler numexpectedhitsreached=\"%1\" />\n")).arg(m_numExpectedHits));
+        return false;
+    }
+
     while (m_runningDownloads < m_maxParallelDownloads) {
         if (m_runningDownloads >= m_maxParallelDownloads || m_queuedUrls.isEmpty())
             break;
-        bool numExpectedHitsReached = true;
-        for (QList<Filter>::ConstIterator it = m_filterSet.constBegin(); it != m_filterSet.constEnd(); ++it) {
-            numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
-        }
-        if (numExpectedHitsReached) {
-            emit report(QString(QLatin1String("<webcrawler numexpectedhitsreached=\"%1\" />\n")).arg(m_numExpectedHits));
-            break;
-        }
-
         const QString url = m_queuedUrls.first();
         m_queuedUrls.removeFirst();
 
@@ -280,6 +280,7 @@ void WebCrawler::finishedDownload()
     qApp->processEvents();
     --m_runningDownloads;
 
+    m_shootingNextDownload = true;
     QTimer::singleShot(m_interDownloadDelay, this, SLOT(singleShotNextDownload()));
 
     reply->deleteLater();
@@ -301,6 +302,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
 
 void WebCrawler::singleShotNextDownload()
 {
+    m_shootingNextDownload = false;
     bool downloadStarted = visitNextPage();
 
     if (!downloadStarted && m_runningDownloads == 0) {
