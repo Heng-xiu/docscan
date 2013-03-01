@@ -36,7 +36,7 @@ public:
 };
 
 NetworkAccessManager::NetworkAccessManager(QObject *parent)
-    : QNetworkAccessManager(parent), m_userAgentList(QStringList() << QLatin1String("Mozilla/5.0 (X11; Linux i686; rv:10.0.6) Gecko/20100101 Firefox/10.0.6") << QLatin1String("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1"))
+    : QNetworkAccessManager(parent), m_userAgentList(QStringList() << QLatin1String("Opera/9.80 (Windows NT 5.1; U; en) Presto/2.10.289 Version/12.01") << QLatin1String("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) konqueror/4.9.1 Safari/534.34") << QLatin1String("BlackBerry8520/5.0.0.592 Profile/MIDP-2.1 Configuration/CLDC-1.1 VendorID/168") << QLatin1String("Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)") << QLatin1String("Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)") << QLatin1String("yacybot (freeworld/global; amd64 Linux 2.6.34; java 1.6.0_22; Europe/en) http://yacy.net/bot.html") << QLatin1String("Mozilla/5.0 (X11; Linux i686; rv:10.0.6) Gecko/20100101 Firefox/10.0.6") << QLatin1String("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1"))
 {
     setCookieJar(new CookieJar(this));
     qsrand(time(NULL));
