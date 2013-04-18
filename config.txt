@@ -1,18 +1,20 @@
-logcollector=/tmp/log.xml
+logcollector=/tmp/utf-8-fragestallningar.xml
 
 finder:numhits=15
 
 #searchenginebing=filetype:doc abc
-searchenginegoogle=( filetype:odt site:pl )
+#searchenginegoogle=( filetype:odt site:pl )
 #searchenginegoogle=site:es ( filetype:docx | filetype:xlsx | filetype:pptx )
 #fromlogfilefilefinder=/tmp/log2.xml
 #fromlogfiledownloader=/tmp/log2.xml
 
-#filter=*.docx
-#filesystemscan=/tmp/a
+filter=*.pdf
+filesystemscan=/tmp/riksarkivet
 
 #urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
-urldownloader=/tmp/odt/%{h:4}/%{h}_%{s}
+urldownloader=/tmp/riksarkivet-result/%{h:4}/%{h}_%{s}
 
-fileanalyzer=NULL
-#fileanalyzer=multiplexer
+#fileanalyzer=NULL
+fileanalyzer=multiplexer
+
+jhove=/home/fish/bin/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf

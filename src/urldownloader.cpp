@@ -269,7 +269,8 @@ void UrlDownloader::finished()
                 output.close();
 
                 if (domain.isEmpty()) {
-                    qWarning() << "Domain is empty, host was" << host << "  url was" << reply->url();
+                    if (!reply->url().isLocalFile())
+                        qWarning() << "Domain is empty, host was" << host << "  url was" << reply->url();
                 } else {
                     if (m_domainCount.contains(domain))
                         m_domainCount[domain] = m_domainCount[domain] + 1;

@@ -111,7 +111,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
-        metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
+        metaText.append(QString("<file size=\"%1\" />\n").arg(fi.size()));
 
         /// guess and evaluate editor (a.k.a. creator)
         QString creator = wrapper->info("Creator");

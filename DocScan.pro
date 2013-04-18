@@ -19,7 +19,7 @@ SOURCES += src/main.cpp \
     src/fileanalyzerabstract.cpp src/fileanalyzerrtf.cpp  \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
     src/fileanalyzerodf.cpp src/watchdog.cpp \
-    src/logcollector.cpp \
+    src/logcollector.cpp src/popplerwrapper.cpp \
     src/general.cpp src/urldownloader.cpp \
     src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
@@ -38,7 +38,7 @@ HEADERS += src/searchengineabstract.h \
     src/logcollector.h src/fromlogfile.h \
     src/general.h src/urldownloader.h \
     src/fileanalyzeropenxml.h src/fileanalyzerrtf.h \
-    src/filefinder.h \
+    src/filefinder.h src/popplerwrapper.h \
     src/filesystemscan.h \
     src/webcrawler.h \
     src/fileanalyzermultiplexer.h \
@@ -53,9 +53,8 @@ HEADERS += src/wv2/word95_helper.h src/wv2/global.h src/wv2/word_helper.h src/wv
   src/wv2/handlers.h src/wv2/convert.h src/wv2/annotations.h  src/wv2/parser9x.h \
   src/wv2/headers97.h src/wv2/wv2version.h src/wv2/olestream.h src/wv2/properties97.h \
   src/wv2/parserfactory.h src/wv2/parser.h src/wv2/parser95.h src/wv2/textconverter.h \
-  src/wv2/graphics.h src/wv2/fonts.h src/wv2/ms_odraw.h src/wv2/headers.h \
-  src/wv2/generator/template-Word95.h src/wv2/generator/template-Word97.h \
-  src/wv2/generator/template-conv.h src/wv2/lists.h src/wv2/wv2_export.h src/wv2/parser97.h \
+  src/wv2/graphics.h src/wv2/fonts.h src/wv2/headers.h \
+  src/wv2/lists.h src/wv2/wv2_export.h src/wv2/parser97.h \
   src/wv2/crc32.h src/wv2/paragraphproperties.h src/wv2/fields.h src/wv2/functor.h \
   src/wv2/footnotes97.h src/wv2/word95_generated.h src/wv2/ustring.h src/wv2/olestorage.h \
   src/wv2/word97_generated.h src/wv2/wvlog.h src/wv2/functordata.h src/wv2/sharedptr.h \
@@ -111,13 +110,10 @@ SOURCES += src/rtf-qt/Tokenizer.cpp src/rtf-qt/IgnoredDestination.cpp \
 INCLUDEPATH += src/wv2/generator src/wv2/ src/rtf-qt/
 
 
-# load and parse PDF files
-LIBS += -lpoppler-qt4
-
 # load and parse zip'ed files (e.g. OpenDocument files)
 LIBS += -lquazip
 
 unix {
     CONFIG += link_pkgconfig
-    PKGCONFIG += libgsf-1 glib-2.0
+    PKGCONFIG += libgsf-1 glib-2.0 poppler-qt4 poppler-cpp poppler
 }

@@ -225,7 +225,7 @@ QMap<QString, QString> FileAnalyzerAbstract::guessProgram(const QString &program
         result["based-on"] = "openoffice";
     } else if (text.startsWith("pdfscanlib ")) {
         static const QRegExp pdfscanlibVersion("v(\\d+(\\.\\d+)+)\\b");
-        result["manufacturer"] = "???";
+        result["manufacturer"] = "kodak?";
         result["product"] = "pdfscanlib";
         if (pdfscanlibVersion.indexIn(text) >= 0)
             result["version"] = pdfscanlibVersion.cap(1);
@@ -753,7 +753,7 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     QString bName = fontName;
     bName = bName.replace(QRegExp(QLatin1String("((Arial|Times|Courier)\\S*)(PS)?MT")), QLatin1String("\\1"));
     bool keepRomanAsSuffix = bName.startsWith(QLatin1String("TimesNewRoman"));
-    bName = bName.replace(QRegExp(QLatin1String("(PS|FK)?[_-,.+]?(Semi(bold(It)?)?|Medium(It(alic)?|Oblique)?|Bold(It(alic)?|Oblique)?|Ital(ic)?|Light(It(alic)?|Oblique)?|Heavy(It(alic)?|Oblique)?|Roman|Upright|Regu(lar)?(It(alic)?|Oblique)?|Book(It(alic)?|Oblique)?|SC)(H|MT|[T]?OsF)?")), QLatin1String(""));
+    bName = bName.replace(QRegExp(QLatin1String("(PS|FK)?[_-,.+]?(Semi(bold(It)?)?|Medium(It(alic)?|Oblique)?|Bold(It(alic)?|Oblique)?|Ital(ic)?|Light(It(alic)?|Oblique)?|Heavy(It(alic)?|Oblique)?|Roman|Upright|Regu(lar)?(It(alic)?|Oblique)?|Book(It(alic)?|Oblique)?|SC)(H|MT|[T]?OsF|PS)?")), QLatin1String(""));
     if (keepRomanAsSuffix) bName = bName.replace(QLatin1String("TimesNew"), QLatin1String("TimesNewRoman"));
     beautifiedName[""] = DocScan::xmlify(bName);
 
