@@ -55,6 +55,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     bool jhoveWellformedAndValid = false;
     QString jhovePDFversion = QString::null;
     QString jhovePDFprofile = QString::null;
+    QString jhoveStandardOutput = QString::null;
     QString jhoveErrorOutput = QString::null;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
@@ -62,14 +63,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhove.start(QLatin1String("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
-            const QString jhoveOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1Char('#'));
-            if (!jhoveOutput.isEmpty()) {
-                jhoveIsPDF = jhoveOutput.contains(QLatin1String("Format: PDF"));
-                jhoveWellformedAndValid = jhoveOutput.contains(QLatin1String("Status: Well-Formed and valid"));
+            jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1String("###"));
+            if (!jhoveStandardOutput.isEmpty()) {
+                jhoveIsPDF = jhoveStandardOutput.contains(QLatin1String("Format: PDF"));
+                jhoveWellformedAndValid = jhoveStandardOutput.contains(QLatin1String("Status: Well-Formed and valid"));
                 static const QRegExp pdfVersionRegExp(QLatin1String("\\bVersion: ([^#]+)#"));
-                jhovePDFversion = pdfVersionRegExp.indexIn(jhoveOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
+                jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
                 static const QRegExp pdfProfileRegExp(QLatin1String("\\bProfile: ([^#]+)(#|$)"));
-                jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
+                jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
             } else {
                 jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data());
                 qWarning() << "Output of jhove is empty, stderr is " << jhoveErrorOutput;
@@ -103,6 +104,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     metaText.append(QString(QLatin1String("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
                 if (!jhovePDFprofile.isEmpty())
                     metaText.append(QString(QLatin1String("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QLatin1String("Linearized PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("Tagged PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level A")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level B")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/X-3")) ? QLatin1String("yes") : QLatin1String("no")));
+                if (!jhoveStandardOutput.isEmpty())
+                    metaText.append(QString(QLatin1String("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
                 if (!jhoveErrorOutput.isEmpty())
                     metaText.append(QString(QLatin1String("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput)));
                 metaText.append(QLatin1String("</jhove>\n"));
