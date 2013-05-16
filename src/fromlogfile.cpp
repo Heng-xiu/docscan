@@ -43,7 +43,7 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
 
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
-            QUrl url(DocScan::dexmlify(hitRegExp.cap(1)));
+            QUrl url = QUrl::fromLocalFile(DocScan::dexmlify(hitRegExp.cap(1)));
             const QString name = url.toString();
             if (filenameRegExp.isEmpty() || filenameRegExp.indexIn(name) >= 0) {
                 m_urlSet.insert(url);

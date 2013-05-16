@@ -158,8 +158,10 @@ void UrlDownloader::finished()
         if (domainRegExp.indexIn(host) >= 0) {
             domain = domainRegExp.cap(0);
             filename = filename.replace("%{d}", domain);
-        } else
+        } else if (!host.isEmpty())
             filename = filename.replace("%{d}", host);
+        else
+            filename = filename.replace("%{d}", QLatin1String("DOMAIN"));
 
         static const QRegExp dateTimeRegExp("%\\{D:([-_%a-zA-Z0-9]+)\\}");
         int p = -1;
