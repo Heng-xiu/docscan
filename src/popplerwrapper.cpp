@@ -65,55 +65,63 @@ public:
 
     // Start a page.
     void startPage(int pageNum, GfxState */*state*/) {
-        logText.append(QString(QLatin1String("<page number=\"%1\">\n")).arg(pageNum));
-        currentPage = pageNum;
+        if (pageNum <= 10) {
+            logText.append(QString(QLatin1String("<page number=\"%1\">\n")).arg(pageNum));
+            currentPage = pageNum;
+        } else
+            currentPage = -1;
     }
 
     // End a page.
     virtual void endPage() {
-        poppler::page *page = m_document->create_page(currentPage - 1);
-        if (page != NULL) {
-            const QString cookedText = page != NULL ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
-            if (!cookedText.isEmpty())
-                logText.append(QString(QLatin1String("<text length=\"%1\">")).arg(page->text().length())).append(cookedText).append(QLatin1String("</text>\n"));
-            else
-                logText.append(QString(QLatin1String("<text length=\"%1\" />\n")).arg(page->text().length()));
-        }
+        if (currentPage >= 0) {
+            poppler::page *page = m_document->create_page(currentPage - 1);
+            if (page != NULL) {
+                const QString cookedText = page != NULL ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
+                if (!cookedText.isEmpty())
+                    logText.append(QString(QLatin1String("<text length=\"%1\">")).arg(page->text().length())).append(cookedText).append(QLatin1String("</text>\n"));
+                else
+                    logText.append(QString(QLatin1String("<text length=\"%1\" />\n")).arg(page->text().length()));
+            }
 
-        logText.append(QLatin1String("</page>\n"));
+            logText.append(QLatin1String("</page>\n"));
+        }
+        currentPage = -1;
     }
 
     void listImage(GfxState */*state*/, Object */*ref*/, Stream *str,
                    int width, int height,
                    GfxImageColorMap *colorMap,
                    GBool /*interpolate*/, GBool /*inlineImg*/) {
-        DocScan::XMLNode node;
-        node.name = QLatin1String("img");
+        if (currentPage >= 0) {
+            DocScan::XMLNode node;
+            node.name = QLatin1String("img");
 
-        switch (str->getKind()) {
-        case strCCITTFax:
-            node.attributes.insert(QLatin1String("type"), QLatin1String("ccitt"));
-            break;
-        case strDCT:
-            node.attributes.insert(QLatin1String("type"), QLatin1String("jpeg"));
-            break;
-        case strJPX:
-            node.attributes.insert(QLatin1String("type"), QLatin1String("jpx"));
-            break;
-        case strJBIG2:
-            node.attributes.insert(QLatin1String("type"), QLatin1String("jbig2"));
-            break;
-        default: {
-            /// nothing
+            switch (str->getKind()) {
+            case strCCITTFax:
+                node.attributes.insert(QLatin1String("type"), QLatin1String("ccitt"));
+                break;
+            case strDCT:
+                node.attributes.insert(QLatin1String("type"), QLatin1String("jpeg"));
+                break;
+            case strJPX:
+                node.attributes.insert(QLatin1String("type"), QLatin1String("jpx"));
+                break;
+            case strJBIG2:
+                node.attributes.insert(QLatin1String("type"), QLatin1String("jbig2"));
+                break;
+            default: {
+                /// nothing
+            }
+            }
+
+            node.attributes.insert(QLatin1String("width"), QString::number(width));
+            node.attributes.insert(QLatin1String("height"), QString::number(height));
+            if (colorMap != NULL)
+                node.attributes.insert(QLatin1String("bits"), QString::number(colorMap->getBits()));
+
+            logText.append(DocScan::xmlNodeToText(node));
         }
-        }
-
-        node.attributes.insert(QLatin1String("width"), QString::number(width));
-        node.attributes.insert(QLatin1String("height"), QString::number(height));
-        if (colorMap != NULL)
-            node.attributes.insert(QLatin1String("bits"), QString::number(colorMap->getBits()));
-
-        logText.append(DocScan::xmlNodeToText(node));
     }
 
     GBool tilingPatternFill(GfxState */*state*/, Gfx */*gfx*/, Catalog */*cat*/, Object */*str*/,
