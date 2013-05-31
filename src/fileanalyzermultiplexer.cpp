@@ -59,9 +59,11 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
     uncompressProcess.start(uncompressTool, arguments);
     if (uncompressProcess.waitForStarted(10000) && uncompressProcess.waitForFinished(60000)) {
         const QString uncompressedFile = tempFilename.left(tempFilename.length() - extensionWithDot.length());
-        const QString logText = QString(QLatin1String("<uncompress tool=\"%1\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile));
+        bool uncompressSuccess = uncompressProcess.exitCode() == 0;
+        const QString logText = QString(QLatin1String("<uncompress status=\"%5\" tool=\"%1\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QLatin1String("success") : QLatin1String("error"));
         emit analysisReport(logText);
-        analyzeFile(uncompressedFile);
+        if (uncompressSuccess)
+            analyzeFile(uncompressedFile);
         QFile::remove(uncompressedFile);
     }
 }
@@ -76,11 +78,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 
     if (filename.endsWith(QLatin1String(".xz"))) {
         uncompressAnalyzefile(filename, QLatin1String(".xz"), QLatin1String("unxz"));
-    } else  if (filename.endsWith(QLatin1String(".gz"))) {
+    } else if (filename.endsWith(QLatin1String(".gz"))) {
         uncompressAnalyzefile(filename, QLatin1String(".gz"), QLatin1String("gunzip"));
-    } else  if (filename.endsWith(QLatin1String(".bz2"))) {
+    } else if (filename.endsWith(QLatin1String(".bz2"))) {
         uncompressAnalyzefile(filename, QLatin1String(".bz2"), QLatin1String("bunzip2"));
-    } else  if (filename.endsWith(QLatin1String(".lzma"))) {
+    } else if (filename.endsWith(QLatin1String(".lzma"))) {
         uncompressAnalyzefile(filename, QLatin1String(".lzma"), QLatin1String("lzma"));
     } else if (filename.endsWith(".pdf")) {
         if (m_filters.contains(QLatin1String("*.pdf")))
