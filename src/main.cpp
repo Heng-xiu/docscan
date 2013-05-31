@@ -29,6 +29,7 @@
 #include "searchenginegoogle.h"
 #include "searchenginebing.h"
 #include "searchenginespringerlink.h"
+#include "fakedownloader.h"
 #include "urldownloader.h"
 // #include "cachedfilefinder.h"
 #include "filesystemscan.h"
@@ -133,6 +134,9 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "urldownloader =" << value;
                         downloader = new UrlDownloader(netAccMan, value);
                     }
+                } else if (key == "fakedownloader" && downloader == NULL) {
+                    qDebug() << "fakedownloader";
+                    downloader = new FakeDownloader(netAccMan);
                 } else if (key == "logcollector" && logCollector == NULL) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
@@ -210,7 +214,19 @@ int main(int argc, char *argv[])
     numHits = 0;
     webcrawlermaxvisitedpages = 0;
 
-    if (argc == 2 && evaluateConfigfile(QLatin1String(argv[argc - 1])) && logCollector != NULL && numHits > 0) {
+    if (argc != 2) {
+        fprintf(stderr, "Require single configuration file as parameter\n");
+        return 1;
+    } else if (!evaluateConfigfile(QLatin1String(argv[argc - 1]))) {
+        fprintf(stderr, "Evaluation of configuration file failed\n");
+        return 1;
+    } else if (logCollector == NULL) {
+        fprintf(stderr, "Failed to instanciate log collector\n");
+        return 1;
+    } else if (numHits <= 0) {
+        fprintf(stderr, "Number of expected hits is not positive\n");
+        return 1;
+    } else {
         WatchDog watchDog;
         if (fileAnalyzer != NULL) watchDog.addWatchable(fileAnalyzer);
         if (downloader != NULL) watchDog.addWatchable(downloader);
@@ -242,8 +258,5 @@ int main(int argc, char *argv[])
         qDebug() << "activeThreadCount" << QThreadPool::globalInstance()->activeThreadCount() << "   maxThreadCount" << QThreadPool::globalInstance()->maxThreadCount();
 
         return a.exec();
-    } else {
-        fprintf(stderr, "Require single configuration file as parameter\n");
-        return 1;
     }
 }
