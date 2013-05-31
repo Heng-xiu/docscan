@@ -198,11 +198,12 @@ void UrlDownloader::finished()
             }
         }
 
-        QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_").replace(QRegExp("_([a-z0-9]{1,4})$", Qt::CaseInsensitive), ".\\1");
+        QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_");
+        urlString = urlString.replace(QRegExp("_([a-z0-9]{1,4}([._](lzma|xz|gz|bz2))?)$", Qt::CaseInsensitive), ".\\1").replace(QRegExp("_(lzma|xz|gz|bz2)$", Qt::CaseInsensitive), ".\\1");
         filename = filename.replace("%{s}", urlString);
 
         /// make known file extensions lower-case
-        static const QStringList fileExtList = QStringList() << QLatin1String(".pdf") << QLatin1String(".odt") << QLatin1String(".doc") << QLatin1String(".docx") << QLatin1String(".rtf");
+        static const QStringList fileExtList = QStringList() << QLatin1String(".pdf") << QLatin1String(".pdf.xz") << QLatin1String(".pdf.lzma") << QLatin1String(".odt") << QLatin1String(".doc") << QLatin1String(".docx") << QLatin1String(".rtf");
         foreach(const QString &fileExt, fileExtList) {
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
@@ -210,7 +211,7 @@ void UrlDownloader::finished()
         if (urlString.contains(QLatin1String("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
             urlString = urlString.append(QLatin1String(".pdf"));
 
-        static const QRegExp fileExtensionRegExp(QLatin1String("[.](.{2,4})([?].+)?$"));
+        static const QRegExp fileExtensionRegExp(QLatin1String("[.](.{2,4}([.](lzma|xz|gz|bz2))?)([?].+)?$"));
         QString fileExtension = QString::null;
         if (fileExtensionRegExp.indexIn(filename) == 0 || (fileExtension = fileExtensionRegExp.cap(1)).isEmpty()) {
             const QString url = reply->url().toString().toLower();

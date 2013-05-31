@@ -55,6 +55,8 @@ private:
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
     FileAnalyzerRTF m_fileAnalyzerRTF;
     const QStringList &m_filters;
+
+    void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);
 };
 
 #endif // FILEANALYZERMULTIPLEXER_H
