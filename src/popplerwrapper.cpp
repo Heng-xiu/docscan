@@ -261,7 +261,8 @@ QStringList PopplerWrapper::fontNames() const
             }
             */
 
-            result << QString::fromStdString(fi.name()) + QLatin1Char('|') + fontType;
+            const QString fontFilename = fi.file().empty() ? QString() : QLatin1String("|FONTFILENAME:") + QString::fromStdString(fi.file());
+            result << QString::fromStdString(fi.name()) + QLatin1Char('|') + fontType + fontFilename + QLatin1String("|EMBEDDED:") + (fi.is_embedded() ? QLatin1Char('1') : QLatin1Char('0')) + QLatin1String("|SUBSET:") + (fi.is_subset() ? QLatin1Char('1') : QLatin1Char('0'));
         }
     }
     // after we are done with the iterator, it must be deleted

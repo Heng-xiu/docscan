@@ -57,13 +57,16 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString jhovePDFprofile = QString::null;
     QString jhoveStandardOutput = QString::null;
     QString jhoveErrorOutput = QString::null;
+    int jhoveExitCode = -1;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
         const QStringList arguments = QStringList() << QLatin1String("-n") << QLatin1String("17") << QLatin1String("/bin/bash") << m_jhoveShellscript << QLatin1String("-c") << m_jhoveConfigFile << QLatin1String("-m") << QLatin1String("PDF-hul") << filename;
         jhove.start(QLatin1String("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
+            jhoveExitCode = jhove.exitCode();
             jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1String("###"));
+            jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data()).replace(QLatin1Char('\n'), QLatin1String("###"));
             if (!jhoveStandardOutput.isEmpty()) {
                 jhoveIsPDF = jhoveStandardOutput.contains(QLatin1String("Format: PDF"));
                 jhoveWellformedAndValid = jhoveStandardOutput.contains(QLatin1String("Status: Well-Formed and valid"));
@@ -72,7 +75,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 static const QRegExp pdfProfileRegExp(QLatin1String("\\bProfile: ([^#]+)(#|$)"));
                 jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
             } else {
-                jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data());
                 qWarning() << "Output of jhove is empty, stderr is " << jhoveErrorOutput;
             }
         } else
@@ -95,8 +97,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (jhoveIsPDF) {
             /// insert data from jHove
-            metaText.append(QString(QLatin1String("<jhove wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QLatin1String("yes") : QLatin1String("no")));
-            if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveErrorOutput.isEmpty())
+            metaText.append(QString(QLatin1String("<jhove exitcode=\"%2\" wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QLatin1String("yes") : QLatin1String("no")).arg(jhoveExitCode));
+            if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
                 metaText.append(QLatin1String(" />\n"));
             else {
                 metaText.append(QLatin1String(">\n"));
@@ -107,7 +109,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (!jhoveStandardOutput.isEmpty())
                     metaText.append(QString(QLatin1String("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
                 if (!jhoveErrorOutput.isEmpty())
-                    metaText.append(QString(QLatin1String("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput)));
+                    metaText.append(QString(QLatin1String("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
                 metaText.append(QLatin1String("</jhove>\n"));
             }
         }
@@ -140,11 +142,17 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             QSet<QString> knownFonts;
             foreach(const QString &fi, fontNames) {
                 QStringList fields = fi.split(QLatin1Char('|'), QString::KeepEmptyParts);
-                if (fields.length() != 2) continue;
+                if (fields.length() < 2) continue;
                 const QString fontName = fields[0].replace(fontNameNormalizer, "");
+                QString fontFilename;
+                const int p1 = fi.indexOf(QLatin1String("|FONTFILENAME:"));
+                if (p1 > 0) {
+                    const int p2 = fi.indexOf(QLatin1String("|"), p1 + 4);
+                    fontFilename = fi.mid(p1 + 15, p2 - p1 - 15);
+                }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-                metaText.append(QString("<font>\n%1</font>").arg(guessFont(fontName, fields[1])));
+                metaText.append(QString("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>").arg(guessFont(fontName, fields[1])).arg(fi.contains(QLatin1String("|EMBEDDED:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fi.contains(QLatin1String("|SUBSET:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
             }
 
         }
