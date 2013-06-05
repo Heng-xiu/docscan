@@ -724,11 +724,14 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
     } else if (fontName.contains("OpenSymbol")) {
         license["type"] = "open";
         license["name"] = "LGPLv3?";
+    } else if (fontName.startsWith("MnSymbol")) {
+        license["type"] = "open";
+        license["name"] = "PD";
     } else if (fontName.startsWith("Gotham") || fontName.startsWith("NewLibrisSerif")) {
         license["type"] = "proprietary"; // fonts used by Forsakringskassan
     } else if (fontName.startsWith("Zapf") || fontName.startsWith("Frutiger")) {
         license["type"] = "proprietary";
-    } else if (fontName.startsWith("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew")) {
+    } else if (fontName.startsWith("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew") || fontName.startsWith("Georgia") || fontName == QLatin1String("Symbol")) {
         license["type"] = "proprietary"; // Microsoft
     } else if (fontName.startsWith("Calibri") || fontName.startsWith("Cambria")  || fontName.startsWith("Constantia") || fontName.startsWith("Candara") || fontName.startsWith("Corbel") || fontName.startsWith("Consolas")) {
         license["type"] = "proprietary"; // Microsoft ClearType Font Collection
@@ -742,7 +745,7 @@ QString FileAnalyzerAbstract::guessFont(const QString &fontName, const QString &
         license["type"] = "proprietary"; // MonoType's font as shipped with Windows
     } else if (fontName.startsWith("Bembo") || fontName.startsWith("Rockwell")) {
         license["type"] = "proprietary"; // MonoType
-    } else if (fontName.startsWith("ACaslon") || fontName.contains("EuroSans")) {
+    } else if (fontName.startsWith("ACaslon") || fontName.contains("EuroSans") || fontName.startsWith("MinionPro")) {
         license["type"] = "proprietary"; // Adobe
     } else if (fontName.contains("Officina")) {
         license["type"] = "proprietary"; // ITC
