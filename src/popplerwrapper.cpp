@@ -64,8 +64,8 @@ public:
     }
 
     // Start a page.
-    void startPage(int pageNum, GfxState */*state*/) {
-        if (pageNum <= 10) {
+    virtual void startPage(int pageNum, GfxState */*state*/, XRef */*xref*/) {
+        if (pageNum >= 0 && pageNum <= 16) {
             logText.append(QString(QLatin1String("<page number=\"%1\">\n")).arg(pageNum));
             currentPage = pageNum;
         } else
@@ -74,7 +74,7 @@ public:
 
     // End a page.
     virtual void endPage() {
-        if (currentPage >= 0) {
+        if (currentPage >= 0 && currentPage <= 16) {
             poppler::page *page = m_document->create_page(currentPage - 1);
             if (page != NULL) {
                 const QString cookedText = page != NULL ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
