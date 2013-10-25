@@ -27,6 +27,7 @@
 #include "popplerwrapper.h"
 #include "fileanalyzerpdf.h"
 #include "watchdog.h"
+#include "guessing.h"
 #include "general.h"
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
@@ -152,7 +153,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-                metaText.append(QString("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>").arg(guessFont(fontName, fields[1])).arg(fi.contains(QLatin1String("|EMBEDDED:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fi.contains(QLatin1String("|SUBSET:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
+                metaText.append(QString(QLatin1String("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QLatin1String("|EMBEDDED:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fi.contains(QLatin1String("|SUBSET:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
             }
 
         }

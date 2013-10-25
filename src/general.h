@@ -67,6 +67,8 @@ QString dexmlify(const QString &xml);
  * @return XML representation
  */
 QString formatDate(const QDate &date, const QString &base);
+
+QString formatMap(const QString &key, const QHash<QString, QString> &attrs);
 }
 
 #endif // GENERAL_H

@@ -23,7 +23,7 @@
 #define FILEANALYZERABSTRACT_H
 
 #include <QObject>
-#include <QMap>
+#include <QHash>
 
 #include "watchable.h"
 
@@ -65,13 +65,10 @@ protected:
 
     QString guessLanguage(const QString &text) const;
     QStringList runAspell(const QString &text, const QString &dictionary) const;
-    QMap<QString, QString> guessProgram(const QString &program) const;
+    QHash<QString, QString> guessProgram(const QString &program) const;
     QString guessTool(const QString &toolString, const QString &altToolString = QString::null) const;
-    QString guessFont(const QString &fontString, const QString &typeName = QString::null) const;
     QString formatDate(const QDate &date, const QString &base = QString::null) const;
     QString evaluatePaperSize(int mmw, int mmh) const;
-
-    QString formatMap(const QString &key, const QMap<QString, QString> &attrs) const;
 
 private:
     static QStringList aspellLanguages;
