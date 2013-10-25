@@ -24,12 +24,13 @@ SOURCES += src/main.cpp \
     src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
     src/filesystemscan.cpp \
-    src/webcrawler.cpp \
+    src/webcrawler.cpp src/fakedownloader.cpp \
     src/fileanalyzermultiplexer.cpp \
     src/fileanalyzercompoundbinary.cpp \
     src/geoip.cpp \
     src/searchenginespringerlink.cpp \
-    src/networkaccessmanager.cpp
+    src/networkaccessmanager.cpp \
+    src/guessing.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
@@ -40,12 +41,13 @@ HEADERS += src/searchengineabstract.h \
     src/fileanalyzeropenxml.h src/fileanalyzerrtf.h \
     src/filefinder.h src/popplerwrapper.h \
     src/filesystemscan.h \
-    src/webcrawler.h \
+    src/webcrawler.h src/fakedownloader.h \
     src/fileanalyzermultiplexer.h \
     src/fileanalyzercompoundbinary.h \
     src/geoip.h \
     src/searchenginespringerlink.h \
-    src/networkaccessmanager.h
+    src/networkaccessmanager.h \
+    src/guessing.h
 
 # wv2
 HEADERS += src/wv2/word95_helper.h src/wv2/global.h src/wv2/word_helper.h src/wv2/styles.h \
@@ -112,6 +114,9 @@ INCLUDEPATH += src/wv2/generator src/wv2/ src/rtf-qt/
 
 # load and parse zip'ed files (e.g. OpenDocument files)
 LIBS += -lquazip
+
+# load compressed files
+LIBS += -llzma
 
 unix {
     CONFIG += link_pkgconfig
