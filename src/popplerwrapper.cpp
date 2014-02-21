@@ -286,12 +286,15 @@ int PopplerWrapper::numPages() const
     return m_document->pages();
 }
 
-QString PopplerWrapper::plainText() const
+QString PopplerWrapper::plainText(int *length) const
 {
+    if (length != 0) *length = 0;
     QString result;
     for (int i = 0; i < numPages() && result.length() < 16384; ++i) {
         poppler::page *page = m_document->create_page(i);
-        result.append(QString::fromStdString(page->text().to_latin1()));
+        const QString text = QString::fromStdString(page->text().to_latin1());
+        if (length != 0) *length += text.length();
+        result.append(text);
     }
     return result;
 }
@@ -319,7 +322,7 @@ bool PopplerWrapper::isEncrypted() const
     return m_document->is_encrypted();
 }
 
-QString PopplerWrapper::imagesLog()
+QString PopplerWrapper::popplerLog()
 {
     ImageInfoOutputDev iiod(m_document);
 

@@ -51,10 +51,10 @@ public:
     QDateTime date(const QString &field) const;
 
     int numPages() const;
-    QString plainText() const;
+    QString plainText(int *length = 0) const;
     QSizeF pageSize() const;
 
-    QString imagesLog();
+    QString popplerLog();
 
     bool isLocked() const;
     bool isEncrypted() const;
