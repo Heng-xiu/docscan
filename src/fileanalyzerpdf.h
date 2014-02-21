@@ -44,7 +44,7 @@ public:
 
     virtual bool isAlive();
 
-    void setupJhove(const QString &shellscript, const QString &configFile);
+    void setupJhove(const QString &shellscript, const QString &configFile, bool verbose);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -52,6 +52,7 @@ public slots:
 private:
     bool m_isAlive;
     QString m_jhoveShellscript, m_jhoveConfigFile;
+    bool m_jhoveVerbose;
 };
 
 #endif // FILEANALYZERPDF_H

@@ -31,7 +31,7 @@
 #include "general.h"
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null)
+    : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null), m_jhoveVerbose(false)
 {
     // nothing
 }
@@ -41,10 +41,11 @@ bool FileAnalyzerPDF::isAlive()
     return m_isAlive;
 }
 
-void FileAnalyzerPDF::setupJhove(const QString &shellscript, const QString &configFile)
+void FileAnalyzerPDF::setupJhove(const QString &shellscript, const QString &configFile, bool verbose)
 {
     m_jhoveShellscript = shellscript;
     m_jhoveConfigFile = configFile;
+    m_jhoveVerbose = verbose;
 }
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
@@ -107,7 +108,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     metaText.append(QString(QLatin1String("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
                 if (!jhovePDFprofile.isEmpty())
                     metaText.append(QString(QLatin1String("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QLatin1String("Linearized PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("Tagged PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level A")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level B")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/X-3")) ? QLatin1String("yes") : QLatin1String("no")));
-                if (!jhoveStandardOutput.isEmpty())
+                if (m_jhoveVerbose && !jhoveStandardOutput.isEmpty())
                     metaText.append(QString(QLatin1String("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
                 if (!jhoveErrorOutput.isEmpty())
                     metaText.append(QString(QLatin1String("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
@@ -193,15 +194,21 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!wrapper->isLocked()) {
             /// some functions are sensitive if PDF is locked
 
-            /// guess language using aspell
-            const QString text = wrapper->plainText();
-            /* Disabling aspell, computationally expensive
-            QString language = guessLanguage(text);
-            if (!language.isEmpty())
-                headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
-             */
-            bodyText = QString("<body length=\"%1\">\n").arg(text.length());
-            bodyText = bodyText.append(wrapper->imagesLog()).append(QLatin1String("</body>\n"));
+            if (textExtraction > teNone) {
+                int length = 0;
+                const QString text = wrapper->plainText(&length);
+                QString language;
+                if (textExtraction >= teAspell) {
+                    language = guessLanguage(text);
+                    if (!language.isEmpty())
+                        headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
+                }
+                bodyText = QString(QLatin1String("<body length=\"%1\"")).arg(length);
+                if (textExtraction >= teFullText)
+                    bodyText.append(QLatin1String(">\n")).append(wrapper->popplerLog()).append(QLatin1String("</body>\n"));
+                else
+                    bodyText.append(QLatin1String("/>\n"));
+            }
 
             /// look into first page for info
             int numPages = wrapper->numPages();

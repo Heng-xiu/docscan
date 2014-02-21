@@ -38,9 +38,13 @@ class FileAnalyzerAbstract : public QObject, public Watchable
 {
     Q_OBJECT
 public:
+    enum TextExtraction {teNone = 0, teLength = 5, teFullText = 10, teAspell = 15};
+
     static const QString licenseCategoryProprietary, licenseCategoryFreeware, licenseCategoryOpen;
 
     explicit FileAnalyzerAbstract(QObject *parent = 0);
+
+    void setTextExtraction(TextExtraction textExtraction);
 
 signals:
     /**
@@ -63,9 +67,10 @@ protected:
     static const QString creationDate, modificationDate;
     static const QRegExp microsoftToolRegExp;
 
+    TextExtraction textExtraction;
+
     QString guessLanguage(const QString &text) const;
     QStringList runAspell(const QString &text, const QString &dictionary) const;
-    QHash<QString, QString> guessProgram(const QString &program) const;
     QString guessTool(const QString &toolString, const QString &altToolString = QString::null) const;
     QString formatDate(const QDate &date, const QString &base = QString::null) const;
     QString evaluatePaperSize(int mmw, int mmh) const;

@@ -44,9 +44,9 @@ bool FileAnalyzerMultiplexer::isAlive()
     return m_fileAnalyzerODF.isAlive() || m_fileAnalyzerPDF.isAlive() || m_fileAnalyzerOpenXML.isAlive();
 }
 
-void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QString &configFile)
+void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QString &configFile, bool verbose)
 {
-    m_fileAnalyzerPDF.setupJhove(shellscript, configFile);
+    m_fileAnalyzerPDF.setupJhove(shellscript, configFile, verbose);
 }
 
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
