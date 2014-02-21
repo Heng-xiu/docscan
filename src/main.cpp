@@ -47,6 +47,8 @@ LogCollector *logCollector;
 FileAnalyzerAbstract *fileAnalyzer;
 int numHits, webcrawlermaxvisitedpages;
 QString jhoveShellscript, jhoveConfigFile;
+bool jhoveVerbose;
+FileAnalyzerAbstract::TextExtraction textExtraction;
 
 bool evaluateConfigfile(const QString &filename)
 {
@@ -69,16 +71,29 @@ bool evaluateConfigfile(const QString &filename)
                 QString key = line.left(i).simplified().toLower();
                 QString value = line.mid(i + 1).simplified();
 
-                if (key == "requiredcontent") {
+                if (key == "textextraction") {
+                    if (value.compare(QLatin1String("none"), Qt::CaseInsensitive) == 0)
+                        textExtraction = FileAnalyzerAbstract::teNone;
+                    else if (value.compare(QLatin1String("length"), Qt::CaseInsensitive) == 0)
+                        textExtraction = FileAnalyzerAbstract::teLength;
+                    else if (value.compare(QLatin1String("fulltext"), Qt::CaseInsensitive) == 0)
+                        textExtraction = FileAnalyzerAbstract::teFullText;
+                    else if (value.compare(QLatin1String("aspell"), Qt::CaseInsensitive) == 0)
+                        textExtraction = FileAnalyzerAbstract::teAspell;
+                    else
+                        qWarning() << "Invalid value for \"textExtraction\":" << value;
+                } else if (key == "requiredcontent") {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
                 } else if (key == "jhove") {
                     const QStringList param = value.split(QChar('|'));
-                    if (param.count() == 2) {
+                    if (param.count() >= 2) {
                         jhoveShellscript = param[0];
                         jhoveConfigFile = param[1];
+                        jhoveVerbose = param.count() >= 3 && (param[2].compare(QLatin1String("true"), Qt::CaseInsensitive) == 0 || param[2].compare(QLatin1String("yes"), Qt::CaseInsensitive) == 0);
                         qDebug() << "jhoveShellscript =" << jhoveShellscript;
                         qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
+                        qDebug() << "jhoveVerbose =" << jhoveVerbose;
                     }
                 } else if (key == "webcrawler:starturl") {
                     startUrl = QUrl(value);
@@ -213,6 +228,7 @@ int main(int argc, char *argv[])
     finder = NULL;
     numHits = 0;
     webcrawlermaxvisitedpages = 0;
+    textExtraction = FileAnalyzerAbstract::teNone;
 
     if (argc != 2) {
         fprintf(stderr, "Require single configuration file as parameter\n");
@@ -228,7 +244,10 @@ int main(int argc, char *argv[])
         return 1;
     } else {
         WatchDog watchDog;
-        if (fileAnalyzer != NULL) watchDog.addWatchable(fileAnalyzer);
+        if (fileAnalyzer != NULL) {
+            watchDog.addWatchable(fileAnalyzer);
+            fileAnalyzer->setTextExtraction(textExtraction);
+        }
         if (downloader != NULL) watchDog.addWatchable(downloader);
         if (finder != NULL) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
@@ -236,11 +255,11 @@ int main(int argc, char *argv[])
         if (!jhoveShellscript.isEmpty() && !jhoveConfigFile.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != NULL)
-                fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile);
+                fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
             else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
                 if (fileAnalyzerMultiplexer != NULL)
-                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile);
+                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
             }
         }
 
