@@ -1,6 +1,7 @@
-logcollector=/tmp/utf-8-fragestallningar.xml
+logcollector=/tmp/pdf-fonts.xml
 
-finder:numhits=15
+textExtraction=none
+finder:numhits=1000
 
 #searchenginebing=filetype:doc abc
 #searchenginegoogle=( filetype:odt site:pl )
@@ -8,13 +9,15 @@ finder:numhits=15
 #fromlogfilefilefinder=/tmp/log2.xml
 #fromlogfiledownloader=/tmp/log2.xml
 
-filter=*.pdf
-filesystemscan=/tmp/riksarkivet
+filter=*.pdf|*.pdf.xz|*.pdf.lzma
+filesystemscan=/tmp/pdf
 
 #urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
-urldownloader=/tmp/riksarkivet-result/%{h:4}/%{h}_%{s}
+#urldownloader=/tmp/pdf-result/%{h:4}/%{h}_%{s}
+fakedownloader=true
 
 #fileanalyzer=NULL
 fileanalyzer=multiplexer
+#fileanalyzer=pdf
 
 jhove=/home/fish/bin/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
