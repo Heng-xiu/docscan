@@ -121,7 +121,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// Bitstream
     } else if (fontName.contains("Helvetica") && fontName.contains("Neue")) {
         license["type"] = "proprietary"; /// Neue Helvetica by Linotype
-    } else if (fontName.startsWith("Times") || fontName.startsWith("Comic Sans") || ontName.startsWith("ComicSans") || fontName.startsWith("Tahoma") || fontName.contains("Helvetica") || fontName.contains("Wingdings")) {
+    } else if (fontName.startsWith("Times") || fontName.startsWith("Comic Sans") || fontName.startsWith("ComicSans") || fontName.startsWith("Tahoma") || fontName.contains("Helvetica") || fontName.contains("Wingdings")) {
         license["type"] = "proprietary";
     } else if (fontName.startsWith("Bookman-") /* not "BookmanOldStyle"? */ || fontName.startsWith("SymbolMT") || fontName.startsWith("GillAltOneMT")) {
         license["type"] = "proprietary"; /// MonoType's font as shipped with Windows
