@@ -60,7 +60,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "open";
     } else if (fontName.contains("Vera") || fontName.contains("Bera")) {
         license["type"] = "open";
-    } else if (fontName.startsWith("TeX-") || fontName.startsWith("PazoMath")) { /// TeX fonts
+    } else if (fontName.startsWith("TeX-") || fontName.startsWith("TeXPa") || fontName.startsWith("PazoMath")) { /// TeX fonts
         license["type"] = "open"; /// most likely
     } else if (fontName.contains("Computer Modern")) { /// TeX fonts
         license["type"] = "open";
@@ -82,6 +82,8 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["name"] = "PD";
     } else if (fontName.contains("Menlo")) {
         license["type"] = "open"; /// Apple's new font based on Bitstream's Vera
+    } else if (fontName.startsWith("Geneva")) {
+        license["type"] = "proprietary"; /// Apple
     } else if (fontName.startsWith("Chantilly") || fontName.contains("BibleScr")) {
         license["type"] = "free"; /// unknown origin, but seems to be free for download
     } else if (fontName.startsWith("Bohemian-typewriter")) {
@@ -106,7 +108,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// ESRI (maybe free-as-in-beer fonts?)
     } else if (fontName.startsWith("Interstate")) {
         license["type"] = "proprietary"; /// Font Bureau
-    } else if (fontName.startsWith("Marlett") || fontName.startsWith("Impact") || fontName.startsWith("Webdings") || fontName.contains("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("CourierNew") || fontName.startsWith("Courier New") || fontName.startsWith("Georgia") || fontName == QLatin1String("Symbol")) {
+    } else if (fontName.startsWith("MicrosoftSansSerif") || fontName.startsWith("Marlett") || fontName.startsWith("Impact") || fontName.startsWith("Comic Sans") || fontName.startsWith("ComicSans") || fontName.startsWith("Webdings") || fontName.contains("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("Times New Roman") || fontName.startsWith("CourierNew") || fontName.startsWith("Courier New") || fontName.startsWith("Georgia") || fontName == QLatin1String("Symbol")) {
         license["type"] = "proprietary"; /// Microsoft
     } else if (fontName.startsWith("Nyala") || fontName.startsWith("Sylfaen") || fontName.startsWith("BookAntiqua") || fontName.startsWith("Lucinda") || fontName.startsWith("Trebuchet") || fontName.startsWith("Franklin Gothic") || fontName.startsWith("FranklinGothic") || fontName.startsWith("Century Schoolbook") || fontName.startsWith("CenturySchoolbook")) {
         license["type"] = "proprietary"; /// Microsoft
@@ -122,15 +124,15 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// Bitstream
     } else if (fontName.contains("Helvetica") && fontName.contains("Neue")) {
         license["type"] = "proprietary"; /// Neue Helvetica by Linotype
-    } else if (fontName.startsWith("Times") || fontName.startsWith("Comic Sans") || fontName.startsWith("ComicSans") || fontName.startsWith("Tahoma") || fontName.contains("Helvetica") || fontName.contains("Wingdings")) {
+    } else if (fontName.startsWith("Times") || fontName.startsWith("Tahoma") || fontName.contains("Helvetica") || fontName.contains("Wingdings")) {
         license["type"] = "proprietary";
     } else if (fontName.startsWith("Bookman-") /* not "BookmanOldStyle"? */ || fontName.startsWith("SymbolMT") || fontName.startsWith("GillAltOneMT")) {
         license["type"] = "proprietary"; /// MonoType's font as shipped with Windows
     } else if (fontName.startsWith("BookmanOldStyle") || fontName.startsWith("Centaur") || fontName.startsWith("Calisto") || fontName.startsWith("CenturyGothic") || fontName.startsWith("Bembo") || fontName.startsWith("GillSans") ||  fontName.startsWith("Rockwell") || fontName.startsWith("Lucida") || fontName.startsWith("Perpetua")) {
         license["type"] = "proprietary"; /// MonoType
-    } else if (fontName.startsWith("AmericanTypewriter") || fontName.startsWith("ACaslon") || fontName.startsWith("AGaramond") || fontName.startsWith("GaramondPremrPro") || fontName.contains("EuroSans") || fontName.startsWith("Minion") || fontName.startsWith("Myriad")) {
+    } else if (fontName.startsWith("KunstlerScript") || fontName.startsWith("AmericanTypewriter") || fontName.startsWith("ACaslon") || fontName.startsWith("AGaramond") || fontName.startsWith("GaramondPremrPro") || fontName.contains("EuroSans") || fontName.startsWith("Minion") || fontName.startsWith("Myriad")) {
         license["type"] = "proprietary"; /// Adobe
-    } else if (fontName.startsWith("AvantGarde") || fontName.startsWith("ItcEras") || fontName.contains("Officina") || fontName.contains("Kabel") || fontName.contains("Cheltenham")) {
+    } else if (fontName.startsWith("EdwardianScriptITC") || fontName.startsWith("AvantGarde") || fontName.startsWith("ItcEras") || fontName.contains("Officina") || fontName.contains("Kabel") || fontName.contains("Cheltenham")) {
         license["type"] = "proprietary"; /// ITC
     } else if (fontName.contains("BellGothic")) {
         license["type"] = "proprietary"; /// Mergenthaler Linotype/AT&T
@@ -155,11 +157,11 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         const QString bNameOriginal = bName;
         bName = bName.trimmed();
         static const QStringList suffixes = QStringList()
-                                            << QLatin1String("MT") << QLatin1String("OsF") << QLatin1String("PS") << QLatin1String("BE") << QLatin1String("MS") << QLatin1String("SC") << QLatin1String("LT") << QLatin1String("LF") << QLatin1String("BT") << QLatin1String("-BT") << QLatin1String("Bk") << QLatin1String("T")
+                                            << QLatin1String("MT") << QLatin1String("OsF") << QLatin1String("PS") << QLatin1String("BE") << QLatin1String("MS") << QLatin1String("SC") << QLatin1String("LT") << QLatin1String("LF") << QLatin1String("-BT") << QLatin1String("BT") << QLatin1String("Bk") << QLatin1String("T")
                                             << QLatin1String("-Normal") << QLatin1String("-Book") << QLatin1String("-Md") << QLatin1String("-Plain") << QLatin1String("-Medium") << QLatin1String("-Medi") << QLatin1String("-MediumItalic") << QLatin1String("-Semibold") << QLatin1String("-SmbdIt") << QLatin1String("-Caps") << QLatin1String("-Roman") << QLatin1String("-Roma") << QLatin1String("-Regular") << QLatin1String("-Regu") << QLatin1String("-DisplayRegular")
-                                            << QLatin1String("-Demi") << QLatin1String("-Blk") << QLatin1String("-Black") << QLatin1String("-Blac") << QLatin1String("Bla") << QLatin1String("-Ultra") << QLatin1String("-Extra") << QLatin1String("-ExtraBold") << QLatin1String("Obl") << QLatin1String("-Hv") << QLatin1String("-HvIt") << QLatin1String("-Heavy") << QLatin1String("-Heav")  << QLatin1String("-BoldIt") << QLatin1String("-BoldItal") << QLatin1String("-BoldItalicB") << QLatin1String("-BdIt") << QLatin1String("-Bd") << QLatin1String("-It")
+                                            << QLatin1String("-Demi") << QLatin1String("-Blk") << QLatin1String("-Black") << QLatin1String("-Blac") << QLatin1String("Bla") << QLatin1String("-Ultra") << QLatin1String("-Extra") << QLatin1String("-ExtraBold") << QLatin1String("Obl") << QLatin1String("-Hv") << QLatin1String("-HvIt") << QLatin1String("-Heavy") << QLatin1String("-Heav") << QLatin1String("-BoldIt") << QLatin1String("-BoldCn") << QLatin1String("-BoldItal") << QLatin1String("-BoldItalicB") << QLatin1String("-BdIt") << QLatin1String("-Bd") << QLatin1String("-It")
                                             << QLatin1String("-Condensed") << QLatin1String("-Light") << QLatin1String("-Ligh") << QLatin1String("-Lt") << QLatin1String("-Slant") << QLatin1String("-LightCond") << QLatin1String("Lig") << QLatin1String("-Narrow")
-                                            << QLatin1String("Ext") << QLatin1String("SWA") << QLatin1String("Std") << QLatin1String("-Identity-H") << QLatin1String("-DTC");
+                                            << QLatin1String("Ext") << QLatin1String("Narrow") << QLatin1String("SWA") << QLatin1String("Std") << QLatin1String("-Identity-H") << QLatin1String("-DTC");
         foreach(const QString &suffix, suffixes) {
             if (bName.endsWith(suffix))
                 bName = bName.left(bName.length() - suffix.length());
@@ -176,6 +178,9 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         bName.replace(teXFonts, QLatin1String("\\1"));
         static const QRegExp adobePrefix = QRegExp(QLatin1String("^A(Caslon|Garamond)"));
         bName.replace(adobePrefix, QLatin1String("\\1"));
+        static const QVector<QPair<QString, QString> > microsoftNamesWithSpaces = QVector<QPair<QString, QString> >() << QPair<QString, QString>(QLatin1String("Times New Roman"), QLatin1String("TimesNewRoman")) << QPair<QString, QString>(QLatin1String("Courier New"), QLatin1String("CourierNew")) << QPair<QString, QString>(QLatin1String("Comic Sans"), QLatin1String("ComicSans"));
+        for (QVector<QPair<QString, QString> >::ConstIterator it = microsoftNamesWithSpaces.constBegin(); it != microsoftNamesWithSpaces.constEnd(); ++it)
+            bName.replace(it->first, it->second);
         bNameChanged = bName != bNameOriginal;
     }
     beautifiedName[""] = DocScan::xmlify(bName);
