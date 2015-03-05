@@ -37,6 +37,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
 {
     QHash<QString, QString> name, beautifiedName, license, technology;
     name[""] = fontName;
+    license["type"] = "unknown"; ///< default: license type is unknown
 
     if (fontName.contains("Libertine")) {
         license["type"] = "open";
