@@ -151,7 +151,8 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     QString bName = fontName;
     bool bNameChanged = true;
     while (bNameChanged) {
-        const QString bNameOriginal = bName.trimmed();
+        const QString bNameOriginal = bName;
+        bName = bName.trimmed();
         static const QStringList suffixes = QStringList()
                                             << QLatin1String("MT") << QLatin1String("OsF") << QLatin1String("PS") << QLatin1String("BE") << QLatin1String("MS") << QLatin1String("SC") << QLatin1String("LT") << QLatin1String("LF") << QLatin1String("BT") << QLatin1String("-BT") << QLatin1String("Bk") << QLatin1String("T")
                                             << QLatin1String("-Normal") << QLatin1String("-Book") << QLatin1String("-Md") << QLatin1String("-Plain") << QLatin1String("-Medium") << QLatin1String("-Medi") << QLatin1String("-MediumItalic") << QLatin1String("-Semibold") << QLatin1String("-SmbdIt") << QLatin1String("-Caps") << QLatin1String("-Roman") << QLatin1String("-Roma") << QLatin1String("-Regular") << QLatin1String("-Regu") << QLatin1String("-DisplayRegular")
