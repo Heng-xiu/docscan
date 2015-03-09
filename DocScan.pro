@@ -23,7 +23,7 @@ SOURCES += src/main.cpp \
     src/general.cpp src/urldownloader.cpp \
     src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
-    src/filesystemscan.cpp \
+    src/filesystemscan.cpp src/filefinderlist.cpp \
     src/webcrawler.cpp src/fakedownloader.cpp \
     src/fileanalyzermultiplexer.cpp \
     src/fileanalyzercompoundbinary.cpp \
@@ -40,7 +40,7 @@ HEADERS += src/searchengineabstract.h \
     src/general.h src/urldownloader.h \
     src/fileanalyzeropenxml.h src/fileanalyzerrtf.h \
     src/filefinder.h src/popplerwrapper.h \
-    src/filesystemscan.h \
+    src/filesystemscan.h src/filefinderlist.h \
     src/webcrawler.h src/fakedownloader.h \
     src/fileanalyzermultiplexer.h \
     src/fileanalyzercompoundbinary.h \

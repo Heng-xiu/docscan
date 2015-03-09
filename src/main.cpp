@@ -38,6 +38,7 @@
 #include "webcrawler.h"
 #include "logcollector.h"
 #include "fromlogfile.h"
+#include "filefinderlist.h"
 
 NetworkAccessManager *netAccMan;
 QStringList filter;
@@ -135,6 +136,9 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == "filesystemscan" && finder == NULL) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
+                } else if (key == "filefinderlist" && finder == NULL) {
+                    qDebug() << "filefinderlist =" << value;
+                    finder = new FileFinderList(value);
                 } else if (key == "fromlogfilefilefinder" && finder == NULL) {
                     qDebug() << "fromlogfilefilefinder =" << value;
                     finder = new FromLogFileFileFinder(value, filter);
