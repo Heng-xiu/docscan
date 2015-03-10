@@ -66,13 +66,14 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
             analyzeFile(uncompressedFile);
         QFile::remove(uncompressedFile);
     }
+    QFile::remove(tempFilename); /// in case temporary file was not removed/replaced by uncompress process
 }
 
 void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
-    static const QRegExp odfExtension(QLatin1String(".od[pst]$"));
-    static const QRegExp openXMLExtension(QLatin1String(".(doc|ppt|xls)x$"));
-    static const QRegExp compoundBinaryExtension(QLatin1String(".(doc|ppt|xls)$"));
+    static const QRegExp odfExtension(QLatin1String("[.]od[pst]$"));
+    static const QRegExp openXMLExtension(QLatin1String("[.](doc|ppt|xls)x$"));
+    static const QRegExp compoundBinaryExtension(QLatin1String("[.](doc|ppt|xls)$"));
 
     qDebug() << "Analyzing file" << filename;
 
