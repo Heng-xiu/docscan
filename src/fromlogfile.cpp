@@ -38,8 +38,8 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
         const QString text = textStream.readAll();
         input.close();
 
-        static const QRegExp hitRegExp = QRegExp(QLatin1String("<filefinder\\b[^>]* event=\"hit\"\\b[^>]* href=\"([^\"]+)\""));
-        static const QRegExp filenameRegExp = filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
+        static const QRegExp hitRegExp = QRegExp(QStringLiteral("<filefinder\\b[^>]* event=\"hit\"\\b[^>]* href=\"([^\"]+)\""));
+        static const QRegExp filenameRegExp = filters.isEmpty() ? QRegExp() : QRegExp(QString(QStringLiteral("(^|/)%1$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QStringLiteral("[.]")).replace(QChar('*'), QStringLiteral(".*")));
 
         int p = -1;
         while ((p = hitRegExp.indexIn(text, p + 1)) >= 0) {
@@ -82,9 +82,9 @@ void FromLogFileDownloader::startParsingAndEmitting()
 {
     QFile input(m_logfilename);
     if (input.open(QFile::ReadOnly)) {
-        static QRegExp filenameRegExp = m_filters.isEmpty() ? QRegExp() : QRegExp(QString(QLatin1String("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QLatin1String("[.]")).replace(QChar('*'), QLatin1String(".*")));
-        static QRegExp hitRegExp = QRegExp(QLatin1String("<download[^>]* filename=\"([^\"]+)\"[^>]* status=\"success\"[^>]* url=\"([^\"]+)\""));
-        static QRegExp searchEngineNumResultsRegExp = QRegExp(QLatin1String("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
+        static QRegExp filenameRegExp = m_filters.isEmpty() ? QRegExp() : QRegExp(QString(QStringLiteral("(^|/)%1$")).arg(m_filters.join(QChar('|'))).replace(QChar('.'), QStringLiteral("[.]")).replace(QChar('*'), QStringLiteral(".*")));
+        static QRegExp hitRegExp = QRegExp(QStringLiteral("<download[^>]* filename=\"([^\"]+)\"[^>]* status=\"success\"[^>]* url=\"([^\"]+)\""));
+        static QRegExp searchEngineNumResultsRegExp = QRegExp(QStringLiteral("<searchengine\\b[^>]* numresults=\"([0-9]*)\""));
         int count = 0;
 
         QTextStream textStream(&input);
@@ -99,7 +99,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
                     ++count;
                 }
             } else if (searchEngineNumResultsRegExp.indexIn(line) >= 0)
-                emit report(QString(QLatin1String("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
+                emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
 
             line = textStream.readLine();
         }

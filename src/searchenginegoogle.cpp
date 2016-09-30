@@ -24,6 +24,7 @@
 #include <QRegExp>
 #include <QTextStream>
 #include <QDebug>
+#include <QUrlQuery>
 #include <QCoreApplication>
 
 #include "networkaccessmanager.h"
@@ -42,7 +43,9 @@ void SearchEngineGoogle::startSearch(int num)
     m_hitsPerPage = qMin(num, defaultHitsPerPage);
 
     QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
-    url.addQueryItem("q", m_searchTerm);
+    QUrlQuery query;
+    query.addQueryItem("q", m_searchTerm);
+    url.setQuery(query);
     m_numExpectedHits = num;
     m_currentPage = 0;
     m_numFoundHits = 0;
@@ -65,7 +68,7 @@ void SearchEngineGoogle::finished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QLatin1String("&#160;"), QLatin1String(" "));
+        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
 
         if (m_currentPage == 0) {
             /// Google has different layouts for web result pages, so different regular expressions are necessary
@@ -77,7 +80,7 @@ void SearchEngineGoogle::finished()
                 if (countHitsRegExp2.indexIn(htmlText) >= 0)
                     emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp2.cap(1).replace(QRegExp("[, .]+"), QString())));
                 else
-                    emit report(QLatin1String("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
+                    emit report(QStringLiteral("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
             }
         }
 
@@ -87,9 +90,9 @@ void SearchEngineGoogle::finished()
             QString urlText = searchHitRegExp.cap(1);
 
             /// Clean up Google's tracking URLs
-            if (urlText.startsWith(QLatin1String("/url?"))) {
-                int p1 = urlText.indexOf(QLatin1String("q="));
-                int p2 = urlText.indexOf(QLatin1String("&"), p1 + 1);
+            if (urlText.startsWith(QStringLiteral("/url?"))) {
+                int p1 = urlText.indexOf(QStringLiteral("q="));
+                int p2 = urlText.indexOf(QStringLiteral("&"), p1 + 1);
                 if (p1 > 1) {
                     if (p2 < 0) p2 = urlText.length();
                     urlText = urlText.mid(p1 + 2, p2 - p1 - 2);
@@ -109,8 +112,10 @@ void SearchEngineGoogle::finished()
         ++m_currentPage;
         if (m_currentPage * m_hitsPerPage < m_numExpectedHits) {
             QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
-            url.addQueryItem("q", m_searchTerm);
-            url.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
+            QUrlQuery query;
+            query.addQueryItem("q", m_searchTerm);
+            query.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
+            url.setQuery(query);
             emit report(QString("<searchengine search=\"%1\" type=\"google\" />\n").arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
             QNetworkRequest request(url);

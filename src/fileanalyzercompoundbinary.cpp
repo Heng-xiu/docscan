@@ -87,8 +87,8 @@ void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, ResultCont
     // TODO: What value is set by non-Microsoft editors on e.g. Linux?
     QString opsys;
     switch (fib.envr) {
-    case 0: result.opSys = QLatin1String("windows"); break;
-    case 1: result.opSys = QLatin1String("mac"); break;
+    case 0: result.opSys = QStringLiteral("windows"); break;
+    case 1: result.opSys = QStringLiteral("mac"); break;
     default: result.opSys = QString("unknown=%1").arg(fib.envr);
     }
 
@@ -106,38 +106,38 @@ bool FileAnalyzerCompoundBinary::getVersion(unsigned short nFib, int &versionNum
     case 0x0065: /// == 101
     case 0x0066: /// == 102
         versionNumber = 6;
-        versionText = QLatin1String("Word 6.0");
+        versionText = QStringLiteral("Word 6.0");
         break;
     case 0x0067: /// == 103
         versionNumber = 6;
-        versionText = QLatin1String("Word 6.0 for Macintosh");
+        versionText = QStringLiteral("Word 6.0 for Macintosh");
         break;
     case 0x0068: /// == 104 FIXME other sources claim this is Word 6.0 for Macintosh
     case 0x0069: /// == 105
         versionNumber = 7;
-        versionText = QLatin1String("Word 95");
+        versionText = QStringLiteral("Word 95");
         break;
     case 0x00c0:
     case 0x00c1:
     case 0x00c2:
         versionNumber = 8;
-        versionText = QLatin1String("Word 97");
+        versionText = QStringLiteral("Word 97");
         break;
     case 0x00d9: /// == 217
         versionNumber = 9;
-        versionText = QLatin1String("Word 2000");
+        versionText = QStringLiteral("Word 2000");
         break;
     case 0x0101: /// == 257
         versionNumber = 10;
-        versionText = QLatin1String("Word 2002 (XP)");
+        versionText = QStringLiteral("Word 2002 (XP)");
         break;
     case 0x010c: /// == 268
         versionNumber = 11;
-        versionText = QLatin1String("Word 2003");
+        versionText = QStringLiteral("Word 2003");
         break;
     default:
         versionNumber = 0;
-        versionText = nFib == 0 ? QString::null : QLatin1String("nFib=") + QString::number(nFib, 16);
+        versionText = nFib == 0 ? QString::null : QStringLiteral("nFib=") + QString::number(nFib, 16);
         result = false;
     }
 
@@ -151,23 +151,23 @@ bool FileAnalyzerCompoundBinary::getEditor(unsigned short wMagic, QString &edito
     /// determine used editor
     switch (wMagic) {
     case 0x6a62:
-        editorText = QLatin1String("Microsoft Word 97");
+        editorText = QStringLiteral("Microsoft Word 97");
         break;
     case 0x626a:
-        editorText = QLatin1String("Microsoft Word 98 for Macintosh");
+        editorText = QStringLiteral("Microsoft Word 98 for Macintosh");
         break;
     case 0x6143:
     case 0x6C6F: /// why two different numbers? Both are used in LibreOffice's and OpenOffice's source code
-        editorText = QLatin1String("OpenOffice or LibreOffice");
+        editorText = QStringLiteral("OpenOffice or LibreOffice");
         break;
     case 0xa5dc:
-        editorText = QLatin1String("Microsoft Word 6.0/7.0");
+        editorText = QStringLiteral("Microsoft Word 6.0/7.0");
         break;
     case 0xa5ec:
-        editorText = QLatin1String("Microsoft Word 8.0");
+        editorText = QStringLiteral("Microsoft Word 8.0");
         break;
     default:
-        editorText = wMagic == 0 ? QString::null : QLatin1String("wMagic=") + QString::number(wMagic, 16);
+        editorText = wMagic == 0 ? QString::null : QStringLiteral("wMagic=") + QString::number(wMagic, 16);
         result = false;
     }
 
@@ -280,11 +280,11 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     analyzeWithParser(cppFilename, result);
 
     QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
-    QString metaText = QLatin1String("<meta>\n");
-    QString headerText = QLatin1String("<header>\n");
+    QString metaText = QStringLiteral("<meta>\n");
+    QString headerText = QStringLiteral("<header>\n");
 
     /// file format including mime type and file format version
-    metaText.append(QString(QLatin1String("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype).arg(result.versionNumber).arg(result.versionText));
+    metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype).arg(result.versionNumber).arg(result.versionText));
 
     /// editor as stated in file format
     metaText.append(QString("<tool origin=\"document\" subtype=\"creator\" type=\"editor\">\n%1</tool>\n").arg(guessTool(result.creatorText)));
@@ -329,12 +329,12 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     QString bodyText = QString("<body length=\"%1\" />\n").arg(result.plainText.length());
 
     /// close all tags, merge text
-    metaText += QLatin1String("</meta>\n");
+    metaText += QStringLiteral("</meta>\n");
     logText.append(metaText);
-    headerText += QLatin1String("</header>\n");
+    headerText += QStringLiteral("</header>\n");
     logText.append(headerText);
     logText.append(bodyText);
-    logText += QLatin1String("</fileanalysis>\n");
+    logText += QStringLiteral("</fileanalysis>\n");
 
     delete document;
 
@@ -364,47 +364,47 @@ bool FileAnalyzerCompoundBinary::isRTFfile(const QString &filename)
 QString FileAnalyzerCompoundBinary::langCodeToISOCode(int lid)
 {
     switch (lid) {
-    case 0x0400: return QLatin1String("-none-"); /// == 1024
-    case 0x0401: return QLatin1String("-arabic-"); /// == 1025
-    case 0x0402: return QLatin1String("bg"); /// == 1026
-    case 0x0403: return QLatin1String("cat"); /// == 1027
-    case 0x0404: return QLatin1String("cn"); /// == 1028
-    case 0x0405: return QLatin1String("cs-CZ"); /// == 1029
-    case 0x0406: return QLatin1String("da-DK"); /// == 1030
-    case 0x0407: return QLatin1String("de-DE"); /// == 1031
-    case 0x0408: return QLatin1String("gr"); /// == 1032
-    case 0x0409: return QLatin1String("en-US"); /// == 1033
-    case 0x040a: return QLatin1String("es"); /// == 1034
-    case 0x040b: return QLatin1String("fi-FI"); /// == 1035
-    case 0x040c: return QLatin1String("fr-FR"); /// == 1036
-    case 0x040d: return QLatin1String("iw-IL"); /// == 1037
-    case 0x040e: return QLatin1String("hu"); /// == 1038
-    case 0x0410: return QLatin1String("it-IT"); /// == 1040
-    case 0x0411: return QLatin1String("jp"); /// == 1041
-    case 0x0412: return QLatin1String("kr"); /// == 1042
-    case 0x0413: return QLatin1String("nl-NL"); /// == 1043
-    case 0x0414: return QLatin1String("nb"); /// == 1044
-    case 0x0415: return QLatin1String("pl"); /// == 1045
-    case 0x0416: return QLatin1String("pt-BR"); /// == 1046
-    case 0x0418: return QLatin1String("ro"); /// == 1048
-    case 0x0419: return QLatin1String("ru-RU"); /// == 1049
-    case 0x041b: return QLatin1String("sk"); /// == 1051
-    case 0x041d: return QLatin1String("sv-SE"); /// == 1053
-    case 0x041e: return QLatin1String("th"); /// == 1054
-    case 0x041f: return QLatin1String("tr"); /// == 1055
-    case 0x0421: return QLatin1String("id"); /// == 1057
-    case 0x0424: return QLatin1String("sl"); /// == 1060
-    case 0x042d: return QLatin1String("-basque-"); /// == 1069
-    case 0x0452: return QLatin1String("-welsh-");
-    case 0x0804: return QLatin1String("cn");
-    case 0x0809: return QLatin1String("en-GB");
-    case 0x080a: return QLatin1String("es-ES"); ///< es-MX?
-    case 0x0816: return QLatin1String("pt-PT");
-    case 0x0c09: return QLatin1String("en-AU");
-    case 0x0c0a: return QLatin1String("pt"); ///< ?
-    case 0x0c0c: return QLatin1String("fr-CA"); ///< ?
+    case 0x0400: return QStringLiteral("-none-"); /// == 1024
+    case 0x0401: return QStringLiteral("-arabic-"); /// == 1025
+    case 0x0402: return QStringLiteral("bg"); /// == 1026
+    case 0x0403: return QStringLiteral("cat"); /// == 1027
+    case 0x0404: return QStringLiteral("cn"); /// == 1028
+    case 0x0405: return QStringLiteral("cs-CZ"); /// == 1029
+    case 0x0406: return QStringLiteral("da-DK"); /// == 1030
+    case 0x0407: return QStringLiteral("de-DE"); /// == 1031
+    case 0x0408: return QStringLiteral("gr"); /// == 1032
+    case 0x0409: return QStringLiteral("en-US"); /// == 1033
+    case 0x040a: return QStringLiteral("es"); /// == 1034
+    case 0x040b: return QStringLiteral("fi-FI"); /// == 1035
+    case 0x040c: return QStringLiteral("fr-FR"); /// == 1036
+    case 0x040d: return QStringLiteral("iw-IL"); /// == 1037
+    case 0x040e: return QStringLiteral("hu"); /// == 1038
+    case 0x0410: return QStringLiteral("it-IT"); /// == 1040
+    case 0x0411: return QStringLiteral("jp"); /// == 1041
+    case 0x0412: return QStringLiteral("kr"); /// == 1042
+    case 0x0413: return QStringLiteral("nl-NL"); /// == 1043
+    case 0x0414: return QStringLiteral("nb"); /// == 1044
+    case 0x0415: return QStringLiteral("pl"); /// == 1045
+    case 0x0416: return QStringLiteral("pt-BR"); /// == 1046
+    case 0x0418: return QStringLiteral("ro"); /// == 1048
+    case 0x0419: return QStringLiteral("ru-RU"); /// == 1049
+    case 0x041b: return QStringLiteral("sk"); /// == 1051
+    case 0x041d: return QStringLiteral("sv-SE"); /// == 1053
+    case 0x041e: return QStringLiteral("th"); /// == 1054
+    case 0x041f: return QStringLiteral("tr"); /// == 1055
+    case 0x0421: return QStringLiteral("id"); /// == 1057
+    case 0x0424: return QStringLiteral("sl"); /// == 1060
+    case 0x042d: return QStringLiteral("-basque-"); /// == 1069
+    case 0x0452: return QStringLiteral("-welsh-");
+    case 0x0804: return QStringLiteral("cn");
+    case 0x0809: return QStringLiteral("en-GB");
+    case 0x080a: return QStringLiteral("es-ES"); ///< es-MX?
+    case 0x0816: return QStringLiteral("pt-PT");
+    case 0x0c09: return QStringLiteral("en-AU");
+    case 0x0c0a: return QStringLiteral("pt"); ///< ?
+    case 0x0c0c: return QStringLiteral("fr-CA"); ///< ?
     default: {
-        return QString(QLatin1String("0x%1 = %2")).arg(QString::number(lid, 16)).arg(QString::number(lid, 10));
+        return QString(QStringLiteral("0x%1 = %2")).arg(QString::number(lid, 16)).arg(QString::number(lid, 10));
     }
     }
 }

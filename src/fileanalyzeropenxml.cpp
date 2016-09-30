@@ -19,8 +19,8 @@
 
  */
 
-#include <quazip/quazip.h>
-#include <quazip/quazipfile.h>
+#include <quazip5/quazip.h>
+#include <quazip5/quazipfile.h>
 
 #include <QRegExp>
 #include <QTextStream>
@@ -46,24 +46,24 @@ public:
     OpenXMLDocumentHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
         : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false) {
         result.paperSizeWidth = result.paperSizeHeight = 0;
-        result.formatVersion = QLatin1String(""); // TODO
+        result.formatVersion = QStringLiteral(""); // TODO
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
         m_insideText |= qName == "w:t";
 
-        if (result.paperSizeWidth == 0 && qName == QLatin1String("w:pgSz")) {
+        if (result.paperSizeWidth == 0 && qName == QStringLiteral("w:pgSz")) {
             bool ok = false;
-            int mmw = atts.value(QLatin1String("w:w")).toInt(&ok) / 56.695238f;
+            int mmw = atts.value(QStringLiteral("w:w")).toInt(&ok) / 56.695238f;
             if (ok) {
                 result.paperSizeWidth = mmw;
                 int mmh = atts.value("w:h").toInt(&ok) / 56.695238f;
                 if (ok)
                     result.paperSizeHeight = mmh;
             }
-        } else if (qName == QLatin1String("w:lang"))
-            result.languageDocument = atts.value(QLatin1String("w:eastAsia"));
+        } else if (qName == QStringLiteral("w:lang"))
+            result.languageDocument = atts.value(QStringLiteral("w:eastAsia"));
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
@@ -296,14 +296,14 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
         }
 
         QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
-        QString metaText = QLatin1String("<meta>\n");
-        QString headerText = QLatin1String("<header>\n");
+        QString metaText = QStringLiteral("<meta>\n");
+        QString headerText = QStringLiteral("<header>\n");
 
         /// file format including mime type and file format version
         metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
         if (!result.formatVersion.isEmpty())
             metaText.append(QString("<version>%1</version>\n").arg(result.formatVersion));
-        metaText.append(QLatin1String("</fileformat>"));
+        metaText.append(QStringLiteral("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
@@ -352,12 +352,12 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
         QString bodyText = QString("<body length=\"%1\" />\n").arg(result.characterCount);
 
 /// close all tags, merge text
-        metaText += QLatin1String("</meta>\n");
+        metaText += QStringLiteral("</meta>\n");
         logText.append(metaText);
-        headerText += QLatin1String("</header>\n");
+        headerText += QStringLiteral("</header>\n");
         logText.append(headerText);
         logText.append(bodyText);
-        logText += QLatin1String("</fileanalysis>\n");
+        logText += QStringLiteral("</fileanalysis>\n");
 
         emit analysisReport(logText);
 

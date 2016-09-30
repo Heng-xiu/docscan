@@ -95,12 +95,12 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
 
         ++m_numRunningTasks;
 
-        QUrl url(QString(QLatin1String("http://freegeoip.appspot.com/xml/%1")).arg(ipAddress));
+        QUrl url(QString(QStringLiteral("http://freegeoip.appspot.com/xml/%1")).arg(ipAddress));
         QNetworkReply *reply = m_networkAccessManager->get(QNetworkRequest(url));
         connect(reply, SIGNAL(finished()), this, SLOT(finishedGeoInfo()));
         reply->setProperty("ip", ipAddress);
 
-        url = QUrl(QString(QLatin1String("http://api.hostip.info/?ip=%1")).arg(ipAddress));
+        url = QUrl(QString(QStringLiteral("http://api.hostip.info/?ip=%1")).arg(ipAddress));
         reply = m_networkAccessManager->get(QNetworkRequest(url));
         connect(reply, SIGNAL(finished()), this, SLOT(finishedGeoInfo()));
         reply->setProperty("ip", ipAddress);
@@ -121,42 +121,42 @@ void GeoIP::finishedGeoInfo()
 
         GeoInformation geoInformation;
 
-        if (xmlText.contains(QLatin1String("<Response>"))) {
-            if (!xmlText.contains(QLatin1String("<Status>true</Status>")) || xmlText.contains(QLatin1String("<City>Tokyo</City>"))) {
+        if (xmlText.contains(QStringLiteral("<Response>"))) {
+            if (!xmlText.contains(QStringLiteral("<Status>true</Status>")) || xmlText.contains(QStringLiteral("<City>Tokyo</City>"))) {
                 // qDebug() << "Could not resolve location for" << ipAddress << "via freegeoip";
             } else {
-                const QRegExp regExpCountryCode(QLatin1String("<CountryCode>(\\S+)</CountryCode>"));
+                const QRegExp regExpCountryCode(QStringLiteral("<CountryCode>(\\S+)</CountryCode>"));
                 if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty())
                     geoInformation.countryCode = regExpCountryCode.cap(1).toLower();
-                const QRegExp regExpCountryName(QLatin1String("<CountryName>([^<]+)</CountryName>"));
+                const QRegExp regExpCountryName(QStringLiteral("<CountryName>([^<]+)</CountryName>"));
                 if (regExpCountryName.indexIn(xmlText) > 0 && !regExpCountryName.cap(1).isEmpty())
                     geoInformation.countryName = regExpCountryName.cap(1).toLower();
-                const QRegExp regExpCity(QLatin1String("<City>([^<]+)</City>"));
+                const QRegExp regExpCity(QStringLiteral("<City>([^<]+)</City>"));
                 if (regExpCity.indexIn(xmlText) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
                     geoInformation.city = regExpCity.cap(1).toLower();
-                const QRegExp regExpLatitude(QLatin1String("<Latitude>([-0-9.]+)</Latitude>"));
+                const QRegExp regExpLatitude(QStringLiteral("<Latitude>([-0-9.]+)</Latitude>"));
                 bool ok = false;
-                if (!regExpLatitude.indexIn(xmlText) < 0 || regExpLatitude.cap(1).isEmpty() || (geoInformation.latitude = regExpLatitude.cap(1).toFloat(&ok)) > 1000.0 || !ok)
+                if (regExpLatitude.indexIn(xmlText) > 0 || regExpLatitude.cap(1).isEmpty() || (geoInformation.latitude = regExpLatitude.cap(1).toFloat(&ok)) > 1000.0 || !ok)
                     geoInformation.latitude = 0.0;
-                const QRegExp regExpLongitude(QLatin1String("<Longitude>([-0-9.]+)</Longitude>"));
+                const QRegExp regExpLongitude(QStringLiteral("<Longitude>([-0-9.]+)</Longitude>"));
                 ok = false;
-                if (!regExpLongitude.indexIn(xmlText) < 0 || regExpLongitude.cap(1).isEmpty() || (geoInformation.longitude = regExpLongitude.cap(1).toFloat(&ok)) > 1000.0 || !ok)
+                if (regExpLongitude.indexIn(xmlText) > 0 || regExpLongitude.cap(1).isEmpty() || (geoInformation.longitude = regExpLongitude.cap(1).toFloat(&ok)) > 1000.0 || !ok)
                     geoInformation.longitude = 0.0;
             }
-        } else if (xmlText.contains(QLatin1String("<HostipLookupResultSet")) && xmlText.contains(QLatin1String("<Hostip>"))) {
-            const QRegExp regExpCountryCode(QLatin1String("<countryAbbrev>(\\S+)</countryAbbrev>"));
+        } else if (xmlText.contains(QStringLiteral("<HostipLookupResultSet")) && xmlText.contains(QStringLiteral("<Hostip>"))) {
+            const QRegExp regExpCountryCode(QStringLiteral("<countryAbbrev>(\\S+)</countryAbbrev>"));
             if (regExpCountryCode.indexIn(xmlText) > 0 && !regExpCountryCode.cap(1).isEmpty())
                 geoInformation.countryCode = regExpCountryCode.cap(1).toLower();
-            const QRegExp regExpCountryName(QLatin1String("<countryName>([^<]+)</countryName>"));
+            const QRegExp regExpCountryName(QStringLiteral("<countryName>([^<]+)</countryName>"));
             if (regExpCountryName.indexIn(xmlText) > 0 && !regExpCountryName.cap(1).isEmpty())
                 geoInformation.countryName = regExpCountryName.cap(1).toLower();
-            int p = xmlText.indexOf(QLatin1String("gml:featureMember"));
-            const QRegExp regExpCity(QLatin1String("<gml:name>([^<]+)</gml:name>"));
+            int p = xmlText.indexOf(QStringLiteral("gml:featureMember"));
+            const QRegExp regExpCity(QStringLiteral("<gml:name>([^<]+)</gml:name>"));
             if (p > 0 && regExpCity.indexIn(xmlText, p) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
                 geoInformation.city = regExpCity.cap(1).toLower();
-            const QRegExp regExpCoordinates(QLatin1String("<gml:coordinates>([-0-9.]+),([-0-9.]+)</gml:coordinates>"));
+            const QRegExp regExpCoordinates(QStringLiteral("<gml:coordinates>([-0-9.]+),([-0-9.]+)</gml:coordinates>"));
             bool ok1 = false, ok2 = false;
-            if (!regExpCoordinates.indexIn(xmlText) < 0 || regExpCoordinates.cap(1).isEmpty() || (geoInformation.latitude = regExpCoordinates.cap(2).toFloat(&ok1)) > 1000.0 || !ok1 || (geoInformation.longitude = regExpCoordinates.cap(1).toFloat(&ok2)) > 1000.0 || !ok2) {
+            if (regExpCoordinates.indexIn(xmlText) > 0 || regExpCoordinates.cap(1).isEmpty() || (geoInformation.latitude = regExpCoordinates.cap(2).toFloat(&ok1)) > 1000.0 || !ok1 || (geoInformation.longitude = regExpCoordinates.cap(1).toFloat(&ok2)) > 1000.0 || !ok2) {
                 geoInformation.latitude = 0.0;
                 geoInformation.longitude = 0.0;
             }
@@ -164,7 +164,7 @@ void GeoIP::finishedGeoInfo()
             qDebug() << "XML is invalid: " << xmlText.left(1024);
 
         if (!geoInformation.countryCode.isEmpty()) {
-            if (geoInformation.countryCode == QLatin1String("uk"))
+            if (geoInformation.countryCode == QStringLiteral("uk"))
                 geoInformation.countryCode = "gb"; /// rewrite United Kingdom to Great Britain
             m_mutexConcurrentAccess->lock();
             m_ipAddressToGeoInformation.insert(ipAddress, geoInformation);

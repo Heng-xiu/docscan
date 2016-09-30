@@ -83,7 +83,7 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 QStringList FileAnalyzerAbstract::getAspellLanguages() const
 {
     if (aspellLanguages.isEmpty()) {
-        QRegExp language(QLatin1String("^[a-z]{2}(_[A-Z]{2})?$"));
+        QRegExp language(QStringLiteral("^[a-z]{2}(_[A-Z]{2})?$"));
         QProcess aspell(qApp);
         QStringList args = QStringList() << "dicts";
         aspell.start("/usr/bin/aspell", args);
@@ -127,7 +127,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
 QString FileAnalyzerAbstract::formatDate(const QDate &date, const QString &base) const
 {
-    return QString("<date epoch=\"%6\" %5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base.isEmpty() ? QLatin1String("") : QString("base=\"%1\"").arg(base)).arg(QString::number(QDateTime(date).toTime_t()));
+    return QString("<date epoch=\"%6\" %5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base.isEmpty() ? QStringLiteral("") : QString("base=\"%1\"").arg(base)).arg(QString::number(QDateTime(date).toTime_t()));
 }
 
 QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
@@ -153,5 +153,5 @@ QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
 QStringList FileAnalyzerAbstract::aspellLanguages;
 
 const QRegExp FileAnalyzerAbstract::microsoftToolRegExp("^(Microsoft\\s(.+\\S) [ -][ ]?(\\S.*)$");
-const QString FileAnalyzerAbstract::creationDate = QLatin1String("creation");
-const QString FileAnalyzerAbstract::modificationDate = QLatin1String("modification");
+const QString FileAnalyzerAbstract::creationDate = QStringLiteral("creation");
+const QString FileAnalyzerAbstract::modificationDate = QStringLiteral("modification");

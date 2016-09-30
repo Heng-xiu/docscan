@@ -112,13 +112,14 @@ SOURCES += src/rtf-qt/Tokenizer.cpp src/rtf-qt/IgnoredDestination.cpp \
 INCLUDEPATH += src/wv2/generator src/wv2/ src/rtf-qt/
 
 
+# TODO test of quazip for Qt5
 # load and parse zip'ed files (e.g. OpenDocument files)
-LIBS += -lquazip
+LIBS += -lquazip5
 
 # load compressed files
 LIBS += -llzma
 
 unix {
     CONFIG += link_pkgconfig
-    PKGCONFIG += libgsf-1 glib-2.0 poppler-qt4 poppler-cpp poppler
+    PKGCONFIG += libgsf-1 glib-2.0 poppler-cpp poppler
 }

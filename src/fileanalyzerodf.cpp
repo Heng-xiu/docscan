@@ -19,8 +19,8 @@
 
  */
 
-#include <quazip/quazip.h>
-#include <quazip/quazipfile.h>
+#include <quazip5/quazip.h>
+#include <quazip5/quazipfile.h>
 
 #include <QIODevice>
 #include <QDebug>
@@ -270,16 +270,16 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         }
 
         QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
-        QString metaText = QLatin1String("<meta>\n");
-        QString headerText = QLatin1String("<header>\n");
+        QString metaText = QStringLiteral("<meta>\n");
+        QString headerText = QStringLiteral("<header>\n");
 
         /// file format including mime type and file format version
         const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QString::null;
-        const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QLatin1String("0");
+        const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QStringLiteral("0");
         metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
         if (result.documentVersionNumbers.count() > 0 && !majorVersion.isNull())
             metaText.append(QString("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n").arg(majorVersion).arg(minorVersion));
-        metaText.append(QLatin1String("</fileformat>"));
+        metaText.append(QStringLiteral("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
@@ -321,23 +321,23 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
 
         /// evaluate dates
         if (result.dateCreation.isValid())
-            headerText.append(DocScan::formatDate(result.dateCreation, QLatin1String("creation")));
+            headerText.append(DocScan::formatDate(result.dateCreation, QStringLiteral("creation")));
         if (result.dateModification.isValid())
-            headerText.append(DocScan::formatDate(result.dateModification, QLatin1String("modification")));
+            headerText.append(DocScan::formatDate(result.dateModification, QStringLiteral("modification")));
         if (result.datePrint.isValid())
-            headerText.append(DocScan::formatDate(result.datePrint, QLatin1String("print")));
+            headerText.append(DocScan::formatDate(result.datePrint, QStringLiteral("print")));
 
         // TODO fonts
 
         QString bodyText = QString("<body length=\"%1\" />\n").arg(result.plainText.length());
 
         /// close all tags, merge text
-        metaText += QLatin1String("</meta>\n");
+        metaText += QStringLiteral("</meta>\n");
         logText.append(metaText);
-        headerText += QLatin1String("</header>\n");
+        headerText += QStringLiteral("</header>\n");
         logText.append(headerText);
         logText.append(bodyText);
-        logText += QLatin1String("</fileanalysis>\n");
+        logText += QStringLiteral("</fileanalysis>\n");
 
         emit analysisReport(logText);
         zipFile.close();

@@ -63,7 +63,7 @@ bool UrlDownloader::isAlive()
 
 void UrlDownloader::download(const QUrl &url)
 {
-    if (url.scheme() == QLatin1String("ftp")) {
+    if (url.scheme() == QStringLiteral("ftp")) {
         /// Qt 4.7.3 seems to have a bug with FTP downloads
         /// see https://bugreports.qt.nokia.com/browse/QTBUG-22820
         qDebug() << "FTP protocol not supported for URL " << url.toString();
@@ -122,8 +122,8 @@ void UrlDownloader::finalReport()
 {
     QString logText = QString("<download count-fail=\"%2\" count-success=\"%1\">\n").arg(m_countSuccessfulDownloads).arg(m_countFailedDownloads);
     for (QMap<QString, int>::ConstIterator it = m_domainCount.constBegin(); it != m_domainCount.constEnd(); ++it)
-        logText += QString(QLatin1String("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
-    logText += QLatin1String("</download>\n");
+        logText += QString(QStringLiteral("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
+    logText += QStringLiteral("</download>\n");
     emit report(logText);
 }
 
@@ -161,7 +161,7 @@ void UrlDownloader::finished()
         } else if (!host.isEmpty())
             filename = filename.replace("%{d}", host);
         else
-            filename = filename.replace("%{d}", QLatin1String("DOMAIN"));
+            filename = filename.replace("%{d}", QStringLiteral("DOMAIN"));
 
         static const QRegExp dateTimeRegExp("%\\{D:([-_%a-zA-Z0-9]+)\\}");
         int p = -1;
@@ -169,17 +169,17 @@ void UrlDownloader::finished()
         while ((p = dateTimeRegExp.indexIn(filename)) >= 0) {
             QString dateTimeStr = dateTime.toString(dateTimeRegExp.cap(1));
             /// support "ww" for zero-padded, two-digit week numbers
-            dateTimeStr = dateTimeStr.replace(QLatin1String("ww"), QLatin1String("%1"));
-            if (dateTimeStr.contains(QLatin1String("%1")))
+            dateTimeStr = dateTimeStr.replace(QStringLiteral("ww"), QStringLiteral("%1"));
+            if (dateTimeStr.contains(QStringLiteral("%1")))
                 dateTimeStr = dateTimeStr.arg(dateTime.date().weekNumber(), 2, 10, QChar('0'));
             /// support "w" for plain week numbers (one or two digits)
-            dateTimeStr = dateTimeStr.replace(QLatin1String("ww"), QString::number(dateTime.date().weekNumber()));
+            dateTimeStr = dateTimeStr.replace(QStringLiteral("ww"), QString::number(dateTime.date().weekNumber()));
             /// support "DDD" for zero-padded, three-digit day-of-the-year numbers
-            dateTimeStr = dateTimeStr.replace(QLatin1String("DDD"), QLatin1String("%1"));
-            if (dateTimeStr.contains(QLatin1String("%1")))
+            dateTimeStr = dateTimeStr.replace(QStringLiteral("DDD"), QStringLiteral("%1"));
+            if (dateTimeStr.contains(QStringLiteral("%1")))
                 dateTimeStr = dateTimeStr.arg(dateTime.date().dayOfYear(), 3, 10, QChar('0'));
             /// support "D" for plain day-of-the-year numbers (one, two, or three digits)
-            dateTimeStr = dateTimeStr.replace(QLatin1String("D"), QString::number(dateTime.date().dayOfYear()));
+            dateTimeStr = dateTimeStr.replace(QStringLiteral("D"), QString::number(dateTime.date().dayOfYear()));
             /// insert date/time into filename
             filename = filename.replace(dateTimeRegExp.cap(0), dateTimeStr);
         }
@@ -203,57 +203,57 @@ void UrlDownloader::finished()
         filename = filename.replace("%{s}", urlString);
 
         /// make known file extensions lower-case
-        static const QStringList fileExtList = QStringList() << QLatin1String(".pdf") << QLatin1String(".pdf.xz") << QLatin1String(".pdf.lzma") << QLatin1String(".odt") << QLatin1String(".doc") << QLatin1String(".docx") << QLatin1String(".rtf");
+        static const QStringList fileExtList = QStringList() << QStringLiteral(".pdf") << QStringLiteral(".pdf.xz") << QStringLiteral(".pdf.lzma") << QStringLiteral(".odt") << QStringLiteral(".doc") << QStringLiteral(".docx") << QStringLiteral(".rtf");
         foreach(const QString &fileExt, fileExtList) {
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
         /// enforce .pdf file name extension if not exists but file name contains "pdf"
-        if (urlString.contains(QLatin1String("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
-            urlString = urlString.append(QLatin1String(".pdf"));
+        if (urlString.contains(QStringLiteral("pdf"), Qt::CaseInsensitive) && !urlString.endsWith(QStringLiteral(".pdf"), Qt::CaseInsensitive))
+            urlString = urlString.append(QStringLiteral(".pdf"));
 
-        static const QRegExp fileExtensionRegExp(QLatin1String("[.](.{2,4}([.](lzma|xz|gz|bz2))?)([?].+)?$"));
+        static const QRegExp fileExtensionRegExp(QStringLiteral("[.](.{2,4}([.](lzma|xz|gz|bz2))?)([?].+)?$"));
         QString fileExtension = QString::null;
         if (fileExtensionRegExp.indexIn(filename) == 0 || (fileExtension = fileExtensionRegExp.cap(1)).isEmpty()) {
             const QString url = reply->url().toString().toLower();
 
             /// Filename has no extension, so test data which extension would be fitting
-            if ((data[0] == '%' && data[1] == 'P' && data[2] == 'D' && data[3] == 'F') || url.contains(QLatin1String("application/pdf")) || url.contains(QLatin1String(".pdf"))) {
-                fileExtension = QLatin1String("pdf");
-            } else if ((data[0] == '\\' && data[1] == '{' && data[2] == 'r' && data[3] == 't' && data[4] == 'f') || url.contains(QLatin1String(".rtf"))) {
-                fileExtension = QLatin1String("rtf");
-            } else if (url.contains(QLatin1String(".odt"))) {
+            if ((data[0] == '%' && data[1] == 'P' && data[2] == 'D' && data[3] == 'F') || url.contains(QStringLiteral("application/pdf")) || url.contains(QStringLiteral(".pdf"))) {
+                fileExtension = QStringLiteral("pdf");
+            } else if ((data[0] == '\\' && data[1] == '{' && data[2] == 'r' && data[3] == 't' && data[4] == 'f') || url.contains(QStringLiteral(".rtf"))) {
+                fileExtension = QStringLiteral("rtf");
+            } else if (url.contains(QStringLiteral(".odt"))) {
                 /// Open Document Format text
-                fileExtension = QLatin1String("odt");
-            } else if (url.contains(QLatin1String(".ods"))) {
+                fileExtension = QStringLiteral("odt");
+            } else if (url.contains(QStringLiteral(".ods"))) {
                 /// Open Document Format spreadsheet
-                fileExtension = QLatin1String("ods");
-            } else if (url.contains(QLatin1String(".odp"))) {
+                fileExtension = QStringLiteral("ods");
+            } else if (url.contains(QStringLiteral(".odp"))) {
                 /// Open Document Format spreadsheet
-                fileExtension = QLatin1String("odp");
-            } else if (url.contains(QLatin1String(".docx"))) {
+                fileExtension = QStringLiteral("odp");
+            } else if (url.contains(QStringLiteral(".docx"))) {
                 /// Office Open XML text
-                fileExtension = QLatin1String("docx");
-            } else if (url.contains(QLatin1String(".pptx"))) {
+                fileExtension = QStringLiteral("docx");
+            } else if (url.contains(QStringLiteral(".pptx"))) {
                 /// Office Open XML presentation
-                fileExtension = QLatin1String("pptx");
-            } else if (url.contains(QLatin1String(".xlsx"))) {
+                fileExtension = QStringLiteral("pptx");
+            } else if (url.contains(QStringLiteral(".xlsx"))) {
                 /// Office Open XML spreadsheet
-                fileExtension = QLatin1String("xlsx");
-            } else if (url.contains(QLatin1String(".doc"))) {
+                fileExtension = QStringLiteral("xlsx");
+            } else if (url.contains(QStringLiteral(".doc"))) {
                 /// archaic .doc
-                fileExtension = QLatin1String("doc");
-            } else if (url.contains(QLatin1String(".ppt"))) {
+                fileExtension = QStringLiteral("doc");
+            } else if (url.contains(QStringLiteral(".ppt"))) {
                 /// archaic .ppt
-                fileExtension = QLatin1String("ppt");
-            } else if (url.contains(QLatin1String(".xls"))) {
+                fileExtension = QStringLiteral("ppt");
+            } else if (url.contains(QStringLiteral(".xls"))) {
                 /// archaic .xls
-                fileExtension = QLatin1String("xls");
-            } else if ((data[0] == (char)0xd0 && data[1] == (char)0xcf && data[2] == (char)0x11) || (url.contains(QLatin1String(".doc")) && !url.contains(QLatin1String(".docx")))) {
+                fileExtension = QStringLiteral("xls");
+            } else if ((data[0] == (char)0xd0 && data[1] == (char)0xcf && data[2] == (char)0x11) || (url.contains(QStringLiteral(".doc")) && !url.contains(QStringLiteral(".docx")))) {
                 /// some kind of archaic Microsoft format, assuming .doc as most popular
-                fileExtension = QLatin1String("doc");
-            } else if ((data[0] == (char)'P' && data[1] == (char)'K' && (int)data[2] < 10) || url.contains(QLatin1String(".zip"))) {
+                fileExtension = QStringLiteral("doc");
+            } else if ((data[0] == (char)'P' && data[1] == (char)'K' && (int)data[2] < 10) || url.contains(QStringLiteral(".zip"))) {
                 /// .zip file, could be ODF or 00XML (further testing required)
-                fileExtension = QLatin1String("zip");
+                fileExtension = QStringLiteral("zip");
             }
         }
         filename = filename.replace("%{x}", fileExtension);
@@ -284,21 +284,21 @@ void UrlDownloader::finished()
                 DocScan::XMLNode geoLocationNode;
                 GeoIP::GeoInformation geoInformation = m_geoip->getGeoInformation(reply->url().host());
                 if (!geoInformation.countryCode.isEmpty()) {
-                    geoLocationNode.name = QLatin1String("geoinformation");
-                    geoLocationNode.attributes.insert(QLatin1String("countrycode"), geoInformation.countryCode);
-                    geoLocationNode.attributes.insert(QLatin1String("countryname"), geoInformation.countryName);
-                    geoLocationNode.attributes.insert(QLatin1String("city"), geoInformation.city);
-                    geoLocationNode.attributes.insert(QLatin1String("latitude"), QString::number(geoInformation.latitude));
-                    geoLocationNode.attributes.insert(QLatin1String("longitude"), QString::number(geoInformation.longitude));
+                    geoLocationNode.name = QStringLiteral("geoinformation");
+                    geoLocationNode.attributes.insert(QStringLiteral("countrycode"), geoInformation.countryCode);
+                    geoLocationNode.attributes.insert(QStringLiteral("countryname"), geoInformation.countryName);
+                    geoLocationNode.attributes.insert(QStringLiteral("city"), geoInformation.city);
+                    geoLocationNode.attributes.insert(QStringLiteral("latitude"), QString::number(geoInformation.latitude));
+                    geoLocationNode.attributes.insert(QStringLiteral("longitude"), QString::number(geoInformation.longitude));
                 }
 
                 DocScan::XMLNode logNode;
-                logNode.name = QLatin1String("download");
-                logNode.attributes.insert(QLatin1String("url"), reply->url().toString());
-                logNode.attributes.insert(QLatin1String("filename"), filename);
-                logNode.attributes.insert(QLatin1String("status"), QLatin1String("success"));
+                logNode.name = QStringLiteral("download");
+                logNode.attributes.insert(QStringLiteral("url"), reply->url().toString());
+                logNode.attributes.insert(QStringLiteral("filename"), filename);
+                logNode.attributes.insert(QStringLiteral("status"), QStringLiteral("success"));
                 if (!domain.isEmpty())
-                    logNode.attributes.insert(QLatin1String("domain"), domain);
+                    logNode.attributes.insert(QStringLiteral("domain"), domain);
                 if (!geoLocationNode.name.isEmpty())
                     logNode.text += DocScan::xmlNodeToText(geoLocationNode);
                 emit report(DocScan::xmlNodeToText(logNode));

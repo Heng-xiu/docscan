@@ -52,7 +52,7 @@ void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QStri
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     const QFileInfo fi(filename);
-    const QString tempFilename = QLatin1String("/tmp/") + QString::number(qrand()) + QLatin1String("-") + fi.fileName();
+    const QString tempFilename = QStringLiteral("/tmp/") + QString::number(qrand()) + QStringLiteral("-") + fi.fileName();
     QFile::copy(filename, tempFilename);
     QProcess uncompressProcess(this);
     const QStringList arguments = QStringList() << tempFilename;
@@ -60,7 +60,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
     if (uncompressProcess.waitForStarted(10000) && uncompressProcess.waitForFinished(60000)) {
         const QString uncompressedFile = tempFilename.left(tempFilename.length() - extensionWithDot.length());
         bool uncompressSuccess = uncompressProcess.exitCode() == 0;
-        const QString logText = QString(QLatin1String("<uncompress status=\"%5\" tool=\"%1\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QLatin1String("success") : QLatin1String("error"));
+        const QString logText = QString(QStringLiteral("<uncompress status=\"%5\" tool=\"%1\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QStringLiteral("success") : QStringLiteral("error"));
         emit analysisReport(logText);
         if (uncompressSuccess)
             analyzeFile(uncompressedFile);
@@ -71,22 +71,22 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
 
 void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
-    static const QRegExp odfExtension(QLatin1String("[.]od[pst]$"));
-    static const QRegExp openXMLExtension(QLatin1String("[.](doc|ppt|xls)x$"));
-    static const QRegExp compoundBinaryExtension(QLatin1String("[.](doc|ppt|xls)$"));
+    static const QRegExp odfExtension(QStringLiteral("[.]od[pst]$"));
+    static const QRegExp openXMLExtension(QStringLiteral("[.](doc|ppt|xls)x$"));
+    static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
 
     qDebug() << "Analyzing file" << filename;
 
-    if (filename.endsWith(QLatin1String(".xz"))) {
-        uncompressAnalyzefile(filename, QLatin1String(".xz"), QLatin1String("unxz"));
-    } else if (filename.endsWith(QLatin1String(".gz"))) {
-        uncompressAnalyzefile(filename, QLatin1String(".gz"), QLatin1String("gunzip"));
-    } else if (filename.endsWith(QLatin1String(".bz2"))) {
-        uncompressAnalyzefile(filename, QLatin1String(".bz2"), QLatin1String("bunzip2"));
-    } else if (filename.endsWith(QLatin1String(".lzma"))) {
-        uncompressAnalyzefile(filename, QLatin1String(".lzma"), QLatin1String("lzma"));
+    if (filename.endsWith(QStringLiteral(".xz"))) {
+        uncompressAnalyzefile(filename, QStringLiteral(".xz"), QStringLiteral("unxz"));
+    } else if (filename.endsWith(QStringLiteral(".gz"))) {
+        uncompressAnalyzefile(filename, QStringLiteral(".gz"), QStringLiteral("gunzip"));
+    } else if (filename.endsWith(QStringLiteral(".bz2"))) {
+        uncompressAnalyzefile(filename, QStringLiteral(".bz2"), QStringLiteral("bunzip2"));
+    } else if (filename.endsWith(QStringLiteral(".lzma"))) {
+        uncompressAnalyzefile(filename, QStringLiteral(".lzma"), QStringLiteral("lzma"));
     } else if (filename.endsWith(".pdf")) {
-        if (m_filters.contains(QLatin1String("*.pdf")))
+        if (m_filters.contains(QStringLiteral("*.pdf")))
             m_fileAnalyzerPDF.analyzeFile(filename);
         else
             qDebug() << "Skipping unmatched extension \".pdf\"";

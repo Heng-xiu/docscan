@@ -73,13 +73,13 @@ bool evaluateConfigfile(const QString &filename)
                 QString value = line.mid(i + 1).simplified();
 
                 if (key == "textextraction") {
-                    if (value.compare(QLatin1String("none"), Qt::CaseInsensitive) == 0)
+                    if (value.compare(QStringLiteral("none"), Qt::CaseInsensitive) == 0)
                         textExtraction = FileAnalyzerAbstract::teNone;
-                    else if (value.compare(QLatin1String("length"), Qt::CaseInsensitive) == 0)
+                    else if (value.compare(QStringLiteral("length"), Qt::CaseInsensitive) == 0)
                         textExtraction = FileAnalyzerAbstract::teLength;
-                    else if (value.compare(QLatin1String("fulltext"), Qt::CaseInsensitive) == 0)
+                    else if (value.compare(QStringLiteral("fulltext"), Qt::CaseInsensitive) == 0)
                         textExtraction = FileAnalyzerAbstract::teFullText;
-                    else if (value.compare(QLatin1String("aspell"), Qt::CaseInsensitive) == 0)
+                    else if (value.compare(QStringLiteral("aspell"), Qt::CaseInsensitive) == 0)
                         textExtraction = FileAnalyzerAbstract::teAspell;
                     else
                         qWarning() << "Invalid value for \"textExtraction\":" << value;
@@ -91,7 +91,7 @@ bool evaluateConfigfile(const QString &filename)
                     if (param.count() >= 2) {
                         jhoveShellscript = param[0];
                         jhoveConfigFile = param[1];
-                        jhoveVerbose = param.count() >= 3 && (param[2].compare(QLatin1String("true"), Qt::CaseInsensitive) == 0 || param[2].compare(QLatin1String("yes"), Qt::CaseInsensitive) == 0);
+                        jhoveVerbose = param.count() >= 3 && (param[2].compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || param[2].compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0);
                         qDebug() << "jhoveShellscript =" << jhoveShellscript;
                         qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
                         qDebug() << "jhoveVerbose =" << jhoveVerbose;
@@ -115,7 +115,7 @@ bool evaluateConfigfile(const QString &filename)
                     bool ok = false;
                     springerLinkYear = value.toInt(&ok);
                     if (!ok) springerLinkYear = SearchEngineSpringerLink::AllYears;
-                    qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::AllYears ? QLatin1String("No Year") : QString::number(springerLinkYear));
+                    qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::AllYears ? QStringLiteral("No Year") : QString::number(springerLinkYear));
                 } else if (key == "webcrawler:maxvisitedpages") {
                     bool ok = false;
                     webcrawlermaxvisitedpages = value.toInt(&ok);
@@ -202,27 +202,31 @@ bool evaluateConfigfile(const QString &filename)
     return true;
 }
 
-void myMessageOutput(QtMsgType type, const char *msg)
+void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    const QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
     case QtDebugMsg:
-        fprintf(stdout, "%s\n", msg);
+        fprintf(stdout, "%s\n", localMsg.constData());
+        break;
+    case QtInfoMsg:
+        fprintf(stdout, "Info: %s\n", localMsg.constData());
         break;
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", msg);
+        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", msg);
+        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", msg);
-        break;
+        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        abort();
     }
 }
 
 int main(int argc, char *argv[])
 {
-    qInstallMsgHandler(myMessageOutput);
+    qInstallMessageHandler(myMessageOutput);
     QCoreApplication a(argc, argv);
 
     netAccMan = new NetworkAccessManager(&a);
@@ -237,7 +241,7 @@ int main(int argc, char *argv[])
     if (argc != 2) {
         fprintf(stderr, "Require single configuration file as parameter\n");
         return 1;
-    } else if (!evaluateConfigfile(QLatin1String(argv[argc - 1]))) {
+    } else if (!evaluateConfigfile(QString::fromUtf8(argv[argc - 1]))) {
         fprintf(stderr, "Evaluation of configuration file failed\n");
         return 1;
     } else if (logCollector == NULL) {

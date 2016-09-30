@@ -33,14 +33,14 @@ QString xmlNodeToText(const XMLNode &node)
     QStringList attributes = node.attributes.keys();
     attributes.sort();
     for (QStringList::ConstIterator it = attributes.constBegin(); it != attributes.constEnd(); ++it)
-        result.append(QString(QLatin1String(" %1=\"%2\"")).arg(*it).arg(xmlify(node.attributes[*it])));
+        result.append(QString(QStringLiteral(" %1=\"%2\"")).arg(*it).arg(xmlify(node.attributes[*it])));
 
     if (node.text.isEmpty())
-        result.append(QLatin1String(" />\n"));
+        result.append(QStringLiteral(" />\n"));
     else {
-        result.append(QLatin1String(">\n"));
+        result.append(QStringLiteral(">\n"));
         result.append(node.text);
-        result.append(QString(QLatin1String("</%1>\n")).arg(node.name));
+        result.append(QString(QStringLiteral("</%1>\n")).arg(node.name));
     }
 
     return result;
@@ -49,7 +49,7 @@ QString xmlNodeToText(const XMLNode &node)
 QString xmlify(const QString &text)
 {
     QString result = text;
-    result = result.replace(QRegExp(QLatin1String("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), QLatin1String(""));
+    result = result.replace(QRegExp(QStringLiteral("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), QStringLiteral(""));
 
     /// remove unprintable or control characters
     for (int i = 0; i < result.length(); ++i)
@@ -58,9 +58,9 @@ QString xmlify(const QString &text)
             --i;
         }
 
-    result = result.replace(QChar('&'), QLatin1String("&amp;"));
-    result = result.replace(QChar('<'), QLatin1String("&lt;")).replace(QChar('>'), QLatin1String("&gt;"));
-    result = result.replace(QChar('"'), QLatin1String("&quot;")).replace(QChar('\''), QLatin1String("&apos;"));
+    result = result.replace(QChar('&'), QStringLiteral("&amp;"));
+    result = result.replace(QChar('<'), QStringLiteral("&lt;")).replace(QChar('>'), QStringLiteral("&gt;"));
+    result = result.replace(QChar('"'), QStringLiteral("&quot;")).replace(QChar('\''), QStringLiteral("&apos;"));
     result = result.simplified();
     return result;
 }
@@ -68,10 +68,10 @@ QString xmlify(const QString &text)
 QString dexmlify(const QString &xml)
 {
     QString result = xml;
-    result = result.replace(QLatin1String("&lt;"), QChar('<')).replace(QLatin1String("&gt;"), QChar('>'));
-    result = result.replace(QLatin1String("&quot;"), QChar('"'));
-    result = result.replace(QLatin1String("&apos;"), QChar('\''));
-    result = result.replace(QLatin1String("&amp;"), QChar('&'));
+    result = result.replace(QStringLiteral("&lt;"), QChar('<')).replace(QStringLiteral("&gt;"), QChar('>'));
+    result = result.replace(QStringLiteral("&quot;"), QChar('"'));
+    result = result.replace(QStringLiteral("&apos;"), QChar('\''));
+    result = result.replace(QStringLiteral("&amp;"), QChar('&'));
     return result;
 }
 
@@ -82,7 +82,7 @@ QString formatDate(const QDate &date, const QString &base)
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs)
 {
-    if (attrs.isEmpty()) return QLatin1String("");
+    if (attrs.isEmpty()) return QStringLiteral("");
 
     const QString body = DocScan::xmlify(attrs[""]);
     QString result = QString("<%1").arg(key);

@@ -60,8 +60,8 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     }
 
     QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
-    QString metaText = QLatin1String("<meta>\n");
-    QString headerText = QLatin1String("<header>\n");
+    QString metaText = QStringLiteral("<meta>\n");
+    QString headerText = QStringLiteral("<header>\n");
 
     const QString mimetype = "application/rtf";
     metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n</fileformat>").arg(mimetype));
@@ -127,7 +127,7 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     int numChars = output.numberOfCharacters();
     //if (numChars<=0 || numChars>=0xfffff) numChars=output.numberOfCharactersWithoutSpaces();
     int numWords = output.numberOfWords();
-    QString bodyText = QString("<body length=\"%1\" words=\"%2\" />\n").arg(numChars > 0 && numChars < 0xfffff ? QString::number(numChars) : QLatin1String("unreliable")).arg(numWords > 0 && numWords < 0xfffff ? QString::number(numWords) : QLatin1String("unreliable"));
+    QString bodyText = QString("<body length=\"%1\" words=\"%2\" />\n").arg(numChars > 0 && numChars < 0xfffff ? QString::number(numChars) : QStringLiteral("unreliable")).arg(numWords > 0 && numWords < 0xfffff ? QString::number(numWords) : QStringLiteral("unreliable"));
 
     /// evaluate language
     headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(FileAnalyzerCompoundBinary::langCodeToISOCode(probeLanguage(filename))));
@@ -144,12 +144,12 @@ void FileAnalyzerRTF::analyzeFile(const QString &filename)
     // TODO fonts
 
     /// close all tags, merge text
-    metaText += QLatin1String("</meta>\n");
+    metaText += QStringLiteral("</meta>\n");
     logText.append(metaText);
-    headerText += QLatin1String("</header>\n");
+    headerText += QStringLiteral("</header>\n");
     logText.append(headerText);
     logText.append(bodyText);
-    logText += QLatin1String("</fileanalysis>\n");
+    logText += QStringLiteral("</fileanalysis>\n");
 
     emit analysisReport(logText);
 

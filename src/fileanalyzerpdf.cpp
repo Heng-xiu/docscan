@@ -62,19 +62,19 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int jhoveExitCode = -1;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
-        const QStringList arguments = QStringList() << QLatin1String("-n") << QLatin1String("17") << QLatin1String("/bin/bash") << m_jhoveShellscript << QLatin1String("-c") << m_jhoveConfigFile << QLatin1String("-m") << QLatin1String("PDF-hul") << filename;
-        jhove.start(QLatin1String("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
+        jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
             jhoveExitCode = jhove.exitCode();
-            jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QLatin1String("###"));
-            jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data()).replace(QLatin1Char('\n'), QLatin1String("###"));
+            jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
+            jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
             if (!jhoveStandardOutput.isEmpty()) {
-                jhoveIsPDF = jhoveStandardOutput.contains(QLatin1String("Format: PDF"));
-                jhoveWellformedAndValid = jhoveStandardOutput.contains(QLatin1String("Status: Well-Formed and valid"));
-                static const QRegExp pdfVersionRegExp(QLatin1String("\\bVersion: ([^#]+)#"));
+                jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF"));
+                jhoveWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral("Status: Well-Formed and valid"));
+                static const QRegExp pdfVersionRegExp(QStringLiteral("\\bVersion: ([^#]+)#"));
                 jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
-                static const QRegExp pdfProfileRegExp(QLatin1String("\\bProfile: ([^#]+)(#|$)"));
+                static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
                 jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
             } else {
                 qWarning() << "Output of jhove is empty, stderr is " << jhoveErrorOutput;
@@ -95,24 +95,24 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         wrapper->getPdfVersion(majorVersion, minorVersion);
-        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n").arg(majorVersion).arg(minorVersion).arg(wrapper->isLocked() ? QLatin1String("yes") : QLatin1String("no")).arg(wrapper->isEncrypted() ? QLatin1String("yes") : QLatin1String("no")));
+        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n").arg(majorVersion).arg(minorVersion).arg(wrapper->isLocked() ? QStringLiteral("yes") : QStringLiteral("no")).arg(wrapper->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
 
         if (jhoveIsPDF) {
             /// insert data from jHove
-            metaText.append(QString(QLatin1String("<jhove exitcode=\"%2\" wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QLatin1String("yes") : QLatin1String("no")).arg(jhoveExitCode));
+            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode));
             if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
-                metaText.append(QLatin1String(" />\n"));
+                metaText.append(QStringLiteral(" />\n"));
             else {
-                metaText.append(QLatin1String(">\n"));
+                metaText.append(QStringLiteral(">\n"));
                 if (!jhovePDFversion.isEmpty())
-                    metaText.append(QString(QLatin1String("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
+                    metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
                 if (!jhovePDFprofile.isEmpty())
-                    metaText.append(QString(QLatin1String("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QLatin1String("Linearized PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("Tagged PDF")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level A")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/A-1, Level B")) ? QLatin1String("yes") : QLatin1String("no")).arg(jhovePDFprofile.contains(QLatin1String("ISO PDF/X-3")) ? QLatin1String("yes") : QLatin1String("no")));
+                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
                 if (m_jhoveVerbose && !jhoveStandardOutput.isEmpty())
-                    metaText.append(QString(QLatin1String("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
+                    metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
                 if (!jhoveErrorOutput.isEmpty())
-                    metaText.append(QString(QLatin1String("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QLatin1String("###"), QLatin1String("\n")))));
-                metaText.append(QLatin1String("</jhove>\n"));
+                    metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+                metaText.append(QStringLiteral("</jhove>\n"));
             }
         }
 
@@ -147,14 +147,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (fields.length() < 2) continue;
                 const QString fontName = fields[0].replace(fontNameNormalizer, "");
                 QString fontFilename;
-                const int p1 = fi.indexOf(QLatin1String("|FONTFILENAME:"));
+                const int p1 = fi.indexOf(QStringLiteral("|FONTFILENAME:"));
                 if (p1 > 0) {
-                    const int p2 = fi.indexOf(QLatin1String("|"), p1 + 4);
+                    const int p2 = fi.indexOf(QStringLiteral("|"), p1 + 4);
                     fontFilename = fi.mid(p1 + 15, p2 - p1 - 15);
                 }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-                metaText.append(QString(QLatin1String("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QLatin1String("|EMBEDDED:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fi.contains(QLatin1String("|SUBSET:1")) ? QLatin1String("yes") : QLatin1String("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
+                metaText.append(QString(QStringLiteral("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QStringLiteral("|EMBEDDED:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fi.contains(QStringLiteral("|SUBSET:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
             }
 
         }
@@ -203,11 +203,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     if (!language.isEmpty())
                         headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
                 }
-                bodyText = QString(QLatin1String("<body length=\"%1\"")).arg(length);
+                bodyText = QString(QStringLiteral("<body length=\"%1\"")).arg(length);
                 if (textExtraction >= teFullText)
-                    bodyText.append(QLatin1String(">\n")).append(wrapper->popplerLog()).append(QLatin1String("</body>\n"));
+                    bodyText.append(QStringLiteral(">\n")).append(wrapper->popplerLog()).append(QStringLiteral("</body>\n"));
                 else
-                    bodyText.append(QLatin1String("/>\n"));
+                    bodyText.append(QStringLiteral("/>\n"));
             }
 
             /// look into first page for info
@@ -227,12 +227,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         /// close all tags, merge text
         if (!metaText.isEmpty())
-            logText.append(QLatin1String("<meta>\n")).append(metaText).append(QLatin1String("</meta>\n"));
+            logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
         if (!headerText.isEmpty())
-            logText.append(QLatin1String("<header>\n")).append(headerText).append(QLatin1String("</header>\n"));
+            logText.append(QStringLiteral("<header>\n")).append(headerText).append(QStringLiteral("</header>\n"));
         if (!bodyText.isEmpty())
             logText.append(bodyText);
-        logText += QLatin1String("</fileanalysis>\n");
+        logText += QStringLiteral("</fileanalysis>\n");
 
         qint64 endTime = QDateTime::currentMSecsSinceEpoch();
         logText.prepend(QString("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime));

@@ -66,7 +66,7 @@ public:
     // Start a page.
     virtual void startPage(int pageNum, GfxState */*state*/, XRef */*xref*/) {
         if (pageNum >= 0 && pageNum <= 16) {
-            logText.append(QString(QLatin1String("<page number=\"%1\">\n")).arg(pageNum));
+            logText.append(QString(QStringLiteral("<page number=\"%1\">\n")).arg(pageNum));
             currentPage = pageNum;
         } else
             currentPage = -1;
@@ -79,12 +79,12 @@ public:
             if (page != NULL) {
                 const QString cookedText = page != NULL ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
                 if (!cookedText.isEmpty())
-                    logText.append(QString(QLatin1String("<text length=\"%1\">")).arg(page->text().length())).append(cookedText).append(QLatin1String("</text>\n"));
+                    logText.append(QString(QStringLiteral("<text length=\"%1\">")).arg(page->text().length())).append(cookedText).append(QStringLiteral("</text>\n"));
                 else
-                    logText.append(QString(QLatin1String("<text length=\"%1\" />\n")).arg(page->text().length()));
+                    logText.append(QString(QStringLiteral("<text length=\"%1\" />\n")).arg(page->text().length()));
             }
 
-            logText.append(QLatin1String("</page>\n"));
+            logText.append(QStringLiteral("</page>\n"));
         }
         currentPage = -1;
     }
@@ -95,30 +95,30 @@ public:
                    GBool /*interpolate*/, GBool /*inlineImg*/) {
         if (currentPage >= 0) {
             DocScan::XMLNode node;
-            node.name = QLatin1String("img");
+            node.name = QStringLiteral("img");
 
             switch (str->getKind()) {
             case strCCITTFax:
-                node.attributes.insert(QLatin1String("type"), QLatin1String("ccitt"));
+                node.attributes.insert(QStringLiteral("type"), QStringLiteral("ccitt"));
                 break;
             case strDCT:
-                node.attributes.insert(QLatin1String("type"), QLatin1String("jpeg"));
+                node.attributes.insert(QStringLiteral("type"), QStringLiteral("jpeg"));
                 break;
             case strJPX:
-                node.attributes.insert(QLatin1String("type"), QLatin1String("jpx"));
+                node.attributes.insert(QStringLiteral("type"), QStringLiteral("jpx"));
                 break;
             case strJBIG2:
-                node.attributes.insert(QLatin1String("type"), QLatin1String("jbig2"));
+                node.attributes.insert(QStringLiteral("type"), QStringLiteral("jbig2"));
                 break;
             default: {
                 /// nothing
             }
             }
 
-            node.attributes.insert(QLatin1String("width"), QString::number(width));
-            node.attributes.insert(QLatin1String("height"), QString::number(height));
+            node.attributes.insert(QStringLiteral("width"), QString::number(width));
+            node.attributes.insert(QStringLiteral("height"), QString::number(height));
             if (colorMap != NULL)
-                node.attributes.insert(QLatin1String("bits"), QString::number(colorMap->getBits()));
+                node.attributes.insert(QStringLiteral("bits"), QString::number(colorMap->getBits()));
 
             logText.append(DocScan::xmlNodeToText(node));
         }
@@ -223,46 +223,46 @@ QStringList PopplerWrapper::fontNames() const
             /* FIXME
             switch ((poppler::font_info::type_enum)fi.type){
             case poppler::font_info::unknown:
-                fontType= QLatin1String("unknown");
+                fontType= QStringLiteral("unknown");
                 break;
             case poppler::font_info::type1:
-                fontType= QLatin1String("Type 1");
+                fontType= QStringLiteral("Type 1");
                 break;
             case poppler::font_info::type1c:
-                fontType= QLatin1String("Type 1C");
+                fontType= QStringLiteral("Type 1C");
                 break;
             case poppler::font_info::type3:
-                fontType= QLatin1String("Type 3");
+                fontType= QStringLiteral("Type 3");
                 break;
             case poppler::font_info::truetype:
-                fontType= QLatin1String("TrueType");
+                fontType= QStringLiteral("TrueType");
                 break;
             case poppler::font_info::cid_type0:
-                fontType= QLatin1String("CID Type 0");
+                fontType= QStringLiteral("CID Type 0");
                 break;
             case poppler::font_info::cid_type0c:
-                fontType= QLatin1String("CID Type 0C");
+                fontType= QStringLiteral("CID Type 0C");
                 break;
             case poppler::font_info::cid_truetype:
-                fontType= QLatin1String("CID TrueType");
+                fontType= QStringLiteral("CID TrueType");
                 break;
             case poppler::font_info::type1c_ot:
-                fontType= QLatin1String("Type 1C (OpenType)");
+                fontType= QStringLiteral("Type 1C (OpenType)");
                 break;
             case poppler::font_info::truetype_ot:
-                fontType= QLatin1String("TrueType (OpenType)");
+                fontType= QStringLiteral("TrueType (OpenType)");
                 break;
             case poppler::font_info::cid_type0c_ot:
-                fontType= QLatin1String("CID Type 0C (OpenType)");
+                fontType= QStringLiteral("CID Type 0C (OpenType)");
                 break;
             case poppler::font_info::cid_truetype_ot:
-                fontType= QLatin1String("CID TrueType (OpenType)");
+                fontType= QStringLiteral("CID TrueType (OpenType)");
                 break;
             }
             */
 
-            const QString fontFilename = fi.file().empty() ? QString() : QLatin1String("|FONTFILENAME:") + QString::fromStdString(fi.file());
-            result << QString::fromStdString(fi.name()) + QLatin1Char('|') + fontType + fontFilename + QLatin1String("|EMBEDDED:") + (fi.is_embedded() ? QLatin1Char('1') : QLatin1Char('0')) + QLatin1String("|SUBSET:") + (fi.is_subset() ? QLatin1Char('1') : QLatin1Char('0'));
+            const QString fontFilename = fi.file().empty() ? QString() : QStringLiteral("|FONTFILENAME:") + QString::fromStdString(fi.file());
+            result << QString::fromStdString(fi.name()) + QLatin1Char('|') + fontType + fontFilename + QStringLiteral("|EMBEDDED:") + (fi.is_embedded() ? QLatin1Char('1') : QLatin1Char('0')) + QStringLiteral("|SUBSET:") + (fi.is_subset() ? QLatin1Char('1') : QLatin1Char('0'));
         }
     }
     // after we are done with the iterator, it must be deleted
@@ -326,7 +326,7 @@ QString PopplerWrapper::popplerLog()
 {
     ImageInfoOutputDev iiod(m_document);
 
-    GooString fileName(m_filename.toAscii().data());
+    GooString fileName(m_filename.toLocal8Bit().constData());
     PDFDoc *doc = PDFDocFactory().createPDFDoc(fileName);
 
     doc->displayPages(&iiod, 0, numPages(), 72, 72, 0, gTrue, gFalse, gFalse);

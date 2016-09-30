@@ -24,6 +24,7 @@
 #include <QRegExp>
 #include <QTextStream>
 #include <QDebug>
+#include <QUrlQuery>
 #include <QCoreApplication>
 
 #include "networkaccessmanager.h"
@@ -40,8 +41,10 @@ void SearchEngineBing::startSearch(int num)
 {
     ++m_runningSearches;
 
-    QUrl url(QLatin1String("http://www.bing.com/search?setmkt=en-US&setlang=match"));
-    url.addQueryItem("q", m_searchTerm);
+    QUrl url(QStringLiteral("http://www.bing.com/search?setmkt=en-US&setlang=match"));
+    QUrlQuery query;
+    query.addQueryItem("q", m_searchTerm);
+    url.setQuery(query);
     m_numExpectedHits = num;
     m_currentPage = 0;
     m_numFoundHits = 0;
@@ -64,15 +67,15 @@ void SearchEngineBing::finished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QLatin1String("&#160;"), QLatin1String(" "));
+        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
 
         if (m_currentPage == 0) {
-            const QRegExp countHitsRegExp(QLatin1String("([0-9]+([ ,][0-9]+)*) result"), Qt::CaseInsensitive);
+            const QRegExp countHitsRegExp(QStringLiteral("([0-9]+([ ,][0-9]+)*) result"), Qt::CaseInsensitive);
             if (countHitsRegExp.indexIn(htmlText) >= 0) {
-                const QString hits = countHitsRegExp.cap(1).replace(QRegExp(QLatin1String("[, ]+")), QString());
+                const QString hits = countHitsRegExp.cap(1).replace(QRegExp(QStringLiteral("[, ]+")), QString());
                 emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(hits));
             } else
-                emit report(QLatin1String("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));
+                emit report(QStringLiteral("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));
         }
 
         const QRegExp searchHitRegExp("<h3><a href=\"([^\"]+)\"");

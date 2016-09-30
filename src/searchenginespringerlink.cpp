@@ -23,6 +23,7 @@
 #include <QNetworkRequest>
 #include <QTextStream>
 #include <QUrl>
+#include <QUrlQuery>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QRegExp>
@@ -31,7 +32,7 @@
 #include "general.h"
 #include "searchenginespringerlink.h"
 
-const QString SearchEngineSpringerLink::AllCategories = QLatin1String("content");
+const QString SearchEngineSpringerLink::AllCategories = QStringLiteral("content");
 const int SearchEngineSpringerLink::AllYears = -1;
 const QString SearchEngineSpringerLink::AllSubjects = QString::null;
 const QString SearchEngineSpringerLink::AllContentTypes = QString::null;
@@ -59,23 +60,25 @@ void SearchEngineSpringerLink::nextSearchStep()
 {
     m_isRunning = true;
 
-    QUrl url(QString(QLatin1String("http://www.springerlink.com/%1/")).arg(m_category));
+    QUrl url(QString(QStringLiteral("http://www.springerlink.com/%1/")).arg(m_category));
+    QUrlQuery query;
     if (!m_searchTerm.isEmpty())
-        url.addQueryItem(QLatin1String("k"), m_searchTerm);
+        query.addQueryItem(QStringLiteral("k"), m_searchTerm);
     if (!m_contentType.isEmpty())
-        url.addQueryItem(QLatin1String("Content+Type"), m_contentType);
+        query.addQueryItem(QStringLiteral("Content+Type"), m_contentType);
     if (!m_subject.isEmpty())
-        url.addQueryItem(QLatin1String("Subject"), m_subject);
+        query.addQueryItem(QStringLiteral("Subject"), m_subject);
     if (m_searchOffset > 0)
-        url.addQueryItem(QLatin1String("o"), QString::number(m_searchOffset));
+        query.addQueryItem(QStringLiteral("o"), QString::number(m_searchOffset));
     if (m_year >= 1970)
-        url.addQueryItem(QLatin1String("Copyright"), QString::number(m_year));
-    url.addQueryItem(QLatin1String("Language"), QLatin1String("English"));
+        query.addQueryItem(QStringLiteral("Copyright"), QString::number(m_year));
+    query.addQueryItem(QStringLiteral("Language"), QStringLiteral("English"));
+    url.setQuery(query);
 
     DocScan::XMLNode reportNode;
-    reportNode.name = QLatin1String("searchengine");
-    reportNode.attributes.insert(QLatin1String("type"), QLatin1String("springerlink"));
-    reportNode.attributes.insert(QLatin1String("search"), url.toString());
+    reportNode.name = QStringLiteral("searchengine");
+    reportNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
+    reportNode.attributes.insert(QStringLiteral("search"), url.toString());
     emit report(DocScan::xmlNodeToText(reportNode));
 
     qDebug() << "m_networkAccessManager->get " << url.toString();
@@ -99,40 +102,40 @@ void SearchEngineSpringerLink::finished()
             QNetworkReply *newReply = m_networkAccessManager->get(request);
             connect(newReply, SIGNAL(finished()), this, SLOT(finished()));
         } else {
-            QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QLatin1String("&#160;"), QLatin1String(" "));
+            QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
 
             if (m_searchOffset == 0) {
                 /// first page
 
-                static const QRegExp regExpNumHits(QLatin1String("Viewing items \\d+ - \\d+ of ([0-9,.]+)"));
+                static const QRegExp regExpNumHits(QStringLiteral("Viewing items \\d+ - \\d+ of ([0-9,.]+)"));
                 int p1 = regExpNumHits.indexIn(htmlText);
                 if (p1 >= 0) {
-                    QString numHits = regExpNumHits.cap(1).replace(QLatin1String(","), QString::null);
+                    QString numHits = regExpNumHits.cap(1).replace(QStringLiteral(","), QString::null);
                     DocScan::XMLNode numHitsNode;
-                    numHitsNode.name = QLatin1String("searchengine");
-                    numHitsNode.attributes.insert(QLatin1String("type"), QLatin1String("springerlink"));
-                    numHitsNode.attributes.insert(QLatin1String("numresults"), numHits);
+                    numHitsNode.name = QStringLiteral("searchengine");
+                    numHitsNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
+                    numHitsNode.attributes.insert(QStringLiteral("numresults"), numHits);
                     emit report(DocScan::xmlNodeToText(numHitsNode));
                 }
             }
 
             int p1 = -1;
-            while ((p1 = htmlText.indexOf(QLatin1String("<li class=\"pdf\"><a"), p1 + 1)) >= 0) {
-                int p2 = htmlText.indexOf(QLatin1String("href=\""), p1 + 18);
+            while ((p1 = htmlText.indexOf(QStringLiteral("<li class=\"pdf\"><a"), p1 + 1)) >= 0) {
+                int p2 = htmlText.indexOf(QStringLiteral("href=\""), p1 + 18);
                 if (p2 < 0) break;
-                int p3 = htmlText.indexOf(QLatin1String("\" "), p2 + 6);
+                int p3 = htmlText.indexOf(QStringLiteral("\" "), p2 + 6);
                 if (p3 < 0) break;
 
-                QUrl url(QLatin1String("http://www.springerlink.com/"));
+                QUrl url(QStringLiteral("http://www.springerlink.com/"));
                 url.setPath(htmlText.mid(p2 + 6, p3 - p2 - 6));
                 qDebug() << url.toString();
 
                 if (url.isValid() && (m_numFoundHits++ < m_numExpectedHits)) {
 
                     DocScan::XMLNode fileFinderNode;
-                    fileFinderNode.name = QLatin1String("filefinder");
-                    fileFinderNode.attributes.insert(QLatin1String("event"), QLatin1String("hit"));
-                    fileFinderNode.attributes.insert(QLatin1String("href"), url.toString());
+                    fileFinderNode.name = QStringLiteral("filefinder");
+                    fileFinderNode.attributes.insert(QStringLiteral("event"), QStringLiteral("hit"));
+                    fileFinderNode.attributes.insert(QStringLiteral("href"), url.toString());
                     emit report(DocScan::xmlNodeToText(fileFinderNode));
 
                     emit foundUrl(url);
@@ -147,10 +150,10 @@ void SearchEngineSpringerLink::finished()
         }
     } else {
         DocScan::XMLNode reportNode;
-        reportNode.name = QLatin1String("searchengine");
-        reportNode.attributes.insert(QLatin1String("type"), QLatin1String("springerlink"));
-        reportNode.attributes.insert(QLatin1String("search"), reply->url().toString());
-        reportNode.attributes.insert(QLatin1String("status"), QLatin1String("error"));
+        reportNode.name = QStringLiteral("searchengine");
+        reportNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
+        reportNode.attributes.insert(QStringLiteral("search"), reply->url().toString());
+        reportNode.attributes.insert(QStringLiteral("status"), QStringLiteral("error"));
         emit report(DocScan::xmlNodeToText(reportNode));
         m_isRunning = false;
     }

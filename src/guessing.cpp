@@ -65,7 +65,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     } else if (fontName.contains("Computer Modern")) { /// TeX fonts
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
-    } else if (fontName.startsWith("cmr") || fontName.startsWith("cmsy") || fontName.startsWith("stmary") || fontName.startsWith("wasy") || fontName.contains(QRegExp(QLatin1String("^(CM|SF|MS)[A-Z]+[0-9]+$")))) { /// TeX fonts
+    } else if (fontName.startsWith("cmr") || fontName.startsWith("cmsy") || fontName.startsWith("stmary") || fontName.startsWith("wasy") || fontName.contains(QRegExp(QStringLiteral("^(CM|SF|MS)[A-Z]+[0-9]+$")))) { /// TeX fonts
         license["type"] = "open";
         license["name"] = "SIL Open Font License";
     } else if (fontName.contains("Marvosym")) {
@@ -108,7 +108,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// ESRI (maybe free-as-in-beer fonts?)
     } else if (fontName.startsWith("Interstate")) {
         license["type"] = "proprietary"; /// Font Bureau
-    } else if (fontName.startsWith("MicrosoftSansSerif") || fontName.startsWith("Marlett") || fontName.startsWith("Impact") || fontName.startsWith("Comic Sans") || fontName.startsWith("ComicSans") || fontName.startsWith("Webdings") || fontName.contains("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("Times New Roman") || fontName.startsWith("CourierNew") || fontName.startsWith("Courier New") || fontName.startsWith("Georgia") || fontName == QLatin1String("Symbol")) {
+    } else if (fontName.startsWith("MicrosoftSansSerif") || fontName.startsWith("Marlett") || fontName.startsWith("Impact") || fontName.startsWith("Comic Sans") || fontName.startsWith("ComicSans") || fontName.startsWith("Webdings") || fontName.contains("Arial") || fontName.startsWith("Verdana") || fontName.startsWith("TimesNewRoman") || fontName.startsWith("Times New Roman") || fontName.startsWith("CourierNew") || fontName.startsWith("Courier New") || fontName.startsWith("Georgia") || fontName == QStringLiteral("Symbol")) {
         license["type"] = "proprietary"; /// Microsoft
     } else if (fontName.startsWith("Nyala") || fontName.startsWith("Sylfaen") || fontName.startsWith("BookAntiqua") || fontName.startsWith("Lucinda") || fontName.startsWith("Trebuchet") || fontName.startsWith("Franklin Gothic") || fontName.startsWith("FranklinGothic") || fontName.startsWith("Century Schoolbook") || fontName.startsWith("CenturySchoolbook")) {
         license["type"] = "proprietary"; /// Microsoft
@@ -157,28 +157,28 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         const QString bNameOriginal = bName;
         bName = bName.trimmed();
         static const QStringList suffixes = QStringList()
-                                            << QLatin1String("MT") << QLatin1String("OsF") << QLatin1String("PS") << QLatin1String("BE") << QLatin1String("MS") << QLatin1String("SC") << QLatin1String("LT") << QLatin1String("LF") << QLatin1String("-BT") << QLatin1String("BT") << QLatin1String("Bk") << QLatin1String("T")
-                                            << QLatin1String("-Normal") << QLatin1String("-Book") << QLatin1String("-Md") << QLatin1String("-Plain") << QLatin1String("-Medium") << QLatin1String("-Medi") << QLatin1String("-MediumItalic") << QLatin1String("-Semibold") << QLatin1String("-SmbdIt") << QLatin1String("-Caps") << QLatin1String("-Roman") << QLatin1String("-Roma") << QLatin1String("-Regular") << QLatin1String("-Regu") << QLatin1String("-DisplayRegular")
-                                            << QLatin1String("-Demi") << QLatin1String("-Blk") << QLatin1String("-Black") << QLatin1String("-Blac") << QLatin1String("Bla") << QLatin1String("-Ultra") << QLatin1String("-Extra") << QLatin1String("-ExtraBold") << QLatin1String("Obl") << QLatin1String("-Hv") << QLatin1String("-HvIt") << QLatin1String("-Heavy") << QLatin1String("-Heav") << QLatin1String("-BoldIt") << QLatin1String("-BoldCn") << QLatin1String("-BoldItal") << QLatin1String("-BoldItalicB") << QLatin1String("-BdIt") << QLatin1String("-Bd") << QLatin1String("-It")
-                                            << QLatin1String("-Condensed") << QLatin1String("-Light") << QLatin1String("-Ligh") << QLatin1String("-Lt") << QLatin1String("-Slant") << QLatin1String("-LightCond") << QLatin1String("Lig") << QLatin1String("-Narrow")
-                                            << QLatin1String("Ext") << QLatin1String("Narrow") << QLatin1String("SWA") << QLatin1String("Std") << QLatin1String("-Identity-H") << QLatin1String("-DTC");
+                                            << QStringLiteral("MT") << QStringLiteral("OsF") << QStringLiteral("PS") << QStringLiteral("BE") << QStringLiteral("MS") << QStringLiteral("SC") << QStringLiteral("LT") << QStringLiteral("LF") << QStringLiteral("-BT") << QStringLiteral("BT") << QStringLiteral("Bk") << QStringLiteral("T")
+                                            << QStringLiteral("-Normal") << QStringLiteral("-Book") << QStringLiteral("-Md") << QStringLiteral("-Plain") << QStringLiteral("-Medium") << QStringLiteral("-Medi") << QStringLiteral("-MediumItalic") << QStringLiteral("-Semibold") << QStringLiteral("-SmbdIt") << QStringLiteral("-Caps") << QStringLiteral("-Roman") << QStringLiteral("-Roma") << QStringLiteral("-Regular") << QStringLiteral("-Regu") << QStringLiteral("-DisplayRegular")
+                                            << QStringLiteral("-Demi") << QStringLiteral("-Blk") << QStringLiteral("-Black") << QStringLiteral("-Blac") << QStringLiteral("Bla") << QStringLiteral("-Ultra") << QStringLiteral("-Extra") << QStringLiteral("-ExtraBold") << QStringLiteral("Obl") << QStringLiteral("-Hv") << QStringLiteral("-HvIt") << QStringLiteral("-Heavy") << QStringLiteral("-Heav") << QStringLiteral("-BoldIt") << QStringLiteral("-BoldCn") << QStringLiteral("-BoldItal") << QStringLiteral("-BoldItalicB") << QStringLiteral("-BdIt") << QStringLiteral("-Bd") << QStringLiteral("-It")
+                                            << QStringLiteral("-Condensed") << QStringLiteral("-Light") << QStringLiteral("-Ligh") << QStringLiteral("-Lt") << QStringLiteral("-Slant") << QStringLiteral("-LightCond") << QStringLiteral("Lig") << QStringLiteral("-Narrow")
+                                            << QStringLiteral("Ext") << QStringLiteral("Narrow") << QStringLiteral("SWA") << QStringLiteral("Std") << QStringLiteral("-Identity-H") << QStringLiteral("-DTC");
         foreach(const QString &suffix, suffixes) {
             if (bName.endsWith(suffix))
                 bName = bName.left(bName.length() - suffix.length());
         }
         static const QVector<QRegExp> suffixesRegExp = QVector<QRegExp>()
-                << QRegExp(QLatin1String("[,-]?(Ital(ic)?|Oblique|Black|Bol(dB?)?)$"))
-                << QRegExp(QLatin1String("[,-](BdCn|SC)[0-9]*$")) << QRegExp(QLatin1String("[,-][A-Z][0-9]$")) << QRegExp(QLatin1String("_[0-9]+$"))
-                << QRegExp(QLatin1String("[+][A-Z]+$"))
-                << QRegExp(QLatin1String("[*][0-9]+$"));
+                << QRegExp(QStringLiteral("[,-]?(Ital(ic)?|Oblique|Black|Bol(dB?)?)$"))
+                << QRegExp(QStringLiteral("[,-](BdCn|SC)[0-9]*$")) << QRegExp(QStringLiteral("[,-][A-Z][0-9]$")) << QRegExp(QStringLiteral("_[0-9]+$"))
+                << QRegExp(QStringLiteral("[+][A-Z]+$"))
+                << QRegExp(QStringLiteral("[*][0-9]+$"));
         foreach(const QRegExp &suffix, suffixesRegExp) {
             bName.remove(suffix);
         }
-        static const QRegExp teXFonts = QRegExp(QLatin1String("^((CM|SF|MS)[A-Z]+|(cm)[a-z]+|wasy|stmary|LM(Sans|Roman|Math|Mono)[a-zA-Z]*)([0-9]+)$"));
-        bName.replace(teXFonts, QLatin1String("\\1"));
-        static const QRegExp adobePrefix = QRegExp(QLatin1String("^A(Caslon|Garamond)"));
-        bName.replace(adobePrefix, QLatin1String("\\1"));
-        static const QVector<QPair<QString, QString> > microsoftNamesWithSpaces = QVector<QPair<QString, QString> >() << QPair<QString, QString>(QLatin1String("Times New Roman"), QLatin1String("TimesNewRoman")) << QPair<QString, QString>(QLatin1String("Courier New"), QLatin1String("CourierNew")) << QPair<QString, QString>(QLatin1String("Comic Sans"), QLatin1String("ComicSans"));
+        static const QRegExp teXFonts = QRegExp(QStringLiteral("^((CM|SF|MS)[A-Z]+|(cm)[a-z]+|wasy|stmary|LM(Sans|Roman|Math|Mono)[a-zA-Z]*)([0-9]+)$"));
+        bName.replace(teXFonts, QStringLiteral("\\1"));
+        static const QRegExp adobePrefix = QRegExp(QStringLiteral("^A(Caslon|Garamond)"));
+        bName.replace(adobePrefix, QStringLiteral("\\1"));
+        static const QVector<QPair<QString, QString> > microsoftNamesWithSpaces = QVector<QPair<QString, QString> >() << QPair<QString, QString>(QStringLiteral("Times New Roman"), QStringLiteral("TimesNewRoman")) << QPair<QString, QString>(QStringLiteral("Courier New"), QStringLiteral("CourierNew")) << QPair<QString, QString>(QStringLiteral("Comic Sans"), QStringLiteral("ComicSans"));
         for (QVector<QPair<QString, QString> >::ConstIterator it = microsoftNamesWithSpaces.constBegin(); it != microsoftNamesWithSpaces.constEnd(); ++it)
             bName.replace(it->first, it->second);
         bNameChanged = bName != bNameOriginal;
@@ -313,7 +313,7 @@ QString Guessing::programToXML(const QString &program) {
             xml["manufacturer"] = "oracle";
             xml["product"] = "openoffice";
         }
-    } else if (text == QLatin1String("writer") || text == QLatin1String("calc") || text == QLatin1String("impress")) {
+    } else if (text == QStringLiteral("writer") || text == QStringLiteral("calc") || text == QStringLiteral("impress")) {
         /// for Creator/Editor string
         xml["manufacturer"] = "oracle;tdf";
         xml["product"] = "openoffice;libreoffice";
@@ -470,12 +470,12 @@ QString Guessing::programToXML(const QString &program) {
         if (indesignVersion.indexIn(text) >= 0)
             xml["version"] = indesignVersion.cap(0);
         else {
-            static const QRegExp csVersion(QLatin1String("\\bCS(\\d*)\\b"));
+            static const QRegExp csVersion(QStringLiteral("\\bCS(\\d*)\\b"));
             if (csVersion.indexIn(text) >= 0) {
                 bool ok = false;
                 double versionNumber = csVersion.cap(1).toDouble(&ok);
-                if (csVersion.cap(0) == QLatin1String("CS"))
-                    xml["version"] = QLatin1String("3.0");
+                if (csVersion.cap(0) == QStringLiteral("CS"))
+                    xml["version"] = QStringLiteral("3.0");
                 else if (ok && versionNumber > 1) {
                     versionNumber += 2;
                     xml["version"] = QString::number(versionNumber, 'f', 1);
@@ -489,12 +489,12 @@ QString Guessing::programToXML(const QString &program) {
         if (illustratorVersion.indexIn(text) >= 0)
             xml["version"] = illustratorVersion.cap(0);
         else {
-            static const QRegExp csVersion(QLatin1String("\\bCS(\\d*)\\b"));
+            static const QRegExp csVersion(QStringLiteral("\\bCS(\\d*)\\b"));
             if (csVersion.indexIn(text) >= 0) {
                 bool ok = false;
                 double versionNumber = csVersion.cap(1).toDouble(&ok);
-                if (csVersion.cap(0) == QLatin1String("CS"))
-                    xml["version"] = QLatin1String("11.0");
+                if (csVersion.cap(0) == QStringLiteral("CS"))
+                    xml["version"] = QStringLiteral("11.0");
                 else if (ok && versionNumber > 1) {
                     versionNumber += 10;
                     xml["version"] = QString::number(versionNumber, 'f', 1);
@@ -571,7 +571,7 @@ QString Guessing::programToXML(const QString &program) {
         static const QRegExp pscriptVersion("\\b\\d+(\\.\\d+)+\\b");
         xml["manufacturer"] = "microsoft";
         xml["product"] = "pscript";
-        xml["opsys"] = QLatin1String("windows");
+        xml["opsys"] = QStringLiteral("windows");
         if (pscriptVersion.indexIn(text) >= 0)
             xml["version"] = pscriptVersion.cap(0);
     } else if (text.indexOf("quarkxpress") >= 0) {
@@ -584,7 +584,7 @@ QString Guessing::programToXML(const QString &program) {
         static const QRegExp pdfcreatorVersion("\\b\\d+(\\.\\d+)+\\b");
         xml["manufacturer"] = "pdfforge";
         xml["product"] = "pdfcreator";
-        xml["opsys"] = QLatin1String("windows");
+        xml["opsys"] = QStringLiteral("windows");
         if (pdfcreatorVersion.indexIn(text) >= 0)
             xml["version"] = pdfcreatorVersion.cap(0);
     } else if (text.startsWith("stamppdf batch")) {
@@ -655,7 +655,7 @@ QString Guessing::programToXML(const QString &program) {
         xml["product"] = "apogee";
     } else if (text.contains("ricoh")) {
         xml["manufacturer"] = "ricoh";
-        const int i = text.indexOf(QLatin1String("aficio"));
+        const int i = text.indexOf(QStringLiteral("aficio"));
         if (i >= 0)
             xml["product"] = text.mid(i).replace(QLatin1Char(' '), QString::null);
     } else if (text.contains("toshiba") || text.contains("mfpimglib")) {
@@ -703,8 +703,8 @@ QString Guessing::programToXML(const QString &program) {
         xml["product"] = "alivepdf";
         if (alivepdfVersion.indexIn(text) >= 0)
             xml["version"] = alivepdfVersion.cap(0);
-        xml["opsys"] = QLatin1String("flash");
-    } else if (text == QLatin1String("google")) {
+        xml["opsys"] = QStringLiteral("flash");
+    } else if (text == QStringLiteral("google")) {
         xml["manufacturer"] = "google";
         xml["product"] = "docs";
     } else if (!text.contains("words")) {
@@ -718,10 +718,10 @@ QString Guessing::programToXML(const QString &program) {
             if (!xml.contains("subversion") && !microsoftVersion.cap(1).isEmpty())
                 xml["subversion"] = microsoftVersion.cap(1);
 
-            if (text.contains(QLatin1String("Macintosh")) || text.contains(QLatin1String("Mac OS X")))
-                xml["opsys"] = QLatin1String("macosx");
+            if (text.contains(QStringLiteral("Macintosh")) || text.contains(QStringLiteral("Mac OS X")))
+                xml["opsys"] = QStringLiteral("macosx");
             else
-                xml["opsys"] = QLatin1String("windows?");
+                xml["opsys"] = QStringLiteral("windows?");
         }
     }
 
@@ -737,16 +737,16 @@ QString Guessing::programToXML(const QString &program) {
                 xml["version"] = OOoVersion2.cap(1);
         }
 
-        if (text.indexOf(QLatin1String("unix")) >= 0)
-            xml["opsys"] = QLatin1String("generic-unix");
-        else if (text.indexOf(QLatin1String("linux")) >= 0)
-            xml["opsys"] = QLatin1String("linux");
-        else if (text.indexOf(QLatin1String("win32")) >= 0)
-            xml["opsys"] = QLatin1String("windows");
-        else if (text.indexOf(QLatin1String("solaris")) >= 0)
-            xml["opsys"] = QLatin1String("solaris");
-        else if (text.indexOf(QLatin1String("freebsd")) >= 0)
-            xml["opsys"] = QLatin1String("bsd");
+        if (text.indexOf(QStringLiteral("unix")) >= 0)
+            xml["opsys"] = QStringLiteral("generic-unix");
+        else if (text.indexOf(QStringLiteral("linux")) >= 0)
+            xml["opsys"] = QStringLiteral("linux");
+        else if (text.indexOf(QStringLiteral("win32")) >= 0)
+            xml["opsys"] = QStringLiteral("windows");
+        else if (text.indexOf(QStringLiteral("solaris")) >= 0)
+            xml["opsys"] = QStringLiteral("solaris");
+        else if (text.indexOf(QStringLiteral("freebsd")) >= 0)
+            xml["opsys"] = QStringLiteral("bsd");
     }
 
     if (!xml.contains("manufacturer") && (text.contains("adobe") || text.contains("acrobat")))
@@ -754,14 +754,14 @@ QString Guessing::programToXML(const QString &program) {
 
     if (!xml.contains("opsys")) {
         /// automatically guess operating system
-        if (text.contains(QLatin1String("macint")))
-            xml["opsys"] = QLatin1String("macosx");
-        else if (text.contains(QLatin1String("solaris")))
-            xml["opsys"] = QLatin1String("solaris");
-        else if (text.contains(QLatin1String("linux")))
-            xml["opsys"] = QLatin1String("linux");
-        else if (text.contains(QLatin1String("windows")) || text.contains(QLatin1String("win32")) || text.contains(QLatin1String("win64")))
-            xml["opsys"] = QLatin1String("windows");
+        if (text.contains(QStringLiteral("macint")))
+            xml["opsys"] = QStringLiteral("macosx");
+        else if (text.contains(QStringLiteral("solaris")))
+            xml["opsys"] = QStringLiteral("solaris");
+        else if (text.contains(QStringLiteral("linux")))
+            xml["opsys"] = QStringLiteral("linux");
+        else if (text.contains(QStringLiteral("windows")) || text.contains(QStringLiteral("win32")) || text.contains(QStringLiteral("win64")))
+            xml["opsys"] = QStringLiteral("windows");
     }
 
 
