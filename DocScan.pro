@@ -80,9 +80,6 @@ INCLUDEPATH += src/wv2/generator src/wv2/
 # load and parse zip'ed files (e.g. OpenDocument files)
 LIBS += -lquazip5
 
-# load compressed files
-LIBS += -llzma
-
 unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += glib-2.0 poppler-cpp poppler
