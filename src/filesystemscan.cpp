@@ -40,7 +40,7 @@ void FileSystemScan::startSearch(int numExpectedHits)
         QDir dir = QDir(queue.first());
         queue.removeFirst();
 
-        QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name & QDir::IgnoreCase);
+        QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name | QDir::IgnoreCase);
         foreach(const QString &filename, files) {
             QUrl url = QUrl::fromLocalFile(dir.absolutePath() + QDir::separator() + filename);
             emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));

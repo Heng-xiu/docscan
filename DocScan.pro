@@ -121,5 +121,5 @@ LIBS += -llzma
 
 unix {
     CONFIG += link_pkgconfig
-    PKGCONFIG += libgsf-1 glib-2.0 poppler-cpp poppler
+    PKGCONFIG += glib-2.0 poppler-cpp poppler
 }
