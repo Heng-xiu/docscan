@@ -28,7 +28,7 @@
 LogCollector::LogCollector(QIODevice *output, QObject *parent)
     : QObject(parent), m_ts(output), m_output(output), m_tagStart("<(\\w+)\\b")
 {
-    m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log>" << endl;
+    m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log isodate=\"" << QDateTime::currentDateTime().toString(Qt::ISODate) << "\">" << endl;
 }
 
 bool LogCollector::isAlive()
@@ -46,7 +46,7 @@ void LogCollector::receiveLog(const QString &message)
 
 void LogCollector::close()
 {
-    m_ts << "</log>" << endl;
+    m_ts << "</log>" << endl << "<!-- " << QDateTime::currentDateTime().toString(Qt::ISODate) << " -->" << endl;
     m_ts.flush();
     m_output->close();
 }
