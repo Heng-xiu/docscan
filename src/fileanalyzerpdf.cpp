@@ -67,7 +67,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int jhoveExitCode = -1;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
-        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
+        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
@@ -85,7 +85,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 qWarning() << "Output of jhove is empty, stderr is " << jhoveErrorOutput;
             }
         } else
-            qWarning() << "Failed to start jhove with as" << arguments.join("_");
+            qWarning() << "Failed to start jhove with arguments " << arguments.join("_");
     }
 
     bool veraPDFIsPDF = false;

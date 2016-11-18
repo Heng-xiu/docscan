@@ -97,6 +97,9 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "jhoveShellscript =" << jhoveShellscript;
                         qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
                         qDebug() << "jhoveVerbose =" << jhoveVerbose;
+                        const QFileInfo script(jhoveShellscript);
+                        if (jhoveShellscript.isEmpty() || !script.exists() || !script.isExecutable())
+                            qCritical() << "Value for jhoveShellscript does not refer to an existing, executable script or program";
                     }
                 } else if (key == "verapdf") {
                     veraPDFcliTool = value;
