@@ -64,13 +64,17 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString jhovePDFprofile = QString::null;
     QString jhoveStandardOutput = QString::null;
     QString jhoveErrorOutput = QString::null;
+    int jhoveWalltime = 0;
     int jhoveExitCode = -1;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
         const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        QTime time;
+        time.start();
         if (jhove.waitForStarted()) {
             jhove.waitForFinished();
+            jhoveWalltime = time.elapsed();
             jhoveExitCode = jhove.exitCode();
             jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
             jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
@@ -92,14 +96,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     bool veraPDFIsPDFA1B = false;
     QString veraPDFStandardOutput = QString::null;
     QString veraPDFErrorOutput = QString::null;
+    int veraPDFwalltime = 0;
     long veraPDFfilesize = 0;
     int veraPDFExitCode = -1;
     if (jhoveIsPDF && !m_veraPDFcliTool.isEmpty()) {
         QProcess veraPDF(this);
         const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        QTime time;
+        time.start();
         if (veraPDF.waitForStarted()) {
             veraPDF.waitForFinished();
+            veraPDFwalltime = time.elapsed();
             veraPDFExitCode = veraPDF.exitCode();
             veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().data());
             veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().data());
@@ -138,7 +146,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (jhoveIsPDF) {
             /// insert data from jHove
-            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" wellformed=\"%1\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode));
+            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" wellformed=\"%1\" walltime=\"%3\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveWalltime));
             if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
                 metaText.append(QStringLiteral(" />\n"));
             else {
@@ -159,7 +167,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             /// insert XML data from veraPDF
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
             if (p > 0) {
-                metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" filesize=\"%4\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFIsPDFA1B ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFfilesize));
+                metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" filesize=\"%4\" walltime=\"%5\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFIsPDFA1B ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFfilesize).arg(veraPDFwalltime));
                 metaText.append(veraPDFStandardOutput.mid(p + 3));
                 metaText.append(QStringLiteral("</verapdf>\n"));
             }
