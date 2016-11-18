@@ -21,6 +21,7 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QDebug>
 #include <QThreadPool>
@@ -49,6 +50,7 @@ FileAnalyzerAbstract *fileAnalyzer;
 int numHits, webcrawlermaxvisitedpages;
 QString jhoveShellscript, jhoveConfigFile;
 bool jhoveVerbose;
+QString veraPDFcliTool;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 
 bool evaluateConfigfile(const QString &filename)
@@ -96,6 +98,12 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
                         qDebug() << "jhoveVerbose =" << jhoveVerbose;
                     }
+                } else if (key == "verapdf") {
+                    veraPDFcliTool = value;
+                    qDebug() << "veraPDFcliTool = " << veraPDFcliTool;
+                    const QFileInfo script(veraPDFcliTool);
+                    if (veraPDFcliTool.isEmpty() || !script.exists() || !script.isExecutable())
+                        qCritical() << "Value for veraPDFcliTool does not refer to an existing, executable script or program";
                 } else if (key == "webcrawler:starturl") {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -259,12 +267,15 @@ int main(int argc, char *argv[])
 
         if (!jhoveShellscript.isEmpty() && !jhoveConfigFile.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != NULL)
+            if (fileAnalyzerPDF != NULL) {
                 fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
-            else {
+                fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
+            } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != NULL)
+                if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
+                    fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
+                }
             }
         }
 

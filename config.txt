@@ -1,23 +1,23 @@
 logcollector=/tmp/pdf-fonts.xml
 
 textExtraction=none
-finder:numhits=1000
+finder:numhits=25000
 
-#searchenginebing=filetype:doc abc
-#searchenginegoogle=( filetype:odt site:pl )
-#searchenginegoogle=site:es ( filetype:docx | filetype:xlsx | filetype:pptx )
-#fromlogfilefilefinder=/tmp/log2.xml
-#fromlogfiledownloader=/tmp/log2.xml
+filter=*.pdf|*.pdf.xz
+#filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/
+#filesystemscan=/tmp/problem
+#filesystemscan=/tmp/pdf
+filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/cth/2010/
+#filefinderlist=/tmp/list.txt
 
-filter=*.pdf|*.pdf.xz|*.pdf.lzma
-filesystemscan=/tmp/pdf
 
 #urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
 #urldownloader=/tmp/pdf-result/%{h:4}/%{h}_%{s}
 fakedownloader=true
 
 #fileanalyzer=NULL
-fileanalyzer=multiplexer
-#fileanalyzer=pdf
+#fileanalyzer=multiplexer
+fileanalyzer=pdf
 
-jhove=/home/fish/bin/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
+jhove=/home/fish/HiS/Research/OSS/jhove/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
+verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf

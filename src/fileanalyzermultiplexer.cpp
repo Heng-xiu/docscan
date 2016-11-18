@@ -48,6 +48,10 @@ void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QStri
     m_fileAnalyzerPDF.setupJhove(shellscript, configFile, verbose);
 }
 
+void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
+    m_fileAnalyzerPDF.setupVeraPDF(cliTool);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     const QFileInfo fi(filename);
