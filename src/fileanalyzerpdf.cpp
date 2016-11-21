@@ -175,7 +175,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (jhoveIsPDF) {
             /// insert data from jHove
-            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" wellformed=\"%1\" walltime=\"%3\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveWalltime));
+            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" pdf=\"%4\" wellformed=\"%1\" walltime=\"%3\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveWalltime).arg(jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
             if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
                 metaText.append(QStringLiteral(" />\n"));
             else {
