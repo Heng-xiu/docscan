@@ -31,6 +31,9 @@
 #include "guessing.h"
 #include "general.h"
 
+static const int oneMinuteInMillisec = 60000;
+static const int twoMinutesInMillisec = 120000;
+
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null), m_jhoveVerbose(false)
 {
@@ -80,8 +83,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (jhove.waitForStarted()) {
-            jhove.waitForFinished();
+        if (jhove.waitForStarted(oneMinuteInMillisec / 2)) {
+            jhove.waitForFinished(oneMinuteInMillisec);
             jhoveWalltime = time.elapsed();
             jhoveExitCode = jhove.exitCode();
             jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
@@ -113,8 +116,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (veraPDF.waitForStarted()) {
-            veraPDF.waitForFinished();
+        if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
+            veraPDF.waitForFinished(twoMinutesInMillisec);
             veraPDFwalltime = time.elapsed();
             veraPDFExitCode = veraPDF.exitCode();
             veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().data());
@@ -138,8 +141,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                     veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                     time.start();
-                    if (veraPDF.waitForStarted()) {
-                        veraPDF.waitForFinished();
+                    if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
+                        veraPDF.waitForFinished(twoMinutesInMillisec);
                         veraPDFwalltime = time.elapsed();
                         veraPDFExitCode = veraPDF.exitCode();
                         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().data());
