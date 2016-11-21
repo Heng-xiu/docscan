@@ -36,15 +36,14 @@
 class FileAnalyzerOpenXML::OpenXMLDocumentHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerOpenXML *p;
     ResultContainer &result;
     QStack<QString> m_nodeName;
     bool m_insideText;
     QString c;
 
 public:
-    OpenXMLDocumentHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false) {
+    OpenXMLDocumentHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer), m_insideText(false) {
         result.paperSizeWidth = result.paperSizeHeight = 0;
         result.formatVersion = QStringLiteral(""); // TODO
     }
@@ -85,13 +84,12 @@ public:
 class FileAnalyzerOpenXML::OpenXMLSettingsHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerOpenXML *p;
     ResultContainer &result;
     QString m_language;
 
 public:
-    OpenXMLSettingsHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_language(QString::null) {
+    OpenXMLSettingsHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer), m_language(QString::null) {
         // nothing
     }
 
@@ -113,13 +111,12 @@ public:
 class FileAnalyzerOpenXML::OpenXMLSlideHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerOpenXML *p;
     ResultContainer &result;
     QString m_language;
 
 public:
-    OpenXMLSlideHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_language(QString::null) {
+    OpenXMLSlideHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer), m_language(QString::null) {
         // nothing
     }
 
@@ -142,13 +139,12 @@ public:
 class FileAnalyzerOpenXML::OpenXMLCoreHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerOpenXML *p;
     ResultContainer &result;
     QStack<QString> m_nodeName;
 
 public:
-    OpenXMLCoreHandler(FileAnalyzerOpenXML *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer)  {
+    OpenXMLCoreHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer)  {
         // nothing
     }
 

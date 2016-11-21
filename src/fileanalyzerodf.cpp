@@ -39,15 +39,14 @@
 class FileAnalyzerODF::ODFContentFileHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerODF *p;
     ResultContainer &result;
     QStack<QString> m_nodeName;
     bool m_insideText;
     int m_pageCount;
 
 public:
-    ODFContentFileHandler(FileAnalyzerODF *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer), m_insideText(false), m_pageCount(0) {
+    ODFContentFileHandler(FileAnalyzerODF *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer), m_insideText(false), m_pageCount(0) {
         // nothing
     }
 
@@ -78,7 +77,6 @@ public:
 class FileAnalyzerODF::ODFStylesFileHandler: public QXmlDefaultHandler
 {
 private:
-    FileAnalyzerODF *p;
     ResultContainer &result;
     QStack<QString> m_nodeName;
     QString stylepagelayoutname;
@@ -86,8 +84,8 @@ private:
     QString m_lastStyleName;
 
 public:
-    ODFStylesFileHandler(FileAnalyzerODF *parent, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), p(parent), result(resultContainer), stylepagelayoutname(QString::null) {
+    ODFStylesFileHandler(FileAnalyzerODF *, ResultContainer &resultContainer)
+        : QXmlDefaultHandler(), result(resultContainer), stylepagelayoutname(QString::null) {
         // nothing
     }
 
