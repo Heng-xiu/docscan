@@ -88,7 +88,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
     } else if (filename.endsWith(QStringLiteral(".bz2"))) {
         uncompressAnalyzefile(filename, QStringLiteral(".bz2"), QStringLiteral("bunzip2"));
     } else if (filename.endsWith(QStringLiteral(".lzma"))) {
-        uncompressAnalyzefile(filename, QStringLiteral(".lzma"), QStringLiteral("lzma"));
+        uncompressAnalyzefile(filename, QStringLiteral(".lzma"), QStringLiteral("unlzma"));
     } else if (filename.endsWith(".pdf")) {
         if (m_filters.contains(QStringLiteral("*.pdf")))
             m_fileAnalyzerPDF.analyzeFile(filename);
