@@ -166,7 +166,7 @@ void UrlDownloader::finished()
         static const QRegExp dateTimeRegExp("%\\{D:([-_%a-zA-Z0-9]+)\\}");
         int p = -1;
         QDateTime dateTime = QDateTime::currentDateTime();
-        while ((p = dateTimeRegExp.indexIn(filename)) >= 0) {
+        while ((p = dateTimeRegExp.indexIn(filename, p + 1)) >= 0) {
             QString dateTimeStr = dateTime.toString(dateTimeRegExp.cap(1));
             /// support "ww" for zero-padded, two-digit week numbers
             dateTimeStr = dateTimeStr.replace(QStringLiteral("ww"), QStringLiteral("%1"));
@@ -187,7 +187,7 @@ void UrlDownloader::finished()
         QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
         static const QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
         p = -1;
-        while ((p = md5sumRegExp.indexIn(filename)) >= 0) {
+        while ((p = md5sumRegExp.indexIn(filename, p + 1)) >= 0) {
             if (md5sumRegExp.cap(1).isEmpty())
                 filename = filename.replace(md5sumRegExp.cap(0), md5sum);
             else {
