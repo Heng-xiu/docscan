@@ -56,53 +56,15 @@ void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
-    m_isAlive = true;
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-
-    QString realFilename = filename;
-    if (filename.endsWith(QStringLiteral(".pdf.xz"))) {
+    if (filename.endsWith(QStringLiteral(".xz")) || filename.endsWith(QStringLiteral(".gz")) || filename.endsWith(QStringLiteral(".bz2")) || filename.endsWith(QStringLiteral(".lzma"))) {
         /// File is xz-compressed
-        QString tempFilename = QString(QStringLiteral("/tmp/.temporary-%1.pdf")).arg(QCoreApplication::instance()->applicationPid());
-        QProcess xz(this);
-        const QStringList arguments;
-        xz.start(QStringLiteral("unxz"), arguments, QIODevice::ReadWrite);
-        if (xz.waitForStarted()) {
-            QFile inputFile(filename), outputFile(realFilename);
-            if (inputFile.open(QIODevice::ReadOnly) && outputFile.open(QIODevice::WriteOnly)) {
-                while (true) {
-                    static const int buffersize = 1 << 18;
-                    const QByteArray inputBuffer = inputFile.read(buffersize);
-                    if (!inputBuffer.isEmpty())
-                        xz.write(inputBuffer);
-                    if (xz.bytesAvailable() > 0) {
-                        const QByteArray outputBuffer = xz.read(xz.bytesAvailable());
-                        outputFile.write(outputBuffer);
-                    }
-                    if (inputBuffer.isEmpty()) {
-                        xz.closeWriteChannel();
-                        break;
-                    }
-                }
-                xz.waitForFinished();
-                if (xz.bytesAvailable() > 0) {
-                    const QByteArray outputBuffer = xz.read(xz.bytesAvailable());
-                    outputFile.write(outputBuffer);
-                }
-                outputFile.close();
-                inputFile.close();
-                realFilename = tempFilename;
-            } else
-                qWarning() << "Failed to open files";
-        } else
-            qWarning() << "Failed to start 'unxz'";
-
-        if (tempFilename != realFilename) {
-            /// Decompression failed, revert file creation and filename settings
-            QFile(tempFilename).remove();
-            realFilename = filename;
-        }
+        qWarning() << "Compressed files like " << filename << " should not directly send through this analyzer, but rather be uncompressed by FileAnalyzerMultiplexer first";
+        m_isAlive = false;
+        return;
     }
 
+    m_isAlive = true;
+    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
     bool jhoveIsPDF = false;
     bool jhoveWellformedAndValid = false;
@@ -114,7 +76,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int jhoveExitCode = -1;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
-        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << realFilename;
+        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -147,7 +109,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int veraPDFExitCode = -1;
     if (jhoveIsPDF && !m_veraPDFcliTool.isEmpty()) {
         QProcess veraPDF(this);
-        const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << realFilename;
+        const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -176,7 +138,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start veraPDF with arguments " << arguments.join("_");
     }
 
-    PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(realFilename);
+    PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
     if (wrapper != NULL) {
         QString guess;
 
@@ -220,7 +182,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         }
 
         /// file information including size
-        QFileInfo fi = QFileInfo(realFilename);
+        QFileInfo fi = QFileInfo(filename);
         metaText.append(QString("<file size=\"%1\" />\n").arg(fi.size()));
 
         /// guess and evaluate editor (a.k.a. creator)
@@ -346,10 +308,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     } else
         emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(filename));
 
-    if (realFilename != filename) {
-        /// Temporary file was created, delete it now
-        QFile(realFilename).remove();
-    }
 
     m_isAlive = false;
 }
