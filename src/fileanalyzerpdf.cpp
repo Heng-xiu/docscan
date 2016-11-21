@@ -101,7 +101,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     }
 
     bool veraPDFIsPDF = false;
-    bool veraPDFIsPDFA1B = false;
+    bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
     QString veraPDFStandardOutput = QString::null;
     QString veraPDFErrorOutput = QString::null;
     int veraPDFwalltime = 0;
@@ -130,6 +130,24 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                         bool ok = false;
                         veraPDFfilesize = startOfOutput.mid(p1 + 18, p2 - p1 - 18).toLong(&ok);
                         if (!ok) veraPDFfilesize = 0;
+                    }
+                }
+
+                if (veraPDFIsPDFA1B) {
+                    /// So, it is PDF-A/1b, then test for PDF-A/1a
+                    const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+                    veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+                    time.start();
+                    if (veraPDF.waitForStarted()) {
+                        veraPDF.waitForFinished();
+                        veraPDFwalltime = time.elapsed();
+                        veraPDFExitCode = veraPDF.exitCode();
+                        veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().data());
+                        veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().data());
+                        if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
+                            const QString startOfOutput = veraPDFStandardOutput.left(2048);
+                            veraPDFIsPDFA1A = startOfOutput.contains(QStringLiteral(" flavour=\"PDFA_1_A\"")) && startOfOutput.contains(QStringLiteral(" isCompliant=\"true\""));
+                        }
                     }
                 }
             } else
@@ -175,7 +193,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             /// insert XML data from veraPDF
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
             if (p > 0) {
-                metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" filesize=\"%4\" walltime=\"%5\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFIsPDFA1B ? QStringLiteral("true") : QStringLiteral("false")).arg(veraPDFfilesize).arg(veraPDFwalltime));
+                metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" filesize=\"%5\" walltime=\"%6\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFfilesize).arg(veraPDFwalltime));
                 metaText.append(veraPDFStandardOutput.mid(p + 3));
                 metaText.append(QStringLiteral("</verapdf>\n"));
             }
