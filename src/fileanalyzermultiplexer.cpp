@@ -64,7 +64,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
     if (uncompressProcess.waitForStarted(10000) && uncompressProcess.waitForFinished(60000)) {
         const QString uncompressedFile = tempFilename.left(tempFilename.length() - extensionWithDot.length());
         bool uncompressSuccess = uncompressProcess.exitCode() == 0;
-        const QString logText = QString(QStringLiteral("<uncompress status=\"%5\" tool=\"%1\" time=\"%5\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QStringLiteral("success") : QStringLiteral("error")).arg(QDateTime::currentMSecsSinceEpoch() - startTime);
+        const QString logText = QString(QStringLiteral("<uncompress status=\"%5\" tool=\"%1\" time=\"%6\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QStringLiteral("success") : QStringLiteral("error")).arg(QDateTime::currentMSecsSinceEpoch() - startTime);
         emit analysisReport(logText);
         if (uncompressSuccess)
             analyzeFile(uncompressedFile);
