@@ -179,6 +179,8 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "finder:numhits =" << numHits;
                 } else if (key == "fileanalyzer") {
                     if (value.contains("multiplexer")) {
+                        if (filter.isEmpty())
+                            qWarning() << "Attempting to create a FileAnalyzerMultiplexer with empty filter";
                         fileAnalyzer = new FileAnalyzerMultiplexer(filter);
                         qDebug() << "fileanalyzer = FileAnalyzerMultiplexer";
                     } else if (value.contains("odf")) {
