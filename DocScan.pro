@@ -6,6 +6,7 @@ TARGET = DocScan
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG += ordered
+CONFIG += c++11
 TEMPLATE = app
 DEFINES += HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
 

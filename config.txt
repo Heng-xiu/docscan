@@ -3,11 +3,11 @@ logcollector=/tmp/pdf-fonts.xml
 textExtraction=none
 finder:numhits=25000
 
-filter=*.pdf|*.pdf.xz
+filter=*.pdf.xz
 #filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/
 #filesystemscan=/tmp/problem
-#filesystemscan=/tmp/pdf
-filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/cth/2010/
+filesystemscan=/tmp/pdf
+#filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/cth/2010/
 #filefinderlist=/tmp/list.txt
 
 
