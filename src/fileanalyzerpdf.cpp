@@ -113,6 +113,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     if (jhoveIsPDF && !m_veraPDFcliTool.isEmpty()) {
         QProcess veraPDF(this);
         const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -138,7 +139,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
                 if (veraPDFIsPDFA1B) {
                     /// So, it is PDF-A/1b, then test for PDF-A/1a
-                    const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+                    const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                     veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                     time.start();
                     if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
