@@ -24,6 +24,7 @@
 #include <QDateTime>
 #include <QProcess>
 #include <QCoreApplication>
+#include <QDir>
 
 #include "popplerwrapper.h"
 #include "fileanalyzerpdf.h"
