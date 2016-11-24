@@ -155,7 +155,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// MonoType
     } else if (fontName.startsWith("KunstlerScript") || fontName.startsWith("AmericanTypewriter") || fontName.startsWith("ACaslon") || fontName.startsWith("AGaramond") || fontName.startsWith("GaramondPremrPro") || fontName.contains("EuroSans") || fontName.startsWith("Minion") || fontName.startsWith("Myriad")) {
         license["type"] = "proprietary"; /// Adobe
-    } else if (fontName.startsWith("BradleyHandITC") || fontName.startsWith("EdwardianScriptITC") || fontName.startsWith("AvantGarde") || fontName.startsWith("ItcEras") || fontName.contains("Officina") || fontName.contains("Kabel") || fontName.contains("Cheltenham")) {
+    } else if (fontName.startsWith("ITC") || fontName.startsWith("BradleyHandITC") || fontName.startsWith("EdwardianScriptITC") || fontName.startsWith("AvantGarde") || fontName.startsWith("ItcEras") || fontName.contains("Officina") || fontName.contains("Kabel") || fontName.contains("Cheltenham")) {
         license["type"] = "proprietary"; /// ITC
     } else if (fontName.contains("BellGothic")) {
         license["type"] = "proprietary"; /// Mergenthaler Linotype/AT&T
