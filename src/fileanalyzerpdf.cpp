@@ -143,7 +143,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     time.start();
                     if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
                         veraPDF.waitForFinished(twoMinutesInMillisec);
-                        veraPDFwalltime = time.elapsed();
+                        veraPDFwalltime += time.elapsed();
                         veraPDFExitCode = veraPDF.exitCode();
                         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().data());
                         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().data());

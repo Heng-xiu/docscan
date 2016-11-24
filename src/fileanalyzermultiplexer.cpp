@@ -52,6 +52,14 @@ void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
     m_fileAnalyzerPDF.setupVeraPDF(cliTool);
 }
 
+void FileAnalyzerMultiplexer::setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass) {
+    m_fileAnalyzerPDF.setupPdfBoXValidator(pdfboxValidatorJavaClass);
+}
+
+void FileAnalyzerMultiplexer::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
+    m_fileAnalyzerPDF.setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     const QFileInfo fi(filename);

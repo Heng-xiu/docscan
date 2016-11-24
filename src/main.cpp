@@ -51,6 +51,8 @@ int numHits, webcrawlermaxvisitedpages;
 QString jhoveShellscript, jhoveConfigFile;
 bool jhoveVerbose;
 QString veraPDFcliTool;
+QString pdfboxValidatorJavaClass;
+QString callasPdfAPilotCLI;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 
 bool evaluateConfigfile(const QString &filename)
@@ -106,7 +108,19 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "veraPDFcliTool = " << veraPDFcliTool;
                     const QFileInfo script(veraPDFcliTool);
                     if (veraPDFcliTool.isEmpty() || !script.exists() || !script.isExecutable())
-                        qCritical() << "Value for veraPDFcliTool does not refer to an existing, executable script or program";
+                        qCritical() << "Value for verapdf does not refer to an existing, executable script or program";
+                } else if (key == "pdfboxvalidator") {
+                    pdfboxValidatorJavaClass = value;
+                    qDebug() << "pdfboxvalidator = " << pdfboxValidatorJavaClass;
+                    const QFileInfo javaClass(pdfboxValidatorJavaClass);
+                    if (pdfboxValidatorJavaClass.isEmpty() || !javaClass.exists() || javaClass.isExecutable())
+                        qCritical() << "Value for pdfboxValidatorJavaClass does not refer to an non-existing xor executable file";
+                } else if (key == "callaspdfapilot") {
+                    callasPdfAPilotCLI = value;
+                    qDebug() << "callaspdfapilot = " << callasPdfAPilotCLI;
+                    const QFileInfo program(callasPdfAPilotCLI);
+                    if (callasPdfAPilotCLI.isEmpty() || !program.exists() || !program.isExecutable())
+                        qCritical() << "Value for callaspdfapilot does not refer to an existing, executable script or program";
                 } else if (key == "webcrawler:starturl") {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -275,11 +289,15 @@ int main(int argc, char *argv[])
             if (fileAnalyzerPDF != NULL) {
                 fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
                 fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
+                fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
+                fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
                 if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
                     fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
+                    fileAnalyzerMultiplexer->setupPdfBoXValidator(pdfboxValidatorJavaClass);
+                    fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
                 }
             }
         }

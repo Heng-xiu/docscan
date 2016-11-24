@@ -46,6 +46,8 @@ public:
 
     void setupJhove(const QString &shellscript, const QString &configFile, bool verbose);
     void setupVeraPDF(const QString &cliTool);
+    void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
+    void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -55,6 +57,8 @@ private:
     QString m_jhoveShellscript, m_jhoveConfigFile;
     bool m_jhoveVerbose;
     QString m_veraPDFcliTool;
+    QString m_pdfboxValidatorJavaClass;
+    QString m_callasPdfAPilotCLI;
 };
 
 #endif // FILEANALYZERPDF_H
