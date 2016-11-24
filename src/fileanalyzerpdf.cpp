@@ -217,9 +217,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
             static const QRegularExpression rePDFA(QStringLiteral("\\bInfo\\s+PDFA\\s+PDF/A-1([ab])"));
             QRegularExpressionMatch match = rePDFA.match(callasPdfAPilotStandardOutput.right(512));
-            qWarning() << rePDFA.isValid() << rePDFA.pattern() << match.isValid() << match.hasMatch();
             if (callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty() && match.hasMatch()) {
-                qWarning() << "captured=" << match.captured(1);
                 callasPdfAPilotPDFA1letter = match.captured(1).at(0).toLatin1();
                 const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_callasPdfAPilotCLI << QStringLiteral("-a") << filename;
                 callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
@@ -231,7 +229,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
                     callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().data());
                     callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().data());
-                    qWarning() << callasPdfAPilotStandardOutput.right(128);
 
                     static const QRegularExpression reSummary(QStringLiteral("\\bSummary\\t(Errors|Warnings)\\t(0|[1-9][0-9]*)\\b"));
                     QRegularExpressionMatchIterator reIter = reSummary.globalMatch(callasPdfAPilotStandardOutput.right(512));
@@ -248,8 +245,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                         }
                     }
                 }
-            } else
-                qWarning() << callasPdfAPilotStandardOutput.right(512);
+            }
         }
     }
 
