@@ -25,6 +25,7 @@
 #include <QProcess>
 #include <QCoreApplication>
 #include <QDir>
+#include <QRegularExpression>
 
 #include "popplerwrapper.h"
 #include "fileanalyzerpdf.h"
@@ -56,6 +57,14 @@ void FileAnalyzerPDF::setupJhove(const QString &shellscript, const QString &conf
 void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 {
     m_veraPDFcliTool = cliTool;
+}
+
+void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass) {
+    m_pdfboxValidatorJavaClass = pdfboxValidatorJavaClass;
+}
+
+void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
+    m_callasPdfAPilotCLI = callasPdfAPilotCLI;
 }
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
@@ -160,6 +169,90 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start veraPDF with arguments " << arguments.join("_");
     }
 
+    bool pdfboxValidatorValidPdf = false;
+    QString pdfboxValidatorStandardOutput = QString::null;
+    QString pdfboxValidatorErrorOutput = QString::null;
+    int pdfboxValidatorWalltime = 0;
+    int pdfboxValidatorExitCode = -1;
+    if (jhoveIsPDF && !m_pdfboxValidatorJavaClass.isEmpty()) {
+        const QFileInfo fi(m_pdfboxValidatorJavaClass);
+        const QDir dir = fi.dir();
+        const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
+        QProcess pdfboxValidator(this);
+        pdfboxValidator.setWorkingDirectory(dir.path());
+        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << filename;
+        pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        QTime time;
+        time.start();
+        if (pdfboxValidator.waitForStarted(oneMinuteInMillisec / 2)) {
+            pdfboxValidator.waitForFinished(oneMinuteInMillisec);
+            pdfboxValidatorWalltime = time.elapsed();
+            pdfboxValidatorExitCode = pdfboxValidator.exitCode();
+            pdfboxValidatorStandardOutput = QString::fromUtf8(pdfboxValidator.readAllStandardOutput().data());
+            pdfboxValidatorErrorOutput = QString::fromUtf8(pdfboxValidator.readAllStandardError().data());
+            if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
+                pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
+        }
+    }
+
+    QString callasPdfAPilotStandardOutput = QString::null;
+    QString callasPdfAPilotErrorOutput = QString::null;
+    int callasPdfAPilotWalltime = 0;
+    int callasPdfAPilotExitCode = -1;
+    int callasPdfAPilotCountErrors = -1;
+    int callasPdfAPilotCountWarnings = -1;
+    char callasPdfAPilotPDFA1letter = '\0';
+    if (jhoveIsPDF && !m_callasPdfAPilotCLI.isEmpty()) {
+        QProcess callasPdfAPilot(this);
+        const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_callasPdfAPilotCLI << QStringLiteral("--quickpdfinfo") << filename;
+        callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        QTime time;
+        time.start();
+        if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec / 2)) {
+            callasPdfAPilot.waitForFinished(oneMinuteInMillisec);
+            callasPdfAPilotWalltime = time.elapsed();
+            callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
+            callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().data());
+            callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().data());
+
+            static const QRegularExpression rePDFA(QStringLiteral("\\bInfo\\s+PDFA\\s+PDF/A-1([ab])"));
+            QRegularExpressionMatch match = rePDFA.match(callasPdfAPilotStandardOutput.right(512));
+            qWarning() << rePDFA.isValid() << rePDFA.pattern() << match.isValid() << match.hasMatch();
+            if (callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty() && match.hasMatch()) {
+                qWarning() << "captured=" << match.captured(1);
+                callasPdfAPilotPDFA1letter = match.captured(1).at(0).toLatin1();
+                const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_callasPdfAPilotCLI << QStringLiteral("-a") << filename;
+                callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+                QTime time;
+                time.start();
+                if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec / 2)) {
+                    callasPdfAPilot.waitForFinished(oneMinuteInMillisec);
+                    callasPdfAPilotWalltime += time.elapsed();
+                    callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
+                    callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().data());
+                    callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().data());
+                    qWarning() << callasPdfAPilotStandardOutput.right(128);
+
+                    static const QRegularExpression reSummary(QStringLiteral("\\bSummary\\t(Errors|Warnings)\\t(0|[1-9][0-9]*)\\b"));
+                    QRegularExpressionMatchIterator reIter = reSummary.globalMatch(callasPdfAPilotStandardOutput.right(512));
+                    while (reIter.hasNext()) {
+                        const QRegularExpressionMatch match = reIter.next();
+                        if (match.captured(1) == QStringLiteral("Errors")) {
+                            bool ok = false;
+                            callasPdfAPilotCountErrors = match.captured(2).toInt(&ok);
+                            if (!ok) callasPdfAPilotCountErrors = -1;
+                        } else if (match.captured(1) == QStringLiteral("Warnings")) {
+                            bool ok = false;
+                            callasPdfAPilotCountWarnings = match.captured(2).toInt(&ok);
+                            if (!ok) callasPdfAPilotCountWarnings = -1;
+                        }
+                    }
+                }
+            } else
+                qWarning() << callasPdfAPilotStandardOutput.right(512);
+        }
+    }
+
     PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
     if (wrapper != NULL) {
         QString guess;
@@ -201,6 +294,25 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(veraPDFStandardOutput.mid(p + 3));
                 metaText.append(QStringLiteral("</verapdf>\n"));
             }
+        }
+
+        if (!pdfboxValidatorStandardOutput.isEmpty()) {
+            /// insert result from Apache's PDFBox
+            metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\" walltime=\"%3\" />\n")).arg(pdfboxValidatorExitCode).arg(pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")).arg(pdfboxValidatorWalltime));
+        }
+
+        if (!callasPdfAPilotStandardOutput.isEmpty()) {
+            const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
+            const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
+            metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" walltime=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" >\n")).arg(callasPdfAPilotExitCode).arg(callasPdfAPilotWalltime).arg(isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
+            if (callasPdfAPilotExitCode != 0) {
+                if (callasPdfAPilotErrorOutput.isEmpty())
+                    metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
+                else
+                    metaText.append(DocScan::xmlify(callasPdfAPilotErrorOutput));
+            } else
+                metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
+            metaText.append(QStringLiteral("</callaspdfapilot>"));
         }
 
         /// file information including size
