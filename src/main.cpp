@@ -288,15 +288,45 @@ int main(int argc, char *argv[])
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != NULL) {
                 fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
-                fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
-                fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
-                fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
                 if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
+                }
+            }
+        }
+
+        if (!veraPDFcliTool.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != NULL) {
+                fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
+            } else {
+                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
+                if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
+                }
+            }
+        }
+
+        if (!pdfboxValidatorJavaClass.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != NULL) {
+                fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
+            } else {
+                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
+                if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupPdfBoXValidator(pdfboxValidatorJavaClass);
+                }
+            }
+        }
+
+        if (!callasPdfAPilotCLI.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != NULL) {
+                fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
+            } else {
+                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
+                if (fileAnalyzerMultiplexer != NULL) {
                     fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
                 }
             }
