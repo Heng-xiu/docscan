@@ -80,7 +80,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
     bool jhoveIsPDF = false;
-    bool jhoveWellformedAndValid = false;
+    bool jhovePDFWellformed = false, jhovePDFValid = false;
     QString jhovePDFversion = QString::null;
     QString jhovePDFprofile = QString::null;
     QString jhoveStandardOutput = QString::null;
@@ -101,7 +101,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().data()).replace(QLatin1Char('\n'), QStringLiteral("###"));
             if (!jhoveStandardOutput.isEmpty()) {
                 jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF"));
-                jhoveWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral("Status: Well-Formed and valid"));
+                static const QRegExp pdfStatusRegExp(QStringLiteral("\\b*Status: ([^#]+)"));
+                if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
+                    jhovePDFWellformed = pdfStatusRegExp.cap(1).startsWith(QStringLiteral("Well-Formed"), Qt::CaseInsensitive);
+                    jhovePDFValid = pdfStatusRegExp.cap(1).endsWith(QStringLiteral("and valid"));
+                }
                 static const QRegExp pdfVersionRegExp(QStringLiteral("\\bVersion: ([^#]+)#"));
                 jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
                 static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
@@ -265,7 +269,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (jhoveIsPDF) {
             /// insert data from jHove
-            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%2\" pdf=\"%4\" wellformed=\"%1\" walltime=\"%3\"")).arg(jhoveWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveWalltime).arg(jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
+            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%3\" pdf=\"%5\" wellformed=\"%1\" valid=\"%2\" walltime=\"%4\"")).arg(jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveWalltime).arg(jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
             if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
                 metaText.append(QStringLiteral(" />\n"));
             else {
