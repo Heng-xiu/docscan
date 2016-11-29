@@ -178,7 +178,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (!veraPDFStartedRun2)
                     qWarning() << "Failed to start veraPDF with arguments " << arguments.join("_");
             } else
-                qDebug() << "Skipping second run of veraPDF as file " << filename << "is not PDF/A-1a";
+                qDebug() << "Skipping second run of veraPDF as file " << filename << "is not PDF/A-1b";
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << ": " << veraPDFErrorOutput;
     }
