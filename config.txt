@@ -3,7 +3,7 @@ logcollector=/tmp/pdf-fonts.xml
 textExtraction=none
 finder:numhits=25000
 
-filter=*.pdf.xz
+filter=*.pdf.xz|*.pdf
 #filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/
 #filesystemscan=/tmp/problem
 filesystemscan=/tmp/pdf
@@ -16,8 +16,9 @@ filesystemscan=/tmp/pdf
 fakedownloader=true
 
 #fileanalyzer=NULL
-#fileanalyzer=multiplexer
-fileanalyzer=pdf
+fileanalyzer=multiplexer
 
 jhove=/home/fish/HiS/Research/OSS/jhove/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
 verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
+pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox-validate/PdfBoxValidator.class
+callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
