@@ -134,7 +134,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (veraPDF.waitForStarted(twoMinutesInMillisec)) {
             veraPDF.waitForFinished(sixMinutesInMillisec);
             veraPDFExitCode = veraPDF.exitCode();
-            veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
+            /// Some string magic to skip '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' from second output
+            const QString newStdOut = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
+            const int p = newStdOut.indexOf(QStringLiteral("?>"));
+            veraPDFStandardOutput = veraPDFStandardOutput + QStringLiteral("\n") + (p > 1 ? newStdOut.mid(p + 2) : newStdOut);
             veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
             if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
                 const QString startOfOutput = veraPDFStandardOutput.left(2048);
@@ -225,7 +228,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec)) {
                     callasPdfAPilot.waitForFinished(fourMinutesInMillisec);
                     callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
-                    callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
+                    callasPdfAPilotStandardOutput = callasPdfAPilotStandardOutput + QStringLiteral("\n") + QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
                     callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
 
                     static const QRegularExpression reSummary(QStringLiteral("\\bSummary\\t(Errors|Warnings)\\t(0|[1-9][0-9]*)\\b"));
