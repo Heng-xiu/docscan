@@ -275,8 +275,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(QStringLiteral(">\n"));
                 if (!jhovePDFversion.isEmpty())
                     metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
-                if (!jhovePDFprofile.isEmpty())
-                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
+                if (!jhovePDFprofile.isEmpty()) {
+                    const bool isPDFA1a = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A"));
+                    const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
+                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
+                }
                 if (m_jhoveVerbose && !jhoveStandardOutput.isEmpty())
                     metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
                 if (!jhoveErrorOutput.isEmpty())
