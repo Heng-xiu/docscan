@@ -190,10 +190,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
         callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
 
-        static const QRegularExpression rePDFA(QStringLiteral("\\bInfo\\s+PDFA\\s+PDF/A-1([ab])"));
-        const QRegularExpressionMatch match = rePDFA.match(callasPdfAPilotStandardOutput.right(512));
-        if (callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty() && match.hasMatch()) {
-            callasPdfAPilotPDFA1letter = match.captured(1).at(0).toLatin1();
+        if (callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty()) {
+            static const QRegularExpression rePDFA(QStringLiteral("\\bInfo\\s+PDFA\\s+PDF/A-1([ab])"));
+            const QRegularExpressionMatch match = rePDFA.match(callasPdfAPilotStandardOutput.right(512));
+            callasPdfAPilotPDFA1letter = match.hasMatch() ? match.captured(1).at(0).toLatin1() : '\0';
             if (callasPdfAPilotPDFA1letter == 'a' || callasPdfAPilotPDFA1letter == 'b') {
                 /// Document claims to be PDF/A-1a or PDF/A-1b, so test for errors
                 const QStringList arguments = QStringList(defaultArgumentsForNice) << m_callasPdfAPilotCLI << QStringLiteral("-a") << filename;
