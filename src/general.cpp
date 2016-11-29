@@ -49,7 +49,8 @@ QString xmlNodeToText(const XMLNode &node)
 QString xmlify(const QString &text)
 {
     QString result = text;
-    result = result.replace(QRegExp(QStringLiteral("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive), QStringLiteral(""));
+    result = result.replace(QChar(0x0009) /** horizontal tab */, QChar(0x0020)).replace(QChar(0x000a) /** line feed */, QChar(0x0020)).replace(QChar(0x000d) /** cardridge return */, QChar(0x0020)).trimmed();
+    result = result.remove(QRegExp(QStringLiteral("[^-^[]'a-z0-9,;.:_+\\}{@|* !\"#%&/()=?åäöü]"), Qt::CaseInsensitive));
 
     /// remove unprintable or control characters
     for (int i = 0; i < result.length(); ++i)
