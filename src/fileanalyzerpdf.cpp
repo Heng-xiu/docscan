@@ -34,7 +34,9 @@
 #include "general.h"
 
 static const int oneMinuteInMillisec = 60000;
-static const int twoMinutesInMillisec = 120000;
+static const int twoMinutesInMillisec = oneMinuteInMillisec * 2;
+static const int fourMinutesInMillisec = oneMinuteInMillisec * 4;
+static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null), m_jhoveVerbose(false)
@@ -94,8 +96,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (jhove.waitForStarted(oneMinuteInMillisec / 2)) {
-            jhove.waitForFinished(oneMinuteInMillisec);
+        if (jhove.waitForStarted(oneMinuteInMillisec)) {
+            jhove.waitForFinished(fourMinutesInMillisec);
             jhoveExitCode = jhove.exitCode();
             jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
             jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
@@ -129,8 +131,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
-            veraPDF.waitForFinished(twoMinutesInMillisec);
+        if (veraPDF.waitForStarted(twoMinutesInMillisec)) {
+            veraPDF.waitForFinished(sixMinutesInMillisec);
             veraPDFExitCode = veraPDF.exitCode();
             veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
             veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
@@ -153,8 +155,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                     veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                     time.start();
-                    if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
-                        veraPDF.waitForFinished(twoMinutesInMillisec);
+                    if (veraPDF.waitForStarted(twoMinutesInMillisec)) {
+                        veraPDF.waitForFinished(sixMinutesInMillisec);
                         veraPDFExitCode = veraPDF.exitCode();
                         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
                         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
@@ -184,8 +186,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (pdfboxValidator.waitForStarted(oneMinuteInMillisec / 2)) {
-            pdfboxValidator.waitForFinished(oneMinuteInMillisec);
+        if (pdfboxValidator.waitForStarted(oneMinuteInMillisec)) {
+            pdfboxValidator.waitForFinished(twoMinutesInMillisec);
             pdfboxValidatorExitCode = pdfboxValidator.exitCode();
             pdfboxValidatorStandardOutput = QString::fromUtf8(pdfboxValidator.readAllStandardOutput().constData());
             pdfboxValidatorErrorOutput = QString::fromUtf8(pdfboxValidator.readAllStandardError().constData());
@@ -206,8 +208,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
-        if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec / 2)) {
-            callasPdfAPilot.waitForFinished(oneMinuteInMillisec);
+        if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec)) {
+            callasPdfAPilot.waitForFinished(fourMinutesInMillisec);
             callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
             callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
             callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
@@ -220,8 +222,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                 QTime time;
                 time.start();
-                if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec / 2)) {
-                    callasPdfAPilot.waitForFinished(oneMinuteInMillisec);
+                if (callasPdfAPilot.waitForStarted(oneMinuteInMillisec)) {
+                    callasPdfAPilot.waitForFinished(fourMinutesInMillisec);
                     callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
                     callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
                     callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
