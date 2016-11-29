@@ -79,6 +79,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     m_isAlive = true;
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
+    static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
+
     bool jhoveIsPDF = false;
     bool jhovePDFWellformed = false, jhovePDFValid = false;
     QString jhovePDFversion = QString::null;
@@ -88,7 +90,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int jhoveExitCode = INT_MIN;
     if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
         QProcess jhove(this);
-        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -123,7 +125,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int veraPDFExitCode = INT_MIN;
     if (jhoveIsPDF && !m_veraPDFcliTool.isEmpty()) {
         QProcess veraPDF(this);
-        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -148,7 +150,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
                 if (veraPDFIsPDFA1B) {
                     /// So, it is PDF-A/1b, then test for PDF-A/1a
-                    const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+                    const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                     veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                     time.start();
                     if (veraPDF.waitForStarted(oneMinuteInMillisec)) {
@@ -178,7 +180,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
         QProcess pdfboxValidator(this);
         pdfboxValidator.setWorkingDirectory(dir.path());
-        const QStringList arguments = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << filename;
         pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
@@ -200,7 +202,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     char callasPdfAPilotPDFA1letter = '\0';
     if (jhoveIsPDF && !m_callasPdfAPilotCLI.isEmpty()) {
         QProcess callasPdfAPilot(this);
-        const QStringList arguments = QStringList() << QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3") << m_callasPdfAPilotCLI << QStringLiteral("--quickpdfinfo") << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_callasPdfAPilotCLI << QStringLiteral("--quickpdfinfo") << filename;
         callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         QTime time;
         time.start();
