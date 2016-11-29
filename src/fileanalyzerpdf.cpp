@@ -213,7 +213,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhoveExitCode = jhove.exitCode();
         jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
-        if (!jhoveStandardOutput.isEmpty()) {
+        if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF"));
             static const QRegExp pdfStatusRegExp(QStringLiteral("\\b*Status: ([^#]+)"));
             if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
