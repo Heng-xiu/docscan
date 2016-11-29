@@ -253,6 +253,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         }
     }
 
+    const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
+
     PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
     if (wrapper != NULL) {
         QString guess;
@@ -438,14 +440,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             logText.append(bodyText);
         logText += QStringLiteral("</fileanalysis>\n");
 
-        qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-        logText.prepend(QString("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime));
+        const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+        logText.prepend(QString("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime).arg(externalProgramsEndTime - startTime));
 
         emit analysisReport(logText);
 
         delete wrapper;
     } else
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(filename));
+        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n").arg(filename).arg(externalProgramsEndTime - startTime));
 
 
     m_isAlive = false;
