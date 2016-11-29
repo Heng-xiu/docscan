@@ -180,7 +180,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             } else
                 qDebug() << "Skipping second run of veraPDF as file " << filename << "is not PDF/A-1a";
         } else
-            qWarning() << "Execution of veraPDF failed: " << veraPDFErrorOutput;
+            qWarning() << "Execution of veraPDF failed for file " << filename << ": " << veraPDFErrorOutput;
     }
 
     if (callasPdfAPilotStartedRun1) {
@@ -204,7 +204,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             } else
                 qDebug() << "Skipping second run of callas PDF/A Pilot as file " << filename << "is not PDF/A-1";
         } else
-            qWarning() << "Execution of callas PDF/A Pilot failed: " << callasPdfAPilotErrorOutput;
+            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << ": " << callasPdfAPilotErrorOutput;
     }
 
     if (jhoveStarted) {
@@ -225,7 +225,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
             jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
         } else
-            qWarning() << "Execution of jHove failed: " << jhoveErrorOutput;
+            qWarning() << "Execution of jHove failed for file " << filename << ": " << jhoveErrorOutput;
     }
 
     if (pdfboxValidatorStarted) {
@@ -237,7 +237,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
         else
-            qWarning() << "Execution of pdfbox Validator failed: " << pdfboxValidatorErrorOutput;
+            qWarning() << "Execution of pdfbox Validator failed for file " << filename << ": " << pdfboxValidatorErrorOutput;
     }
 
     if (veraPDFStartedRun2) {
@@ -253,7 +253,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const QString startOfOutput = veraPDFStandardOutput.left(2048);
             veraPDFIsPDFA1A = startOfOutput.contains(QStringLiteral(" flavour=\"PDFA_1_A\"")) && startOfOutput.contains(QStringLiteral(" isCompliant=\"true\""));
         } else
-            qWarning() << "Execution of veraPDF failed: " << veraPDFErrorOutput;
+            qWarning() << "Execution of veraPDF failed for file " << filename << ": " << veraPDFErrorOutput;
     }
 
     if (callasPdfAPilotStartedRun2) {
@@ -278,7 +278,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 }
             }
         } else
-            qWarning() << "Execution of callas PDF/A Pilot failed: " << callasPdfAPilotErrorOutput;
+            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << ": " << callasPdfAPilotErrorOutput;
     }
 
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
