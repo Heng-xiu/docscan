@@ -317,7 +317,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
                 metaText.append(QStringLiteral("</jhove>\n"));
             }
-        }
+        } else
+            metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
 
         if (veraPDFExitCode > INT_MIN) {
             /// insert XML data from veraPDF
@@ -330,7 +331,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
                 metaText.append(QStringLiteral("</verapdf>\n"));
             }
-        }
+        } else
+            metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
 
         if (pdfboxValidatorExitCode > INT_MIN) {
             /// insert result from Apache's PDFBox
@@ -340,7 +342,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             else if (!pdfboxValidatorErrorOutput.isEmpty())
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorErrorOutput)));
             metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
-        }
+        } else
+            metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
 
         if (callasPdfAPilotExitCode > INT_MIN) {
             const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
@@ -351,7 +354,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             else if (!callasPdfAPilotErrorOutput.isEmpty())
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(callasPdfAPilotErrorOutput)));
             metaText.append(QStringLiteral("</callaspdfapilot>"));
-        }
+        } else
+            metaText.append(QStringLiteral("<callaspdfapilot><error>callas PDF/A Pilot failed to start or was never started</error></callaspdfapilot>\n"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
