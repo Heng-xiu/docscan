@@ -135,15 +135,17 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary"; /// Microsoft
     } else if (fontName.startsWith("Nyala") || fontName.startsWith("Sylfaen") || fontName.startsWith("BookAntiqua") || fontName.startsWith("Lucinda") || fontName.startsWith("Trebuchet") || fontName.startsWith("Franklin Gothic") || fontName.startsWith("FranklinGothic") || fontName.startsWith("Century Schoolbook") || fontName.startsWith("CenturySchoolbook")) {
         license["type"] = "proprietary"; /// Microsoft
-    } else if (fontName.startsWith("MS Mincho") || fontName.startsWith("MS-Mincho")) {
+    } else if (fontName.startsWith("MS Mincho") || fontName.startsWith("MS-Mincho") || fontName.startsWith("MSMincho")) {
         license["type"] = "proprietary"; /// Microsoft/Ricoh/Ryobi Imagix
     } else if (fontName.startsWith("SimSun")) {
         license["type"] = "proprietary"; /// Microsoft/ZHONGYI
     } else if (fontName.startsWith("Calibri") || fontName.startsWith("CALIBRI") || fontName.startsWith("Cambria") || fontName.startsWith("Constantia") || fontName.startsWith("Candara") || fontName.startsWith("Corbel") || fontName.startsWith("Consolas")) {
         license["type"] = "proprietary"; /// Microsoft ClearType Font Collection
-    } else if (fontName.startsWith("MathematicalPi") || fontName.startsWith("ClearfaceGothic") || fontName.startsWith("Berling") /* there may be an URW++ variant */ || fontName.startsWith("Granjon") || fontName.startsWith("Sabon") || fontName.startsWith("Folio") || fontName.startsWith("Futura") || fontName.startsWith("Soho") || fontName.startsWith("Eurostile") || fontName.startsWith("NewCenturySchlbk") || fontName.startsWith("TradeGothic") || fontName.startsWith("Univers") || fontName.contains("Palatino")) {
+    } else if (fontName.startsWith("Plantin") || fontName.startsWith("MathematicalPi") || fontName.startsWith("ClearfaceGothic") || fontName.startsWith("Berling") /* there may be an URW++ variant */ || fontName.startsWith("Granjon") || fontName.startsWith("Sabon") || fontName.startsWith("Folio") || fontName.startsWith("Futura") || fontName.startsWith("Soho") || fontName.startsWith("Eurostile") || fontName.startsWith("NewCenturySchlbk") || fontName.startsWith("TradeGothic") || fontName.startsWith("Univers") || fontName.contains("Palatino")) {
         license["type"] = "proprietary"; /// Linotype
-    } else if (fontName.contains("CharterBT") || fontName.contains("Monospace821") || fontName.contains("Swiss721") || fontName.contains("Humanist777") || fontName.contains("Dutch801")) {
+    } else if (fontName.endsWith("BT") || fontName.contains("BT-")) {
+        license["type"] = "proprietary"; /// Bitstream
+    } else if (fontName.contains("Monospace821") || fontName.contains("Swiss721") || fontName.contains("Humanist777") || fontName.contains("Dutch801") || fontName.startsWith("Zurich")) {
         license["type"] = "proprietary"; /// Bitstream
     } else if (fontName.contains("Helvetica") && fontName.contains("Neue")) {
         license["type"] = "proprietary"; /// Neue Helvetica by Linotype
@@ -151,7 +153,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license["type"] = "proprietary";
     } else if (fontName.startsWith("Bookman-") /* not "BookmanOldStyle"? */ || fontName.startsWith("SymbolMT") || fontName.startsWith("GillAltOneMT")) {
         license["type"] = "proprietary"; /// MonoType's font as shipped with Windows
-    } else if (fontName.startsWith("BookmanOldStyle") || fontName.startsWith("Centaur") || fontName.startsWith("Calisto") || fontName.startsWith("CenturyGothic") || fontName.startsWith("Bembo") || fontName.startsWith("GillSans") ||  fontName.startsWith("Rockwell") || fontName.startsWith("Lucida") || fontName.startsWith("Perpetua")) {
+    } else if (fontName.startsWith("Monotype") || fontName.startsWith("OceanSans") || fontName.startsWith("BookmanOldStyle") || fontName.startsWith("Centaur") || fontName.startsWith("Calisto") || fontName.startsWith("CenturyGothic") || fontName.startsWith("Bembo") || fontName.startsWith("GillSans") ||  fontName.startsWith("Rockwell") || fontName.startsWith("Lucida") || fontName.startsWith("Perpetua")) {
         license["type"] = "proprietary"; /// MonoType
     } else if (fontName.startsWith("KunstlerScript") || fontName.startsWith("AmericanTypewriter") || fontName.startsWith("ACaslon") || fontName.startsWith("AGaramond") || fontName.startsWith("GaramondPremrPro") || fontName.contains("EuroSans") || fontName.startsWith("Minion") || fontName.startsWith("Myriad")) {
         license["type"] = "proprietary"; /// Adobe

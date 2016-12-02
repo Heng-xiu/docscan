@@ -391,7 +391,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 const int p1 = fi.indexOf(QStringLiteral("|FONTFILENAME:"));
                 if (p1 > 0) {
                     const int p2 = fi.indexOf(QStringLiteral("|"), p1 + 4);
-                    fontFilename = fi.mid(p1 + 15, p2 - p1 - 15);
+                    fontFilename = fi.mid(p1 + 15, p2 - p1 - 15).replace(QStringLiteral("#20"), QStringLiteral(" "));
                 }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
