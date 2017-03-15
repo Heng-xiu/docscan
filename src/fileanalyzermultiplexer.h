@@ -26,7 +26,7 @@
 #include "fileanalyzerodf.h"
 #include "fileanalyzeropenxml.h"
 #include "fileanalyzerpdf.h"
-#include "fileanalyzercompoundbinary.h"
+// #include "fileanalyzercompoundbinary.h"
 
 /**
  * Automatically redirects a file to be analyzed
@@ -54,7 +54,7 @@ private:
     FileAnalyzerODF m_fileAnalyzerODF;
     FileAnalyzerPDF m_fileAnalyzerPDF;
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
-    FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
+//     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
     const QStringList &m_filters;
 
     void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);

@@ -35,7 +35,7 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
     connect(&m_fileAnalyzerOpenXML, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
-    connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+//     connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
 }
 
 bool FileAnalyzerMultiplexer::isAlive()
@@ -85,7 +85,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
     static const QRegExp odfExtension(QStringLiteral("[.]od[pst]$"));
     static const QRegExp openXMLExtension(QStringLiteral("[.](doc|ppt|xls)x$"));
-    static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
+//     static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
 
     qDebug() << "Analyzing file" << filename;
 
@@ -112,11 +112,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerOpenXML.analyzeFile(filename);
         else
             qDebug() << "Skipping unmatched extension" << openXMLExtension.cap(0);
-    } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
-        if (m_filters.contains(QChar('*') + compoundBinaryExtension.cap(0))) {
-            m_fileAnalyzerCompoundBinary.analyzeFile(filename);
-        } else
-            qDebug() << "Skipping unmatched extension" << compoundBinaryExtension.cap(0);
+//     } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
+//         if (m_filters.contains(QChar('*') + compoundBinaryExtension.cap(0))) {
+//             m_fileAnalyzerCompoundBinary.analyzeFile(filename);
+//         } else
+//             qDebug() << "Skipping unmatched extension" << compoundBinaryExtension.cap(0);
     } else
         qWarning() << "Unknown filename extension for file " << filename;
 }

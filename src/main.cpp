@@ -206,9 +206,9 @@ bool evaluateConfigfile(const QString &filename)
                     } else if (value.contains("pdf")) {
                         fileAnalyzer = new FileAnalyzerPDF();
                         qDebug() << "fileanalyzer = FileAnalyzerPDF";
-                    } else if (value.contains("compoundbinary")) {
-                        fileAnalyzer = new FileAnalyzerCompoundBinary();
-                        qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
+//                     } else if (value.contains("compoundbinary")) {
+//                         fileAnalyzer = new FileAnalyzerCompoundBinary();
+//                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
                     } else
                         fileAnalyzer = NULL;
                 } else {
