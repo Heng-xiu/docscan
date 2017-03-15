@@ -79,7 +79,26 @@ INCLUDEPATH += src/wv2/generator src/wv2/
 
 # TODO test of quazip for Qt5
 # load and parse zip'ed files (e.g. OpenDocument files)
-LIBS += -lquazip5
+exists( /usr/lib/libquazip5.so ) {
+	QUAZIP5LIBPATH = /usr/lib/
+}
+exists( /usr/lib/x86_64-linux-gnu/libquazip5.so ) {
+	QUAZIP5LIBPATH = /usr/lib/x86_64-linux-gnu
+}
+isEmpty( QUAZIP5LIBPATH ) {
+	error( "Could not find Quazip5's library" )
+}
+message( "Found Quazip5's library in '"$$QUAZIP5LIBPATH"'" )
+LIBS += -lquazip5 -L$$QUAZIP5LIBPATH
+
+exists( /usr/include/quazip/quazip.h ) {
+	message( "Found Quazip5's headers in '/usr/include/quazip'" )
+	INCLUDEPATH += /usr/include/quazip
+}
+exists( /usr/include/quazip5/quazip.h ) {
+	message( "Found Quazip5's headers in '/usr/include/quazip5'" )
+	INCLUDEPATH += /usr/include/quazip5
+}
 
 unix {
     CONFIG += link_pkgconfig

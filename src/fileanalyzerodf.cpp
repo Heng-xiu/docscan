@@ -19,8 +19,8 @@
 
  */
 
-#include <quazip5/quazip.h>
-#include <quazip5/quazipfile.h>
+#include <quazip.h>
+#include <quazipfile.h>
 
 #include <QIODevice>
 #include <QDebug>
