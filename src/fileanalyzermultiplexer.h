@@ -26,7 +26,9 @@
 #include "fileanalyzerodf.h"
 #include "fileanalyzeropenxml.h"
 #include "fileanalyzerpdf.h"
-// #include "fileanalyzercompoundbinary.h"
+#ifdef HAVE_WV2
+#include "fileanalyzercompoundbinary.h"
+#endif // HAVE_WV2
 
 /**
  * Automatically redirects a file to be analyzed
@@ -54,7 +56,9 @@ private:
     FileAnalyzerODF m_fileAnalyzerODF;
     FileAnalyzerPDF m_fileAnalyzerPDF;
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
-//     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
+#ifdef HAVE_WV2
+    FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
+#endif // HAVE_WV2
     const QStringList &m_filters;
 
     void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);

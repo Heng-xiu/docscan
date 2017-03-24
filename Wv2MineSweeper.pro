@@ -6,7 +6,7 @@ CONFIG += console
 CONFIG -= app_bundle thread
 CONFIG += ordered
 TEMPLATE = app
-DEFINES += HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
+DEFINES += HAVE_WV2 HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
 
 SOURCES += src/wv2minesweeper.cpp src/fileanalyzercompoundbinary.cpp \
   src/fileanalyzerabstract.cpp src/general.cpp src/poorlogger.cpp

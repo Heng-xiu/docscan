@@ -25,12 +25,12 @@
 #include <QFileInfo>
 #include <QStringList>
 
-#include <olestream.h>
-#include <word97_helper.h>
-#include <parser.h>
-#include <fields.h>
-#include <handlers.h>
-#include <parserfactory.h>
+#include "wv2/olestream.h"
+#include "wv2/word97_helper.h"
+#include "wv2/parser.h"
+#include "wv2/fields.h"
+#include "wv2/handlers.h"
+#include "wv2/parserfactory.h"
 
 #include "fileanalyzercompoundbinary.h"
 #include "general.h"
