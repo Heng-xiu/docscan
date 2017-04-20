@@ -267,34 +267,34 @@ QString Guessing::programToXML(const QString &program) {
             xml["version"] = radicaleyeVersion.cap(0);
     } else if (text.indexOf("ghostscript") >= 0) {
         static const QRegExp ghostscriptVersion("\\b\\d+(\\.\\d+)+\\b");
-        xml["manufacturer"] = "artifex ";
+        xml["manufacturer"] = "artifex";
         xml["product"] = "ghostscript";
         if (ghostscriptVersion.indexIn(text) >= 0)
             xml["version"] = ghostscriptVersion.cap(0);
     } else if (text.startsWith("cairo ")) {
         static const QRegExp cairoVersion("\\b\\d+(\\.\\d+)+\\b");
-        xml["manufacturer"] = "cairo ";
+        xml["manufacturer"] = "cairo";
         xml["product"] = "cairo";
         if (cairoVersion.indexIn(text) >= 0)
             xml["version"] = cairoVersion.cap(0);
     } else if (text.indexOf("pdftex") >= 0) {
         static const QRegExp pdftexVersion("\\d+(\\.\\d+)+\\b");
-        xml["manufacturer"] = "pdftex ";
+        xml["manufacturer"] = "pdftex";
         xml["product"] = "pdftex";
         if (pdftexVersion.indexIn(text) >= 0)
             xml["version"] = pdftexVersion.cap(0);
     } else if (text.indexOf("latex") >= 0) {
-        xml["manufacturer"] = "latex ";
+        xml["manufacturer"] = "latex";
         xml["product"] = "latex";
     } else if (text.indexOf("dvipdfm") >= 0) {
         static const QRegExp dvipdfmVersion("\\b\\d+(\\.\\d+)+[a-z]*\\b");
-        xml["manufacturer"] = "dvipdfm ";
+        xml["manufacturer"] = "dvipdfm";
         xml["product"] = "dvipdfm";
         if (dvipdfmVersion.indexIn(text) >= 0)
             xml["version"] = dvipdfmVersion.cap(0);
     } else if (text.indexOf("tex output") >= 0) {
         static const QRegExp texVersion("\\b\\d+([.:]\\d+)+\\b");
-        xml["manufacturer"] = "tex ";
+        xml["manufacturer"] = "tex";
         xml["product"] = "tex";
         if (texVersion.indexIn(text) >= 0)
             xml["version"] = texVersion.cap(0);
