@@ -40,7 +40,7 @@ void LogCollector::receiveLog(const QString &message)
 {
     QString key = QString(typeid(*(sender())).name()).toLower().replace(QRegExp("[0-9]+"), "");
 
-    QString time = QDateTime::currentDateTime().toUTC().toString(Qt::ISODate);
+    QString time = QDateTime::currentDateTime().toString(Qt::ISODate);
     m_ts << "<logitem epoch=\"" << (QDateTime::currentMSecsSinceEpoch() / 1000) << "\" source=\"" << key << "\" time=\"" << time << "\">" << endl << message << "</logitem>" << endl;
 }
 
