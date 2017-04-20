@@ -283,6 +283,12 @@ QString Guessing::programToXML(const QString &program) {
         xml["product"] = "pdftex";
         if (pdftexVersion.indexIn(text) >= 0)
             xml["version"] = pdftexVersion.cap(0);
+    } else if (text.indexOf("xetex") >= 0) {
+        static const QRegExp xetexVersion("\\d+(\\.\\d+)+\\b");
+        xml["manufacturer"] = "xetex";
+        xml["product"] = "xetex";
+        if (xetexVersion.indexIn(text) >= 0)
+            xml["version"] = xetexVersion.cap(0);
     } else if (text.indexOf("latex") >= 0) {
         xml["manufacturer"] = "latex";
         xml["product"] = "latex";
