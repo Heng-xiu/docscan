@@ -157,15 +157,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
         if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
-            const QString startOfOutput = veraPDFStandardOutput.left(2048);
-            veraPDFIsPDF = startOfOutput.contains(QStringLiteral(" flavour=\"PDF"));
-            veraPDFIsPDFA1B = startOfOutput.contains(QStringLiteral(" flavour=\"PDFA_1_B\"")) && startOfOutput.contains(QStringLiteral(" isCompliant=\"true\""));
-            const int p1 = startOfOutput.indexOf(QStringLiteral("itemDetails size=\""));
-            if (p1 > 1) {
-                const int p2 = startOfOutput.indexOf(QStringLiteral("\""), p1 + 18);
-                if (p2 > p1) {
+            const QString startOfOutput = veraPDFStandardOutput.left(8192);
+            const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDF"));
+            const int p2 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), p1);
+            const int p3 = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p2 - 64);
+            veraPDFIsPDF = p1 > 0;
+            veraPDFIsPDFA1B = p1 == p2 && p3 > 0 && p3 < p2 + 64;
+            const int p4 = startOfOutput.indexOf(QStringLiteral("item size=\""));
+            if (p4 > 1) {
+                const int p5 = startOfOutput.indexOf(QStringLiteral("\""), p4 + 11);
+                if (p5 > p4) {
                     bool ok = false;
-                    veraPDFfilesize = startOfOutput.mid(p1 + 18, p2 - p1 - 18).toLong(&ok);
+                    veraPDFfilesize = startOfOutput.mid(p4 + 11, p5 - p4 - 11).toLong(&ok);
                     if (!ok) veraPDFfilesize = 0;
                 }
             }
@@ -250,8 +253,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFStandardOutput = veraPDFStandardOutput + QStringLiteral("\n") + (p > 1 ? newStdOut.mid(p + 2) : newStdOut);
         veraPDFErrorOutput = veraPDFErrorOutput + QStringLiteral("\n") + QString::fromUtf8(veraPDF.readAllStandardError().constData());
         if (veraPDFExitCode == 0) {
-            const QString startOfOutput = veraPDFStandardOutput.left(2048);
-            veraPDFIsPDFA1A = startOfOutput.contains(QStringLiteral(" flavour=\"PDFA_1_A\"")) && startOfOutput.contains(QStringLiteral(" isCompliant=\"true\""));
+            const QString startOfOutput = veraPDFStandardOutput.left(8192);
+            const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_A\""));
+            const int p2 = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p1 - 64);
+            veraPDFIsPDFA1A = p1 > 0 && p2 > 0 && p2 < p1 + 64;
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFErrorOutput;
     }
