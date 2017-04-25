@@ -21,4 +21,4 @@ fileanalyzer=multiplexer
 jhove=/home/fish/HiS/Research/OSS/jhove/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
 verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
 pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox-validate/PdfBoxValidator.class
-callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
+#callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
