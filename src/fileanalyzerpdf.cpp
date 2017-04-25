@@ -92,7 +92,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int veraPDFExitCode = INT_MIN;
     QProcess veraPDF(this);
     if (!m_veraPDFcliTool.isEmpty()) {
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         veraPDFStartedRun1 = veraPDF.waitForStarted(twoMinutesInMillisec);
         if (!veraPDFStartedRun1)
@@ -172,7 +172,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
             if (veraPDFIsPDFA1B) {
                 /// So, it is PDF-A/1b, then test for PDF-A/1a
-                const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+                const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") /** Extracts and reports PDF features. */ << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                 veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                 veraPDFStartedRun2 = veraPDF.waitForStarted(twoMinutesInMillisec);
                 if (!veraPDFStartedRun2)
