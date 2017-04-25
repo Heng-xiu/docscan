@@ -96,7 +96,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         veraPDFStartedRun1 = veraPDF.waitForStarted(twoMinutesInMillisec);
         if (!veraPDFStartedRun1)
-            qWarning() << "Failed to start veraPDF with arguments " << arguments.join("_");
+            qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
     }
 
     bool callasPdfAPilotStartedRun1 = false, callasPdfAPilotStartedRun2 = false;
@@ -112,7 +112,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         callasPdfAPilotStartedRun1 = callasPdfAPilot.waitForStarted(oneMinuteInMillisec);
         if (!callasPdfAPilotStartedRun1)
-            qWarning() << "Failed to start callas PDF/A Pilot with arguments " << arguments.join("_");
+            qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
     }
 
     bool jhoveStarted = false;
@@ -129,7 +129,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         jhoveStarted = jhove.waitForStarted(oneMinuteInMillisec);
         if (!jhoveStarted)
-            qWarning() << "Failed to start jhove with arguments " << arguments.join("_");
+            qWarning() << "Failed to start jhove for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory();
     }
 
     bool pdfboxValidatorStarted = false;
@@ -147,12 +147,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         pdfboxValidatorStarted = pdfboxValidator.waitForStarted(oneMinuteInMillisec);
         if (!pdfboxValidatorStarted)
-            qWarning() << "Failed to start pdfbox Validator with arguments " << arguments.join("_");
+            qWarning() << "Failed to start pdfbox Validator for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << pdfboxValidatorErrorOutput;
     }
 
     if (veraPDFStartedRun1) {
         if (!veraPDF.waitForFinished(sixMinutesInMillisec))
-            qWarning() << "Waiting for veraPDF failed or exceeded time limit";
+            qWarning() << "Waiting for veraPDF failed or exceeded time limit for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
@@ -176,16 +176,16 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                 veraPDFStartedRun2 = veraPDF.waitForStarted(twoMinutesInMillisec);
                 if (!veraPDFStartedRun2)
-                    qWarning() << "Failed to start veraPDF with arguments " << arguments.join("_");
+                    qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
             } else
                 qDebug() << "Skipping second run of veraPDF as file " << filename << "is not PDF/A-1b";
         } else
-            qWarning() << "Execution of veraPDF failed for file " << filename << ": " << veraPDFErrorOutput;
+            qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFErrorOutput;
     }
 
     if (callasPdfAPilotStartedRun1) {
         if (!callasPdfAPilot.waitForFinished(twoMinutesInMillisec))
-            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit";
+            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
         callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
         callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
         callasPdfAPilotErrorOutput = QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
@@ -200,16 +200,16 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                 callasPdfAPilotStartedRun2 = callasPdfAPilot.waitForStarted(oneMinuteInMillisec);
                 if (!callasPdfAPilotStartedRun2)
-                    qWarning() << "Failed to start callas PDF/A Pilot with arguments " << arguments.join("_");
+                    qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
             } else
                 qDebug() << "Skipping second run of callas PDF/A Pilot as file " << filename << "is not PDF/A-1";
         } else
-            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << ": " << callasPdfAPilotErrorOutput;
+            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotErrorOutput;
     }
 
     if (jhoveStarted) {
         if (!jhove.waitForFinished(fourMinutesInMillisec))
-            qWarning() << "Waiting for jHove failed or exceeded time limit";
+            qWarning() << "Waiting for jHove failed or exceeded time limit for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory();
         jhoveExitCode = jhove.exitCode();
         jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
@@ -225,24 +225,24 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
             jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
         } else
-            qWarning() << "Execution of jHove failed for file " << filename << ": " << jhoveErrorOutput;
+            qWarning() << "Execution of jHove failed for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory() << ": " << jhoveErrorOutput;
     }
 
     if (pdfboxValidatorStarted) {
         if (!pdfboxValidator.waitForFinished(twoMinutesInMillisec))
-            qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit";
+            qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
         pdfboxValidatorExitCode = pdfboxValidator.exitCode();
         pdfboxValidatorStandardOutput = QString::fromUtf8(pdfboxValidator.readAllStandardOutput().constData());
         pdfboxValidatorErrorOutput = QString::fromUtf8(pdfboxValidator.readAllStandardError().constData());
         if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
         else
-            qWarning() << "Execution of pdfbox Validator failed for file " << filename << ": " << pdfboxValidatorErrorOutput;
+            qWarning() << "Execution of pdfbox Validator failed for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << pdfboxValidatorErrorOutput;
     }
 
     if (veraPDFStartedRun2) {
         if (!veraPDF.waitForFinished(sixMinutesInMillisec))
-            qWarning() << "Waiting for veraPDF failed or exceeded time limit";
+            qWarning() << "Waiting for veraPDF failed or exceeded time limit for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
         /// Some string magic to skip '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' from second output
         const QString newStdOut = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
@@ -253,12 +253,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const QString startOfOutput = veraPDFStandardOutput.left(2048);
             veraPDFIsPDFA1A = startOfOutput.contains(QStringLiteral(" flavour=\"PDFA_1_A\"")) && startOfOutput.contains(QStringLiteral(" isCompliant=\"true\""));
         } else
-            qWarning() << "Execution of veraPDF failed for file " << filename << ": " << veraPDFErrorOutput;
+            qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFErrorOutput;
     }
 
     if (callasPdfAPilotStartedRun2) {
         if (!callasPdfAPilot.waitForFinished(fourMinutesInMillisec))
-            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit";
+            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
         callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
         callasPdfAPilotStandardOutput = callasPdfAPilotStandardOutput + QStringLiteral("\n") + QString::fromUtf8(callasPdfAPilot.readAllStandardOutput().constData());
         callasPdfAPilotErrorOutput = callasPdfAPilotErrorOutput + QStringLiteral("\n") + QString::fromUtf8(callasPdfAPilot.readAllStandardError().constData());
@@ -278,7 +278,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 }
             }
         } else
-            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << ": " << callasPdfAPilotErrorOutput;
+            qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotErrorOutput;
     }
 
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
