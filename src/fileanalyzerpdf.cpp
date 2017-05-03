@@ -222,7 +222,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF"));
-            static const QRegExp pdfStatusRegExp(QStringLiteral("\\b*Status: ([^#]+)"));
+            static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([^#]+)"));
             if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
                 jhovePDFWellformed = pdfStatusRegExp.cap(1).startsWith(QStringLiteral("Well-Formed"), Qt::CaseInsensitive);
                 jhovePDFValid = pdfStatusRegExp.cap(1).endsWith(QStringLiteral("and valid"));
