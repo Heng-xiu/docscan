@@ -24,6 +24,7 @@
 #include <QProcess>
 #include <QFile>
 #include <QFileInfo>
+#include <QCryptographicHash>
 
 #include "fileanalyzermultiplexer.h"
 #include "general.h"
@@ -64,23 +65,89 @@ void FileAnalyzerMultiplexer::setupCallasPdfAPilotCLI(const QString &callasPdfAP
 
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
-    const QFileInfo fi(filename);
-    const QString tempFilename = QStringLiteral("/tmp/") + QString::number(qrand()) + QStringLiteral("-") + fi.fileName();
-    QFile::copy(filename, tempFilename);
-    QProcess uncompressProcess(this);
-    const QStringList arguments = QStringList() << tempFilename;
+    /// Default prefix for temporary file is a large random number
+    const QString randomPrefix = QString::number(qrand());
+    /// Create QFileInfo object to extract the 'basename'
+    const QFileInfo fi(filename.left(filename.length() - extensionWithDot.length()));
+    /// Build temporary filename
+    const QString randomTempFilename = QStringLiteral("/tmp/.docscan-") + randomPrefix + QStringLiteral("-") + fi.fileName();
+
+    /// Keep track of time
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    uncompressProcess.start(uncompressTool, arguments);
-    if (uncompressProcess.waitForStarted(10000) && uncompressProcess.waitForFinished(60000)) {
-        const QString uncompressedFile = tempFilename.left(tempFilename.length() - extensionWithDot.length());
-        bool uncompressSuccess = uncompressProcess.exitCode() == 0;
-        const QString logText = QString(QStringLiteral("<uncompress status=\"%5\" tool=\"%1\" time=\"%6\">\n<origin>%2</origin>\n<via>%3</via>\n<destination>%4</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(tempFilename)).arg(DocScan::xmlify(uncompressedFile)).arg(uncompressSuccess ? QStringLiteral("success") : QStringLiteral("error")).arg(QDateTime::currentMSecsSinceEpoch() - startTime);
-        emit analysisReport(logText);
-        if (uncompressSuccess)
-            analyzeFile(uncompressedFile);
-        QFile::remove(uncompressedFile);
+    /// Keep track of success
+    bool success = true;
+
+    /// QFile objects for input and output
+    QFile inputFile(filename), outputFile(randomTempFilename);
+    QString md5prefix; ///< Recording MD5 checksums of compressed and uncompressed PDF data
+    QCryptographicHash compressedMd5(QCryptographicHash::Md5), uncompressedMd5(QCryptographicHash::Md5);
+    if (inputFile.open(QFile::ReadOnly) && outputFile.open(QFile::WriteOnly)) {
+        static const qint64 buffer_size = 1 << 20; ///< 1 MB buffer size
+        static char buffer[buffer_size];
+
+        QProcess uncompressProcess(this);
+        uncompressProcess.start(uncompressTool);
+        qint64 size = 0;
+        while ((size = inputFile.read(buffer, buffer_size)) > 0) {
+            compressedMd5.addData(buffer, size); ///< Use read compressed data to compute MD5 sum
+            uncompressProcess.write(buffer, size); ///< Pipe compressed data into uncompression process
+            if (!uncompressProcess.waitForBytesWritten()) {
+                success = false;
+                break;
+            };
+
+            /// Read uncompressed data from uncompression process
+            size = qMin(uncompressProcess.bytesAvailable(), buffer_size);
+            if (size > 0) {
+                size = uncompressProcess.read(buffer, size);
+                uncompressedMd5.addData(buffer, size); ///< Use uncompressed data to compute MD5 sum
+                if (outputFile.write(buffer, size) != size) {
+                    success = false;
+                    break;
+                };
+            }
+        }
+        uncompressProcess.closeWriteChannel();
+        inputFile.close();
+        success &= uncompressProcess.waitForBytesWritten();
+
+        /// Process remaining uncompressed data after piping compressed data
+        /// to uncompression process is done
+        uncompressProcess.waitForReadyRead(500);
+        size = qMin(uncompressProcess.bytesAvailable(), buffer_size);
+        while (success && size > 0) {
+            size = uncompressProcess.read(buffer, size);
+            if (size <= 0 || outputFile.write(buffer, size) != size) {
+                success = false;
+                break;
+            };
+            uncompressProcess.waitForReadyRead(500);
+            size = qMin(uncompressProcess.bytesAvailable(), buffer_size);
+        }
+        outputFile.close();
+
+        /// Retrieve MD5 sums of compressed and uncompressed PDF data
+        md5prefix = QString::fromUtf8(compressedMd5.result().toHex()) + QChar('-') + QString::fromUtf8(uncompressedMd5.result().toHex());
+
+        /// No data may have been written to stderr by uncompression process
+        uncompressProcess.setReadChannel(QProcess::StandardError);
+        success &= uncompressProcess.read(buffer, 1) < 1;
+        /// Check if uncompression process exited ok.
+        success &= uncompressProcess.state() == QProcess::NotRunning || uncompressProcess.waitForFinished();
+        success &= uncompressProcess.exitStatus() == QProcess::NormalExit && uncompressProcess.exitCode() == 0;
     }
-    QFile::remove(tempFilename); /// in case temporary file was not removed/replaced by uncompress process
+
+    QString uncompressedFilename = randomTempFilename;
+    if (success && !md5prefix.isEmpty()) {
+        /// If there is a valid MD5 sum prefix, rename temporary file accordingly
+        uncompressedFilename = QStringLiteral("/tmp/.docscan-") + md5prefix + QStringLiteral("-") + fi.fileName();
+        QFile::rename(randomTempFilename, uncompressedFilename);
+    }
+
+    const QString logText = QString(QStringLiteral("<uncompress status=\"%4\" tool=\"%1\" time=\"%5\">\n<origin md5sum=\"%6\">%2</origin>\n<destination md5sum=\"%7\">%3</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(uncompressedFilename)).arg(success ? QStringLiteral("success") : QStringLiteral("error")).arg(QDateTime::currentMSecsSinceEpoch() - startTime).arg(QString::fromUtf8(compressedMd5.result().toHex())).arg(QString::fromUtf8(uncompressedMd5.result().toHex()));
+    emit analysisReport(logText);
+    analyzeFile(uncompressedFilename);
+    QFile::remove(uncompressedFilename); ///< Remove uncompressed file after analysis
 }
 
 void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
