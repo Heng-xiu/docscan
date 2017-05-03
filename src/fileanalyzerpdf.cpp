@@ -356,7 +356,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             /// insert result from Apache's PDFBox
             metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(pdfboxValidatorExitCode).arg(pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
             if (!pdfboxValidatorStandardOutput.isEmpty())
-                metaText.append(DocScan::xmlify(pdfboxValidatorStandardOutput));
+                metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardOutput)));
             else if (!pdfboxValidatorErrorOutput.isEmpty())
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorErrorOutput)));
             metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
