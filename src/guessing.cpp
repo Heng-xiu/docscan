@@ -237,6 +237,11 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         static const QVector<QPair<QString, QString> > microsoftNamesWithSpaces = QVector<QPair<QString, QString> >() << QPair<QString, QString>(QStringLiteral("Times New Roman"), QStringLiteral("TimesNewRoman")) << QPair<QString, QString>(QStringLiteral("Courier New"), QStringLiteral("CourierNew")) << QPair<QString, QString>(QStringLiteral("Comic Sans"), QStringLiteral("ComicSans"));
         for (QVector<QPair<QString, QString> >::ConstIterator it = microsoftNamesWithSpaces.constBegin(); it != microsoftNamesWithSpaces.constEnd(); ++it)
             bName.replace(it->first, it->second);
+        static const QRegExp sixLettersPlusPrefix = QRegExp(QStringLiteral("^[A-Z]{6}\\+([a-zA-Z0-9]{3,})"));
+        if (sixLettersPlusPrefix.indexIn(bName) == 0)
+            bName = bName.mid(7);
+        if (bName.length() > 3 && bName[0] == QChar('*'))
+            bName = bName.mid(1);
         bNameChanged = bName != bNameOriginal;
     }
     beautifiedName[""] = DocScan::xmlify(bName);
