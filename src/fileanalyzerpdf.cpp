@@ -256,7 +256,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const int p = newStdOut.indexOf(QStringLiteral("?>"));
         /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
         if ((newStdOut.contains(QStringLiteral("<rawResults>")) && newStdOut.contains(QStringLiteral("</rawResults>"))) || (newStdOut.contains(QStringLiteral("<ns2:cliReport")) && newStdOut.contains(QStringLiteral("</ns2:cliReport>"))))
-            veraPDFStandardOutput.append(QStringLiteral("\n") + (p > 1 ? newStdOut.mid(p + 2) : newStdOut));
+            veraPDFStandardOutput.append(QStringLiteral("\n") + (p > 1 ? newStdOut.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : newStdOut));
         else
             veraPDFStandardOutput.append(QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(newStdOut) + QStringLiteral("</error>"));
 
@@ -343,7 +343,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             if (!veraPDFStandardOutput.isEmpty()) {
                 /// Check for and omit XML header if it exists
                 const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
-                metaText.append(p > 1 ? veraPDFStandardOutput.mid(p + 2) : veraPDFStandardOutput);
+                metaText.append(p > 1 ? veraPDFStandardOutput.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : veraPDFStandardOutput);
             } else if (!veraPDFErrorOutput.isEmpty())
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
             metaText.append(QStringLiteral("</verapdf>\n"));
