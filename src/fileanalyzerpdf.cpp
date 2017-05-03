@@ -396,10 +396,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const QStringList fontNames = wrapper->fontNames();
             static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
             QSet<QString> knownFonts;
+            QString fontXMLtext;
             foreach(const QString &fi, fontNames) {
                 QStringList fields = fi.split(QLatin1Char('|'), QString::KeepEmptyParts);
                 if (fields.length() < 2) continue;
-                const QString fontName = fields[0].replace(fontNameNormalizer, "");
+                const QString fontName = fields[0].remove(fontNameNormalizer);
                 QString fontFilename;
                 const int p1 = fi.indexOf(QStringLiteral("|FONTFILENAME:"));
                 if (p1 > 0) {
@@ -408,9 +409,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-                metaText.append(QString(QStringLiteral("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QStringLiteral("|EMBEDDED:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fi.contains(QStringLiteral("|SUBSET:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
+                fontXMLtext.append(QString(QStringLiteral("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QStringLiteral("|EMBEDDED:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fi.contains(QStringLiteral("|SUBSET:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
             }
-
+            if (!fontXMLtext.isEmpty())
+                /// Wrap multiple <font> tags into one <fonts> tag
+                metaText.append(QStringLiteral("<fonts>\n")).append(fontXMLtext).append(QStringLiteral("</fonts>\n"));
         }
 
         /// format creation date
