@@ -86,8 +86,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
     bool veraPDFIsPDF = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
-    QString veraPDFStandardOutput = QString::null;
-    QString veraPDFErrorOutput = QString::null;
+    QString veraPDFStandardOutput;
+    QString veraPDFErrorOutput;
     long veraPDFfilesize = 0;
     int veraPDFExitCode = INT_MIN;
     QProcess veraPDF(this);
@@ -155,14 +155,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Waiting for veraPDF failed or exceeded time limit for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
         veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
+        /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
+        if ((!veraPDFStandardOutput.contains(QStringLiteral("<rawResults>")) || !veraPDFStandardOutput.contains(QStringLiteral("</rawResults>"))) && (!veraPDFStandardOutput.contains(QStringLiteral("<ns2:cliReport")) || !veraPDFStandardOutput.contains(QStringLiteral("</ns2:cliReport>"))))
+            veraPDFStandardOutput = QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(veraPDFStandardOutput) + QStringLiteral("</error>");
         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
         if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
             const QString startOfOutput = veraPDFStandardOutput.left(8192);
             const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDF"));
             const int p2 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), p1);
-            const int p3 = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p2 - 64);
+            const int p3a = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p2 - 64);
+            const int p3b = startOfOutput.indexOf(QStringLiteral(" recordPasses=\"true\""), p2 - 64);
             veraPDFIsPDF = p1 > 0;
-            veraPDFIsPDFA1B = p1 == p2 && p3 > 0 && p3 < p2 + 64;
+            veraPDFIsPDFA1B = p1 == p2 && ((p3a > 0 && p3a < p2 + 64) || (p3b > 0 && p3b < p2 + 64));
             const int p4 = startOfOutput.indexOf(QStringLiteral("item size=\""));
             if (p4 > 1) {
                 const int p5 = startOfOutput.indexOf(QStringLiteral("\""), p4 + 11);
@@ -250,13 +254,19 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// Some string magic to skip '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' from second output
         const QString newStdOut = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
         const int p = newStdOut.indexOf(QStringLiteral("?>"));
-        veraPDFStandardOutput = veraPDFStandardOutput + QStringLiteral("\n") + (p > 1 ? newStdOut.mid(p + 2) : newStdOut);
+        /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
+        if ((newStdOut.contains(QStringLiteral("<rawResults>")) && newStdOut.contains(QStringLiteral("</rawResults>"))) || (newStdOut.contains(QStringLiteral("<ns2:cliReport")) && newStdOut.contains(QStringLiteral("</ns2:cliReport>"))))
+            veraPDFStandardOutput.append(QStringLiteral("\n") + (p > 1 ? newStdOut.mid(p + 2) : newStdOut));
+        else
+            veraPDFStandardOutput.append(QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(newStdOut) + QStringLiteral("</error>"));
+
         veraPDFErrorOutput = veraPDFErrorOutput + QStringLiteral("\n") + QString::fromUtf8(veraPDF.readAllStandardError().constData());
         if (veraPDFExitCode == 0) {
-            const QString startOfOutput = veraPDFStandardOutput.left(8192);
+            const QString startOfOutput = newStdOut.left(8192);
             const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_A\""));
-            const int p2 = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p1 - 64);
-            veraPDFIsPDFA1A = p1 > 0 && p2 > 0 && p2 < p1 + 64;
+            const int p2a = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p1 - 64);
+            const int p2b = startOfOutput.indexOf(QStringLiteral(" recordPasses=\"true\""), p1 - 64);
+            veraPDFIsPDFA1A = p1 > 0 && ((p2a > 0 && p2a < p1 + 64) || (p2b > 0 && p2b < p1 + 64));
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFErrorOutput;
     }
@@ -329,15 +339,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (veraPDFExitCode > INT_MIN) {
             /// insert XML data from veraPDF
-            const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
-            if (p > 0) {
-                metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" filesize=\"%5\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFfilesize));
-                if (!veraPDFStandardOutput.isEmpty())
-                    metaText.append(veraPDFStandardOutput.mid(p + 3));
-                else if (!veraPDFErrorOutput.isEmpty())
-                    metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
-                metaText.append(QStringLiteral("</verapdf>\n"));
-            }
+            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" filesize=\"%5\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFfilesize));
+            if (!veraPDFStandardOutput.isEmpty()) {
+                /// Check for and omit XML header if it exists
+                const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
+                metaText.append(p > 1 ? veraPDFStandardOutput.mid(p + 2) : veraPDFStandardOutput);
+            } else if (!veraPDFErrorOutput.isEmpty())
+                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
+            metaText.append(QStringLiteral("</verapdf>\n"));
         } else if (!m_veraPDFcliTool.isEmpty())
             metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
         else
