@@ -24,9 +24,20 @@
 
 #include <QNetworkAccessManager>
 #include <QStringList>
+#include <QNetworkCookieJar>
+
+class CookieJar : public QNetworkCookieJar
+{
+    Q_OBJECT
+
+public:
+    CookieJar(QObject *parent = nullptr);
+};
 
 class NetworkAccessManager : public QNetworkAccessManager
 {
+    Q_OBJECT
+
 public:
     NetworkAccessManager(QObject *parent = nullptr);
 

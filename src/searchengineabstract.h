@@ -31,6 +31,8 @@
  */
 class SearchEngineAbstract : public FileFinder
 {
+    Q_OBJECT
+
 public:
     explicit SearchEngineAbstract(QObject *parent = nullptr);
 };

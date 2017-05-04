@@ -39,6 +39,9 @@ class Downloader : public QObject, public Watchable
 public:
     explicit Downloader(QObject *parent = nullptr);
 
+signals:
+    void downloaded(QString);
+
 public slots:
     /**
      * Download file as specified by the url.

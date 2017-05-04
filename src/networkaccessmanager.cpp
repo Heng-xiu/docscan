@@ -22,18 +22,12 @@
 #include "networkaccessmanager.h"
 
 #include <QNetworkRequest>
-#include <QNetworkCookieJar>
 #include <QDebug>
 
-class CookieJar : public QNetworkCookieJar
-{
-public:
-    CookieJar(QObject *parent = 0)
-        : QNetworkCookieJar(parent) {
-        // TODO
-    }
-
-};
+CookieJar::CookieJar(QObject *parent = nullptr)
+    : QNetworkCookieJar(parent) {
+    // TODO
+}
 
 NetworkAccessManager::NetworkAccessManager(QObject *parent)
     : QNetworkAccessManager(parent), m_userAgentList(QStringList() << QStringLiteral("Opera/9.80 (Windows NT 5.1; U; en) Presto/2.10.289 Version/12.01") << QStringLiteral("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/534.34 (KHTML, like Gecko) konqueror/4.9.1 Safari/534.34") << QStringLiteral("BlackBerry8520/5.0.0.592 Profile/MIDP-2.1 Configuration/CLDC-1.1 VendorID/168") << QStringLiteral("Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)") << QStringLiteral("Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)") << QStringLiteral("yacybot (freeworld/global; amd64 Linux 2.6.34; java 1.6.0_22; Europe/en) http://yacy.net/bot.html") << QStringLiteral("Mozilla/5.0 (X11; Linux i686; rv:10.0.6) Gecko/20100101 Firefox/10.0.6") << QStringLiteral("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:14.0) Gecko/20100101 Firefox/14.0.1"))
