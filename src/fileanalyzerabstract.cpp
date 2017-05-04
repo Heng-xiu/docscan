@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzerabstract.h"
+
 #include <limits>
 
 #include <QProcess>
@@ -26,7 +28,6 @@
 #include <QDate>
 #include <QTextStream>
 
-#include "fileanalyzerabstract.h"
 #include "guessing.h"
 #include "general.h"
 

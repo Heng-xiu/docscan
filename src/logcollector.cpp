@@ -19,11 +19,11 @@
 
  */
 
+#include "logcollector.h"
+
 #include <typeinfo>
 
 #include <QDateTime>
-
-#include "logcollector.h"
 
 LogCollector::LogCollector(QIODevice *output, QObject *parent)
     : QObject(parent), m_ts(output), m_output(output), m_tagStart("<(\\w+)\\b")

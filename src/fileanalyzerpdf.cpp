@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzerpdf.h"
+
 #include <QFileInfo>
 #include <QDebug>
 #include <QDateTime>
@@ -28,7 +30,6 @@
 #include <QRegularExpression>
 
 #include "popplerwrapper.h"
-#include "fileanalyzerpdf.h"
 #include "watchdog.h"
 #include "guessing.h"
 #include "general.h"

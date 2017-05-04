@@ -19,11 +19,11 @@
 
  */
 
+#include "networkaccessmanager.h"
+
 #include <QNetworkRequest>
 #include <QNetworkCookieJar>
 #include <QDebug>
-
-#include "networkaccessmanager.h"
 
 class CookieJar : public QNetworkCookieJar
 {

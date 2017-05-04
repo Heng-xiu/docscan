@@ -19,10 +19,11 @@
 
  */
 
+#include "watchdog.h"
+
 #include <QTimer>
 #include <QDebug>
 
-#include "watchdog.h"
 #include "watchable.h"
 
 static const int countDownInit = 6;

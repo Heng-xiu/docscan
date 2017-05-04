@@ -19,6 +19,8 @@
 
  */
 
+#include "fromlogfile.h"
+
 #include <QFile>
 #include <QTextStream>
 #include <QRegExp>
@@ -27,7 +29,6 @@
 #include <QDebug>
 
 #include "general.h"
-#include "fromlogfile.h"
 
 FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent)
     : FileFinder(parent), m_isAlive(true)

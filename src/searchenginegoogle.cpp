@@ -19,6 +19,8 @@
 
  */
 
+#include "searchenginegoogle.h"
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QRegExp>
@@ -28,7 +30,6 @@
 #include <QCoreApplication>
 
 #include "networkaccessmanager.h"
-#include "searchenginegoogle.h"
 #include "general.h"
 
 SearchEngineGoogle::SearchEngineGoogle(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)

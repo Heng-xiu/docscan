@@ -19,9 +19,9 @@
 
  */
 
-#include <QDebug>
-
 #include "poorlogger.h"
+
+#include <QDebug>
 
 PoorLogger::PoorLogger(QObject *parent): QObject(parent)
 {

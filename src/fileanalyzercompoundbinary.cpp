@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzercompoundbinary.h"
+
 #include <QFile>
 #include <QDebug>
 #include <QtEndian>
@@ -32,7 +34,6 @@
 #include "wv2/handlers.h"
 #include "wv2/parserfactory.h"
 
-#include "fileanalyzercompoundbinary.h"
 #include "general.h"
 
 inline QString string(const wvWare::UString &str)

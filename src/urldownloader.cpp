@@ -19,6 +19,8 @@
 
  */
 
+#include "urldownloader.h"
+
 #include <QNetworkReply>
 #include <QRegExp>
 #include <QCryptographicHash>
@@ -31,7 +33,6 @@
 #include <QMutex>
 
 #include "geoip.h"
-#include "urldownloader.h"
 #include "watchdog.h"
 #include "general.h"
 #include "networkaccessmanager.h"

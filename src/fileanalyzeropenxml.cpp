@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzeropenxml.h"
+
 #include <quazip.h>
 #include <quazipfile.h>
 
@@ -29,9 +31,7 @@
 #include <QDebug>
 #include <QFileInfo>
 
-#include "fileanalyzeropenxml.h"
 #include "general.h"
-
 
 class FileAnalyzerOpenXML::OpenXMLDocumentHandler: public QXmlDefaultHandler
 {

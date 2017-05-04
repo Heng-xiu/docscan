@@ -19,10 +19,10 @@
 
  */
 
+#include "general.h"
+
 #include <QRegExp>
 #include <QStringList>
-
-#include "general.h"
 
 namespace DocScan
 {

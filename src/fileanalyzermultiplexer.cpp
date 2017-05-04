@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzermultiplexer.h"
+
 #include <QRegExp>
 #include <QDebug>
 #include <QProcess>
@@ -26,7 +28,6 @@
 #include <QFileInfo>
 #include <QCryptographicHash>
 
-#include "fileanalyzermultiplexer.h"
 #include "general.h"
 
 FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent)

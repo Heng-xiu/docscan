@@ -19,11 +19,12 @@
 
  */
 
+#include "filesystemscan.h"
+
 #include <QDir>
 #include <QDebug>
 
 #include "general.h"
-#include "filesystemscan.h"
 
 FileSystemScan::FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent)
     : FileFinder(parent), m_filters(filters), m_baseDir(baseDir), m_alive(false)

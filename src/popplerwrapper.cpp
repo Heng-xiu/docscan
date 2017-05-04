@@ -23,6 +23,8 @@
 
  */
 
+#include "popplerwrapper.h"
+
 #include "poppler/OutputDev.h"
 
 #include <poppler/cpp/poppler-document.h>
@@ -37,9 +39,6 @@
 #include <QDebug>
 
 #include "general.h"
-#include "popplerwrapper.h"
-
-
 
 class ImageInfoOutputDev: public OutputDev
 {

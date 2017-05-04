@@ -19,13 +19,14 @@
 
  */
 
+#include "geoip.h"
+
 #include <QCoreApplication>
 #include <QMutex>
 #include <QNetworkReply>
 #include <QRegExp>
 
 #include "networkaccessmanager.h"
-#include "geoip.h"
 
 GeoIP::GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager)

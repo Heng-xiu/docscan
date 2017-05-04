@@ -19,6 +19,8 @@
 
  */
 
+#include "searchenginespringerlink.h"
+
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QTextStream>
@@ -30,7 +32,6 @@
 
 #include "networkaccessmanager.h"
 #include "general.h"
-#include "searchenginespringerlink.h"
 
 const QString SearchEngineSpringerLink::AllCategories = QStringLiteral("content");
 const int SearchEngineSpringerLink::AllYears = -1;

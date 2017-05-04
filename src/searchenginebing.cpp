@@ -19,6 +19,8 @@
 
  */
 
+#include "searchenginebing.h"
+
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QRegExp>
@@ -28,7 +30,6 @@
 #include <QCoreApplication>
 
 #include "networkaccessmanager.h"
-#include "searchenginebing.h"
 #include "general.h"
 
 SearchEngineBing::SearchEngineBing(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)

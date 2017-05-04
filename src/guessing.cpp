@@ -19,13 +19,13 @@
 
  */
 
-#include <QString>
+#include "guessing.h"
+
 #include <QStringList>
 #include <QHash>
 #include <QVector>
 #include <QRegExp>
 
-#include "guessing.h"
 #include "general.h"
 
 Guessing::Guessing()

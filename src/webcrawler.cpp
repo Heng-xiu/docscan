@@ -19,6 +19,8 @@
 
  */
 
+#include "webcrawler.h"
+
 #include <QCoreApplication>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -30,7 +32,6 @@
 #include <QDebug>
 
 #include "networkaccessmanager.h"
-#include "webcrawler.h"
 #include "general.h"
 
 static const QStringList blacklistHosts = QStringList() << QStringLiteral("www.nad.riksarkivet.se") << QStringLiteral("nad.riksarkivet.se");

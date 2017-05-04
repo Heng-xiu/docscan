@@ -19,9 +19,9 @@
 
  */
 
-#include <QDebug>
-
 #include "fakedownloader.h"
+
+#include <QDebug>
 
 FakeDownloader::FakeDownloader(QObject *parent)
     : Downloader(parent)

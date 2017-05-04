@@ -19,6 +19,8 @@
 
  */
 
+#include "fileanalyzerodf.h"
+
 #include <quazip.h>
 #include <quazipfile.h>
 
@@ -30,10 +32,8 @@
 #include <QStack>
 #include <QFileInfo>
 
-#include "fileanalyzerodf.h"
 #include "watchdog.h"
 #include "general.h"
-
 
 
 class FileAnalyzerODF::ODFContentFileHandler: public QXmlDefaultHandler
