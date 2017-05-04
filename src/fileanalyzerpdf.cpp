@@ -385,19 +385,22 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
 
         /// guess and evaluate editor (a.k.a. creator)
-        QString creator = wrapper->info("Creator");
+        QString toolXMLtext;
+        QString creator = wrapper->info(QStringLiteral("Creator"));
         guess.clear();
         if (!creator.isEmpty())
             guess = guessTool(creator, wrapper->info(QStringLiteral("Title")));
         if (!guess.isEmpty())
-            metaText.append(QString(QStringLiteral("<tool type=\"editor\">\n%1</tool>\n")).arg(guess));
+            toolXMLtext.append(QString(QStringLiteral("<tool type=\"editor\">\n%1</tool>\n")).arg(guess));
         /// guess and evaluate producer
         QString producer = wrapper->info(QStringLiteral("Producer"));
         guess.clear();
         if (!producer.isEmpty())
             guess = guessTool(producer, wrapper->info(QStringLiteral("Title")));
         if (!guess.isEmpty())
-            metaText.append(QString(QStringLiteral("<tool type=\"producer\">\n%1</tool>\n")).arg(guess));
+            toolXMLtext.append(QString(QStringLiteral("<tool type=\"producer\">\n%1</tool>\n")).arg(guess));
+        if (!toolXMLtext.isEmpty())
+            metaText.append(QStringLiteral("<tools>\n")).append(toolXMLtext).append(QStringLiteral("</tools>\n"));
 
         if (!wrapper->isLocked()) {
             /// some functions are sensitive if PDF is locked
