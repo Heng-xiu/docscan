@@ -505,7 +505,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         logText += QStringLiteral("</fileanalysis>\n");
 
         const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-        logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime)).arg(QString::number(externalProgramsEndTime - startTime)));
+        logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
 
         emit analysisReport(logText);
 

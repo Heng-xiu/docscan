@@ -239,7 +239,7 @@ void WebCrawler::finishedDownload()
                     }
 
                     if (regExpMatches) {
-                        emit report(QString(QStringLiteral("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(urlStr)));
+                        emit report(QString(QStringLiteral("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(urlStr)));
                         hitCollection.insert(urlStr);
                     } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                         // qDebug() << "Is not a sub-address:" << urlStr << "of" << m_baseUrl;
@@ -277,9 +277,9 @@ void WebCrawler::finishedDownload()
             } else
                 emit report(QString(QStringLiteral("<webcrawler detailed=\"Found a PDF, but not looking for such files\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
         } else
-            emit report(QString(QStringLiteral("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\">%2</webcrawler>\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(text.left(32))));
+            emit report(QString(QStringLiteral("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\">%2</webcrawler>\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(text.left(32))));
     } else
-        emit report(QString(QStringLiteral("<webcrawler detailed=\"%2\" status=\"error\" code=\"%3\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())).arg(DocScan::xmlify(reply->errorString())).arg(reply->error()));
+        emit report(QString(QStringLiteral("<webcrawler detailed=\"%2\" status=\"error\" code=\"%3\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(reply->errorString())).arg(reply->error()));
 
     qApp->processEvents();
     --m_runningDownloads;
@@ -296,7 +296,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
 
     /// Log all SSL/TLS errors
     for (const QSslError &error : list) {
-        const QString logText = QString(QStringLiteral("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n")).arg(DocScan::xmlify(error.errorString())).arg(DocScan::xmlify(reply->url().toString()));
+        const QString logText = QString(QStringLiteral("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n")).arg(DocScan::xmlify(error.errorString()), DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         qWarning() << "Ignoring SSL error: " << error.errorString();
     }
