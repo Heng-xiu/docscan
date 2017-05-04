@@ -128,7 +128,7 @@ public:
     }
 
     virtual bool characters(const QString &text) {
-        QString nodeName = m_nodeName.top().toLower();
+        // still unused: QString nodeName = m_nodeName.top().toLower();
 // TODO
         return QXmlDefaultHandler::characters(text);
     }

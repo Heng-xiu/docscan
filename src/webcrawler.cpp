@@ -155,7 +155,6 @@ bool WebCrawler::visitNextPage()
 
 void WebCrawler::finishedDownload()
 {
-    QRegExp fileExtRegExp = QRegExp(QStringLiteral("[.].{1,4}$"), Qt::CaseInsensitive);
     QRegExp validFileExtRegExp = QRegExp(QStringLiteral("([.]([sp]?htm[l]?|jsp|asp[x]?|php)|[^.]{5,})([?].+)?$"), Qt::CaseInsensitive);
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     m_mutexRunningJobs->lock();

@@ -24,7 +24,7 @@
 #include <QNetworkRequest>
 #include <QDebug>
 
-CookieJar::CookieJar(QObject *parent = nullptr)
+CookieJar::CookieJar(QObject *parent)
     : QNetworkCookieJar(parent) {
     // TODO
 }

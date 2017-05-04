@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     if (argc == 2) {
         const QString filename = QString::fromAscii(argv[argc - 1]);
         FileAnalyzerCompoundBinary *facb = new FileAnalyzerCompoundBinary(&a);
-        PoorLogger *poorLogger = new PoorLogger();
+        // PoorLogger *poorLogger = new PoorLogger();
         // QObject::connect(facb, SIGNAL(analysisReport(QString)), poorLogger,SLOT(receiveLog(QString)));
 
         qDebug() << "Minesweeping file" << filename;
