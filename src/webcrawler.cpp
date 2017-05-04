@@ -34,7 +34,7 @@
 #include "networkaccessmanager.h"
 #include "general.h"
 
-static const QStringList blacklistHosts = QStringList() << QStringLiteral("www.nad.riksarkivet.se") << QStringLiteral("nad.riksarkivet.se");
+const QStringList WebCrawler::blacklistHosts = QStringList() << QStringLiteral("www.nad.riksarkivet.se") << QStringLiteral("nad.riksarkivet.se");
 
 WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
     : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_baseHost(QUrl(baseUrl).host()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_terminating(false), m_shootingNextDownload(false), m_runningDownloads(0)

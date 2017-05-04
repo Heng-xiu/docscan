@@ -52,6 +52,8 @@ public:
     virtual bool isAlive();
 
 private:
+    static const QStringList blacklistHosts;
+
     typedef struct Filter {
         QString label;
         QRegExp regExp;
