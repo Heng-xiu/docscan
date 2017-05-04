@@ -32,7 +32,6 @@
 #include "searchenginespringerlink.h"
 #include "fakedownloader.h"
 #include "urldownloader.h"
-// #include "cachedfilefinder.h"
 #include "filesystemscan.h"
 #include "fileanalyzermultiplexer.h"
 #include "watchdog.h"
@@ -206,9 +205,11 @@ bool evaluateConfigfile(const QString &filename)
                     } else if (value.contains("pdf")) {
                         fileAnalyzer = new FileAnalyzerPDF();
                         qDebug() << "fileanalyzer = FileAnalyzerPDF";
-//                     } else if (value.contains("compoundbinary")) {
-//                         fileAnalyzer = new FileAnalyzerCompoundBinary();
-//                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
+#ifdef HAVE_WV2
+                    } else if (value.contains(QStringLiteral("compoundbinary"))) {
+                        fileAnalyzer = new FileAnalyzerCompoundBinary();
+                        qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
+#endif // HAVE_WV2
                     } else
                         fileAnalyzer = NULL;
                 } else {
