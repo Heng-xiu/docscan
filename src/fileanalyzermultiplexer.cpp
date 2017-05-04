@@ -145,7 +145,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
         QFile::rename(randomTempFilename, uncompressedFilename);
     }
 
-    const QString logText = QString(QStringLiteral("<uncompress status=\"%4\" tool=\"%1\" time=\"%5\">\n<origin md5sum=\"%6\">%2</origin>\n<destination md5sum=\"%7\">%3</destination>\n</uncompress>")).arg(DocScan::xmlify(uncompressTool)).arg(DocScan::xmlify(filename)).arg(DocScan::xmlify(uncompressedFilename)).arg(success ? QStringLiteral("success") : QStringLiteral("error")).arg(QDateTime::currentMSecsSinceEpoch() - startTime).arg(QString::fromUtf8(compressedMd5.result().toHex())).arg(QString::fromUtf8(uncompressedMd5.result().toHex()));
+    const QString logText = QString(QStringLiteral("<uncompress status=\"%1\" tool=\"%2\" time=\"%3\">\n<origin md5sum=\"%5\">%4</origin>\n<destination md5sum=\"%7\">%6</destination>\n</uncompress>")).arg(success ? QStringLiteral("success") : QStringLiteral("error"), DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime), DocScan::xmlify(filename), QString::fromUtf8(compressedMd5.result().toHex()), DocScan::xmlify(uncompressedFilename), QString::fromUtf8(uncompressedMd5.result().toHex()));
     emit analysisReport(logText);
     analyzeFile(uncompressedFilename);
     QFile::remove(uncompressedFilename); ///< Remove uncompressed file after analysis

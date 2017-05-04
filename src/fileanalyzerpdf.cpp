@@ -315,7 +315,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (jhoveExitCode > INT_MIN) {
             /// insert data from jHove
-            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%3\" pdf=\"%4\" wellformed=\"%1\" valid=\"%2\"")).arg(jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveExitCode).arg(jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
+            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%1\" wellformed=\"%2\" valid=\"%3\" pdf=\"%4\"")).arg(QString::number(jhoveExitCode), jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
             if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
                 metaText.append(QStringLiteral(" />\n"));
             else {
@@ -325,7 +325,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (!jhovePDFprofile.isEmpty()) {
                     const bool isPDFA1a = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A"));
                     const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
-                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile)).arg(jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
+                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
                 }
                 if (m_jhoveVerbose && !jhoveStandardOutput.isEmpty())
                     metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
@@ -340,7 +340,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (veraPDFExitCode > INT_MIN) {
             /// insert XML data from veraPDF
-            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" pdf=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" filesize=\"%5\">\n")).arg(veraPDFExitCode).arg(veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFfilesize));
+            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdf=\"%3\" pdfa1b=\"%4\" pdfa1a=\"%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
             if (!veraPDFStandardOutput.isEmpty()) {
                 /// Check for and omit XML header if it exists
                 const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
@@ -355,7 +355,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (pdfboxValidatorExitCode > INT_MIN) {
             /// insert result from Apache's PDFBox
-            metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(pdfboxValidatorExitCode).arg(pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
+            metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
             if (!pdfboxValidatorStandardOutput.isEmpty())
                 metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardOutput)));
             else if (!pdfboxValidatorErrorOutput.isEmpty())
@@ -369,7 +369,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (callasPdfAPilotExitCode > INT_MIN) {
             const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
             const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
-            metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(callasPdfAPilotExitCode).arg(isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
+            metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
             if (!callasPdfAPilotStandardOutput.isEmpty())
                 metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
             else if (!callasPdfAPilotErrorOutput.isEmpty())
@@ -419,7 +419,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 }
                 if (fontName.isEmpty()) continue;
                 if (knownFonts.contains(fontName)) continue; else knownFonts.insert(fontName);
-                fontXMLtext.append(QString(QStringLiteral("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1])).arg(fi.contains(QStringLiteral("|EMBEDDED:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fi.contains(QStringLiteral("|SUBSET:1")) ? QStringLiteral("yes") : QStringLiteral("no")).arg(fontFilename.isEmpty() ? QString() : QString(" filename=\"%1\"").arg(fontFilename)));
+                fontXMLtext.append(QString(QStringLiteral("<font embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(fontName, fields[1]), fi.contains(QStringLiteral("|EMBEDDED:1")) ? QStringLiteral("yes") : QStringLiteral("no"), fi.contains(QStringLiteral("|SUBSET:1")) ? QStringLiteral("yes") : QStringLiteral("no"), fontFilename.isEmpty() ? QString() : QString(QStringLiteral(" filename=\"%1\"")).arg(fontFilename)));
             }
             if (!fontXMLtext.isEmpty())
                 /// Wrap multiple <font> tags into one <fonts> tag

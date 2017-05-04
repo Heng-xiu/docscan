@@ -33,7 +33,7 @@ QString xmlNodeToText(const XMLNode &node)
     QStringList attributes = node.attributes.keys();
     attributes.sort();
     for (QStringList::ConstIterator it = attributes.constBegin(); it != attributes.constEnd(); ++it)
-        result.append(QString(QStringLiteral(" %1=\"%2\"")).arg(*it).arg(xmlify(node.attributes[*it])));
+        result.append(QString(QStringLiteral(" %1=\"%2\"")).arg(*it, xmlify(node.attributes[*it])));
 
     if (node.text.isEmpty())
         result.append(QStringLiteral(" />\n"));
@@ -78,7 +78,7 @@ QString dexmlify(const QString &xml)
 
 QString formatDate(const QDate date, const QString &base)
 {
-    return QString(QStringLiteral("<date base=\"%5\" day=\"%3\" epoch=\"%6\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
+    return QString(QStringLiteral("<date epoch=\"%6\" base=\"%5\" day=\"%3\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(QString::number(date.year()), QString::number(date.month()), QString::number(date.day()), date.toString(Qt::ISODate), base, QString::number(QDateTime(date).toTime_t()));
 }
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs)

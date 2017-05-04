@@ -405,7 +405,7 @@ QString FileAnalyzerCompoundBinary::langCodeToISOCode(int lid)
     case 0x0c0a: return QStringLiteral("pt"); ///< ?
     case 0x0c0c: return QStringLiteral("fr-CA"); ///< ?
     default: {
-        return QString(QStringLiteral("0x%1 = %2")).arg(QString::number(lid, 16)).arg(QString::number(lid, 10));
+        return QString(QStringLiteral("0x%1 = %2")).arg(QString::number(lid, 16), QString::number(lid, 10));
     }
     }
 }
