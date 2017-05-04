@@ -22,6 +22,8 @@
 #ifndef GUESSING_H
 #define GUESSING_H
 
+#include <QString>
+
 class Guessing
 {
 public:
