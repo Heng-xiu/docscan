@@ -207,12 +207,13 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     /// More fonts?
 
     QString bName = fontName;
-    bName.remove(QStringLiteral("#20"));
+    bName.remove(QStringLiteral("#20")).remove(QStringLiteral("\\s")).remove(QStringLiteral(".")).remove(QStringLiteral("_")).remove(QStringLiteral("/"));
     bool bNameChanged = true;
     while (bNameChanged) {
         const QString bNameOriginal = bName;
         bName = bName.trimmed();
         static const QStringList suffixes = QStringList()
+                                            << QStringLiteral("BOLD") << QStringLiteral("ITALIC")
                                             << QStringLiteral("MT") << QStringLiteral("OsF") << QStringLiteral("PS") << QStringLiteral("BE") << QStringLiteral("MS") << QStringLiteral("SC") << QStringLiteral("LT") << QStringLiteral("LF") << QStringLiteral("-BT") << QStringLiteral("BT") << QStringLiteral("Bk") << QStringLiteral("T")
                                             << QStringLiteral("-Normal") << QStringLiteral("-Book") << QStringLiteral("-Md") << QStringLiteral("-Plain") << QStringLiteral("-Medium") << QStringLiteral("-Medi") << QStringLiteral("-MediumItalic") << QStringLiteral("-Semibold") << QStringLiteral("-SmbdIt") << QStringLiteral("-Caps") << QStringLiteral("-Roman") << QStringLiteral("-Roma") << QStringLiteral("-Regular") << QStringLiteral("-Regu") << QStringLiteral("-DisplayRegular")
                                             << QStringLiteral("-Demi") << QStringLiteral("-Blk") << QStringLiteral("-Black") << QStringLiteral("-Blac") << QStringLiteral("Bla") << QStringLiteral("-Ultra") << QStringLiteral("-Extra") << QStringLiteral("-ExtraBold") << QStringLiteral("Obl") << QStringLiteral("-Hv") << QStringLiteral("-HvIt") << QStringLiteral("-Heavy") << QStringLiteral("-Heav") << QStringLiteral("-BoldIt") << QStringLiteral("-BoldCn") << QStringLiteral("-BoldItal") << QStringLiteral("-BoldItalicB") << QStringLiteral("-BdIt") << QStringLiteral("-Bd") << QStringLiteral("-It")
@@ -223,6 +224,8 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
                 bName = bName.left(bName.length() - suffix.length());
         }
         static const QVector<QRegExp> suffixesRegExp = QVector<QRegExp>()
+                << QRegExp(QStringLiteral("-Extend\\.[0-9]+$"))
+                << QRegExp(QStringLiteral("(Fet|Kursiv)[0-9]+$"))
                 << QRegExp(QStringLiteral("[,-]?(Ital(ic)?|Oblique|Black|Bol(dB?)?)$"))
                 << QRegExp(QStringLiteral("[,-](BdCn|SC)[0-9]*$")) << QRegExp(QStringLiteral("[,-][A-Z][0-9]$")) << QRegExp(QStringLiteral("_[0-9]+$"))
                 << QRegExp(QStringLiteral("[+][A-Z]+$"))
