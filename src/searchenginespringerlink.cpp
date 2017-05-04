@@ -103,7 +103,7 @@ void SearchEngineSpringerLink::finished()
             QNetworkReply *newReply = m_networkAccessManager->get(request);
             connect(newReply, SIGNAL(finished()), this, SLOT(finished()));
         } else {
-            QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
+            QString htmlText = QString::fromUtf8(reply->readAll().constData()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
 
             if (m_searchOffset == 0) {
                 /// first page

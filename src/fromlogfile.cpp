@@ -60,7 +60,7 @@ void FromLogFileFileFinder::startSearch(int numExpectedHits)
 {
     emit report(QString(QStringLiteral("<filefinder count=\"%1\" type=\"fromlogfilefilefinder\" />\n")).arg(m_urlSet.count()));
     int count = numExpectedHits;
-    foreach(const QUrl &url, m_urlSet) {
+    for (const QUrl &url : const_cast<const QSet<QUrl> &>(m_urlSet)) {
         if (count <= 0) break;
         emit foundUrl(url);
         --count;

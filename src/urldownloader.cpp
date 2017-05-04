@@ -205,7 +205,7 @@ void UrlDownloader::finished()
 
         /// make known file extensions lower-case
         static const QStringList fileExtList = QStringList() << QStringLiteral(".pdf") << QStringLiteral(".pdf.xz") << QStringLiteral(".pdf.lzma") << QStringLiteral(".odt") << QStringLiteral(".doc") << QStringLiteral(".docx") << QStringLiteral(".rtf");
-        foreach(const QString &fileExt, fileExtList) {
+        for (const QString &fileExt : fileExtList) {
             filename = filename.replace(fileExt, fileExt, Qt::CaseInsensitive);
         }
         /// enforce .pdf file name extension if not exists but file name contains "pdf"

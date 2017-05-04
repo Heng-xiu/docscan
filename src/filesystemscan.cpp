@@ -41,8 +41,8 @@ void FileSystemScan::startSearch(int numExpectedHits)
         QDir dir = QDir(queue.first());
         queue.removeFirst();
 
-        QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name | QDir::IgnoreCase);
-        foreach(const QString &filename, files) {
+        const QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name | QDir::IgnoreCase);
+        for (const QString &filename : files) {
             QUrl url = QUrl::fromLocalFile(dir.absolutePath() + QDir::separator() + filename);
             emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
             emit foundUrl(url);
@@ -50,7 +50,8 @@ void FileSystemScan::startSearch(int numExpectedHits)
             if (hits >= numExpectedHits) break;
         }
 
-        foreach(const QString subdir, dir.entryList(QDir::Dirs)) {
+        const QStringList subdirEntries = dir.entryList(QDir::Dirs);
+        for (const QString &subdir : subdirEntries) {
             if (subdir != QStringLiteral(".") && subdir != QStringLiteral("..")) {
                 queue.append(dir.absolutePath() + QDir::separator() + subdir);
             }

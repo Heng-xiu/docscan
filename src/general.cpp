@@ -76,7 +76,7 @@ QString dexmlify(const QString &xml)
     return result;
 }
 
-QString formatDate(const QDate &date, const QString &base)
+QString formatDate(const QDate date, const QString &base)
 {
     return QString(QStringLiteral("<date base=\"%5\" day=\"%3\" epoch=\"%6\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
 }

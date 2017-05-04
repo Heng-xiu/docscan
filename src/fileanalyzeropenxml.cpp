@@ -45,7 +45,7 @@ public:
     OpenXMLDocumentHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
         : QXmlDefaultHandler(), result(resultContainer), m_insideText(false) {
         result.paperSizeWidth = result.paperSizeHeight = 0;
-        result.formatVersion = QStringLiteral(""); // TODO
+        result.formatVersion.clear(); // TODO
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {

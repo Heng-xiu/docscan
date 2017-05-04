@@ -218,7 +218,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
                                             << QStringLiteral("-Demi") << QStringLiteral("-Blk") << QStringLiteral("-Black") << QStringLiteral("-Blac") << QStringLiteral("Bla") << QStringLiteral("-Ultra") << QStringLiteral("-Extra") << QStringLiteral("-ExtraBold") << QStringLiteral("Obl") << QStringLiteral("-Hv") << QStringLiteral("-HvIt") << QStringLiteral("-Heavy") << QStringLiteral("-Heav") << QStringLiteral("-BoldIt") << QStringLiteral("-BoldCn") << QStringLiteral("-BoldItal") << QStringLiteral("-BoldItalicB") << QStringLiteral("-BdIt") << QStringLiteral("-Bd") << QStringLiteral("-It")
                                             << QStringLiteral("-Condensed") << QStringLiteral("-Light") << QStringLiteral("-Ligh") << QStringLiteral("-Lt") << QStringLiteral("-Slant") << QStringLiteral("-LightCond") << QStringLiteral("Lig") << QStringLiteral("-Narrow")
                                             << QStringLiteral("Ext") << QStringLiteral("Narrow") << QStringLiteral("SWA") << QStringLiteral("Std") << QStringLiteral("-Identity-H") << QStringLiteral("-DTC") << QStringLiteral("CE");
-        foreach(const QString &suffix, suffixes) {
+        for (const QString &suffix : suffixes) {
             if (bName.endsWith(suffix))
                 bName = bName.left(bName.length() - suffix.length());
         }
@@ -227,7 +227,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
                 << QRegExp(QStringLiteral("[,-](BdCn|SC)[0-9]*$")) << QRegExp(QStringLiteral("[,-][A-Z][0-9]$")) << QRegExp(QStringLiteral("_[0-9]+$"))
                 << QRegExp(QStringLiteral("[+][A-Z]+$"))
                 << QRegExp(QStringLiteral("[*][0-9]+$"));
-        foreach(const QRegExp &suffix, suffixesRegExp) {
+        for (const QRegExp &suffix : suffixesRegExp) {
             bName.remove(suffix);
         }
         static const QRegExp teXFonts = QRegExp(QStringLiteral("^((CM|SF|MS)[A-Z]+|(cm)[a-z]+|wasy|stmary|LM(Sans|Roman|Math|Mono)[a-zA-Z]*)([0-9]+)$"));

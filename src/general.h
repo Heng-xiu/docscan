@@ -66,7 +66,7 @@ QString dexmlify(const QString &xml);
  * @param base value for the 'base' attribte
  * @return XML representation
  */
-QString formatDate(const QDate &date, const QString &base);
+QString formatDate(const QDate date, const QString &base);
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs);
 }

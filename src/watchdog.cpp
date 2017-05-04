@@ -44,7 +44,7 @@ void WatchDog::addWatchable(Watchable *watchable)
 void WatchDog::watch()
 {
     bool anyAlive = false;
-    foreach(Watchable *watchable, m_watchables) {
+    for (Watchable *watchable : const_cast<const QSet<Watchable *> &>(m_watchables)) {
         anyAlive |= watchable->isAlive();
         if (anyAlive) break;
     }

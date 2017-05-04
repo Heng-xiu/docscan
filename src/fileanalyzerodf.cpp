@@ -111,16 +111,16 @@ public:
                 QStringList sizes = stylepagelayoutproperties[stylepagelayoutname].split(QStringLiteral("|"));
                 if (sizes[0].endsWith(QStringLiteral("in"))) {
                     bool ok = false;
-                    result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok) * 25.4;
-                    result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok) * 25.4;
+                    result.paperSizeWidth = sizes[0].leftRef(sizes[0].length() - 2).toDouble(&ok) * 25.4;
+                    result.paperSizeHeight = sizes[1].leftRef(sizes[1].length() - 2).toDouble(&ok) * 25.4;
                 } else if (sizes[0].endsWith(QStringLiteral("cm"))) {
                     bool ok = false;
-                    result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok) * 10;
-                    result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok) * 10;
+                    result.paperSizeWidth = sizes[0].leftRef(sizes[0].length() - 2).toDouble(&ok) * 10;
+                    result.paperSizeHeight = sizes[1].leftRef(sizes[1].length() - 2).toDouble(&ok) * 10;
                 } else if (sizes[0].endsWith(QStringLiteral("mm"))) {
                     bool ok = false;
-                    result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok);
-                    result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok);
+                    result.paperSizeWidth = sizes[0].leftRef(sizes[0].length() - 2).toDouble(&ok);
+                    result.paperSizeHeight = sizes[1].leftRef(sizes[1].length() - 2).toDouble(&ok);
                 }
             }
         }

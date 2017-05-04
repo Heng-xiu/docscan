@@ -407,7 +407,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             static QRegExp fontNameNormalizer(QStringLiteral("^[A-Z]+\\+"), Qt::CaseInsensitive);
             QSet<QString> knownFonts;
             QString fontXMLtext;
-            foreach(const QString &fi, fontNames) {
+            for (const QString &fi : fontNames) {
                 QStringList fields = fi.split(QLatin1Char('|'), QString::KeepEmptyParts);
                 if (fields.length() < 2) continue;
                 const QString fontName = fields[0].remove(fontNameNormalizer);

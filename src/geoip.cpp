@@ -80,7 +80,7 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
 
     QString ipAddress;
     if (!hostInfo.addresses().isEmpty())
-        ipAddress = hostInfo.addresses().first().toString();
+        ipAddress = hostInfo.addresses().constFirst().toString();
     if (ipAddress.isEmpty()) {
         --m_numRunningTasks;
         return;

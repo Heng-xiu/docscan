@@ -68,7 +68,7 @@ void SearchEngineBing::finished()
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     if (reply->error() == QNetworkReply::NoError) {
-        QString htmlText = QString::fromUtf8(reply->readAll().data()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
+        QString htmlText = QString::fromUtf8(reply->readAll().constData()).replace(QStringLiteral("&#160;"), QStringLiteral(" "));
 
         if (m_currentPage == 0) {
             const QRegExp countHitsRegExp(QStringLiteral("([0-9]+([ ,][0-9]+)*) result"), Qt::CaseInsensitive);

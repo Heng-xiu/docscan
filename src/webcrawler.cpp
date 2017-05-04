@@ -47,7 +47,7 @@ WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QString
     m_interDownloadDelay = 10; /// milliseconds
     m_maxVisitedPages = qMin(maxVisitedPages, WebCrawler::maxVisitedPages);
 
-    foreach(const QString &label, filters) {
+    for (const QString &label : filters) {
         Filter filter;
         filter.label = label;
         filter.foundHits = 0;
@@ -194,7 +194,7 @@ void WebCrawler::finishedDownload()
         QString text(data);
 
         /// check if HTML page ...
-        if (text.left(256).contains(QStringLiteral("<html"), Qt::CaseInsensitive)) {
+        if (text.leftRef(256).contains(QStringLiteral("<html"), Qt::CaseInsensitive)) {
             emit report(QString(QStringLiteral("<webcrawler status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
             if (m_requiredContent.isEmpty() || text.contains(m_requiredContent)) {
 
@@ -252,7 +252,7 @@ void WebCrawler::finishedDownload()
                 }
 
                 /// delay sending signals to ensure BFS on links
-                foreach(const QString &url, hitCollection) {
+                for (const QString &url : const_cast<const QSet<QString> &>(hitCollection)) {
                     emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url)));
                     emit foundUrl(QUrl(url));
                 }
@@ -295,7 +295,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
     /// Log all SSL/TLS errors
-    foreach(const QSslError &error, list) {
+    for (const QSslError &error : list) {
         const QString logText = QString(QStringLiteral("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n")).arg(DocScan::xmlify(error.errorString())).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         qWarning() << "Ignoring SSL error: " << error.errorString();
