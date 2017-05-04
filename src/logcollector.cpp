@@ -26,7 +26,7 @@
 #include <QDateTime>
 
 LogCollector::LogCollector(QIODevice *output, QObject *parent)
-    : QObject(parent), m_ts(output), m_output(output), m_tagStart("<(\\w+)\\b")
+    : QObject(parent), m_ts(output), m_output(output), m_tagStart(QStringLiteral("<(\\w+)\\b"))
 {
     m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log isodate=\"" << QDateTime::currentDateTime().toString(Qt::ISODate) << "\">" << endl;
 }
@@ -38,7 +38,7 @@ bool LogCollector::isAlive()
 
 void LogCollector::receiveLog(const QString &message)
 {
-    QString key = QString(typeid(*(sender())).name()).toLower().replace(QRegExp("[0-9]+"), "");
+    QString key = QString(typeid(*(sender())).name()).toLower().remove(QRegExp(QStringLiteral("[0-9]+")));
 
     QString time = QDateTime::currentDateTime().toString(Qt::ISODate);
     m_ts << "<logitem epoch=\"" << (QDateTime::currentMSecsSinceEpoch() / 1000) << "\" source=\"" << key << "\" time=\"" << time << "\">" << endl << message << "</logitem>" << endl;

@@ -133,7 +133,7 @@ void GeoIP::finishedGeoInfo()
                 if (regExpCountryName.indexIn(xmlText) > 0 && !regExpCountryName.cap(1).isEmpty())
                     geoInformation.countryName = regExpCountryName.cap(1).toLower();
                 const QRegExp regExpCity(QStringLiteral("<City>([^<]+)</City>"));
-                if (regExpCity.indexIn(xmlText) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
+                if (regExpCity.indexIn(xmlText) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains(QStringLiteral("unknown")))
                     geoInformation.city = regExpCity.cap(1).toLower();
                 const QRegExp regExpLatitude(QStringLiteral("<Latitude>([-0-9.]+)</Latitude>"));
                 bool ok = false;
@@ -153,7 +153,7 @@ void GeoIP::finishedGeoInfo()
                 geoInformation.countryName = regExpCountryName.cap(1).toLower();
             int p = xmlText.indexOf(QStringLiteral("gml:featureMember"));
             const QRegExp regExpCity(QStringLiteral("<gml:name>([^<]+)</gml:name>"));
-            if (p > 0 && regExpCity.indexIn(xmlText, p) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains("unknown"))
+            if (p > 0 && regExpCity.indexIn(xmlText, p) > 0 && !regExpCity.cap(1).isEmpty() && regExpCity.cap(1).contains(QStringLiteral("unknown")))
                 geoInformation.city = regExpCity.cap(1).toLower();
             const QRegExp regExpCoordinates(QStringLiteral("<gml:coordinates>([-0-9.]+),([-0-9.]+)</gml:coordinates>"));
             bool ok1 = false, ok2 = false;
@@ -166,7 +166,7 @@ void GeoIP::finishedGeoInfo()
 
         if (!geoInformation.countryCode.isEmpty()) {
             if (geoInformation.countryCode == QStringLiteral("uk"))
-                geoInformation.countryCode = "gb"; /// rewrite United Kingdom to Great Britain
+                geoInformation.countryCode = QStringLiteral("gb"); /// rewrite United Kingdom to Great Britain
             m_mutexConcurrentAccess->lock();
             m_ipAddressToGeoInformation.insert(ipAddress, geoInformation);
             m_mutexConcurrentAccess->unlock();

@@ -90,7 +90,7 @@ void FileAnalyzerCompoundBinary::analyzeFiB(wvWare::Word97::FIB &fib, ResultCont
     switch (fib.envr) {
     case 0: result.opSys = QStringLiteral("windows"); break;
     case 1: result.opSys = QStringLiteral("mac"); break;
-    default: result.opSys = QString("unknown=%1").arg(fib.envr);
+    default: result.opSys = QString(QStringLiteral("unknown=%1")).arg(fib.envr);
     }
 
     getVersion(fib.nFib, result.versionNumber, result.versionText);
@@ -243,7 +243,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     result.paperSizeHeight = 0;
 
     if (isRTFfile(filename)) {
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"RTF file disguising as DOC\" status=\"error\" />\n").arg(filename));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"RTF file disguising as DOC\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
@@ -253,22 +253,22 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// perform various file checks before starting the analysis
     wvWare::OLEStorage storage(cppFilename);
     if (!storage.open(wvWare::OLEStorage::ReadOnly)) {
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"OLEStorage cannot be opened\" status=\"error\" />\n").arg(filename));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"OLEStorage cannot be opened\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
     wvWare::OLEStreamReader *document = storage.createStreamReader("WordDocument");
     if (document == nullptr || !document->isValid()) {
         if (document != nullptr)  delete document;
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n").arg(filename));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
 
     /// determine mimetype and write file analysis header
-    QString mimetype = "application/octet-stream";
-    if (filename.endsWith(".doc"))
-        mimetype = "application/msword";
+    QString mimetype = QStringLiteral("application/octet-stream");
+    if (filename.endsWith(QStringLiteral(".doc")))
+        mimetype = QStringLiteral("application/msword");
 
     /// get the FIB (File information block) which contains a lot of interesting information
     wvWare::Word97::FIB fib(document, true);
@@ -280,36 +280,36 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// analyze file with parser
     analyzeWithParser(cppFilename, result);
 
-    QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
+    QString logText = QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\">\n")).arg(DocScan::xmlify(filename));
     QString metaText = QStringLiteral("<meta>\n");
     QString headerText = QStringLiteral("<header>\n");
 
     /// file format including mime type and file format version
-    metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype).arg(result.versionNumber).arg(result.versionText));
+    metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n<version major=\"%2\" minor=\"0\">%3</version>\n</fileformat>\n")).arg(mimetype, QString::number(result.versionNumber), result.versionText));
 
     /// editor as stated in file format
-    metaText.append(QString("<tool origin=\"document\" subtype=\"creator\" type=\"editor\">\n%1</tool>\n").arg(guessTool(result.creatorText)));
-    metaText.append(QString("<tool origin=\"document\" subtype=\"revisor\" type=\"editor\">\n%1</tool>\n").arg(guessTool(result.revisorText)));
+    metaText.append(QString(QStringLiteral("<tool origin=\"document\" subtype=\"creator\" type=\"editor\">\n%1</tool>\n")).arg(guessTool(result.creatorText)));
+    metaText.append(QString(QStringLiteral("<tool origin=\"document\" subtype=\"revisor\" type=\"editor\">\n%1</tool>\n")).arg(guessTool(result.revisorText)));
 
     /// evaluate editor (a.k.a. creator)
     if (!result.authorInitial.isEmpty())
-        headerText.append(QString("<author type=\"first\">%1</author>\n").arg(DocScan::xmlify(result.authorInitial)));
+        headerText.append(QString(QStringLiteral("<author type=\"first\">%1</author>\n")).arg(DocScan::xmlify(result.authorInitial)));
     if (!result.authorLast.isEmpty())
-        headerText.append(QString("<author type=\"last\">%1</author>\n").arg(DocScan::xmlify(result.authorLast)));
+        headerText.append(QString(QStringLiteral("<author type=\"last\">%1</author>\n")).arg(DocScan::xmlify(result.authorLast)));
 
     /// evaluate title
     if (!result.title.isEmpty())
-        headerText.append(QString("<title>%1</title>\n").arg(DocScan::xmlify(result.title)));
+        headerText.append(QString(QStringLiteral("<title>%1</title>\n")).arg(DocScan::xmlify(result.title)));
 
     /// evaluate subject
     if (!result.subject.isEmpty())
-        headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(result.subject)));
+        headerText.append(QString(QStringLiteral("<subject>%1</subject>\n")).arg(DocScan::xmlify(result.subject)));
 
     /// evaluate language
     if (!result.language.isEmpty())
-        headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(result.language));
+        headerText.append(QString(QStringLiteral("<language origin=\"document\">%1</language>\n")).arg(result.language));
     //if (result.plainText.length() > 1024)
-    //    headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+    //    headerText.append(QString(QStringLiteral("<language origin=\"aspell\">%1</language>\n")).arg(guessLanguage(result.plainText)));
 
     /// evaluate dates
     if (result.dateCreation.isValid())
@@ -319,7 +319,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 
     /// evaluate number of pages
     if (result.pageCount > 0)
-        headerText.append(QString("<num-pages>%1</num-pages>\n").arg(result.pageCount));
+        headerText.append(QString(QStringLiteral("<num-pages>%1</num-pages>\n")).arg(result.pageCount));
 
     /// evaluate paper size
     if (result.paperSizeHeight > 0 && result.paperSizeWidth > 0)
@@ -327,7 +327,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 
     // TODO fonts
 
-    QString bodyText = QString("<body length=\"%1\" />\n").arg(result.plainText.length());
+    QString bodyText = QString(QStringLiteral("<body length=\"%1\" />\n")).arg(result.plainText.length());
 
     /// close all tags, merge text
     metaText += QStringLiteral("</meta>\n");

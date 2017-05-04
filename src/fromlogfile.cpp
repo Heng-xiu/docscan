@@ -58,7 +58,7 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
 
 void FromLogFileFileFinder::startSearch(int numExpectedHits)
 {
-    emit report(QString("<filefinder count=\"%1\" type=\"fromlogfilefilefinder\" />\n").arg(m_urlSet.count()));
+    emit report(QString(QStringLiteral("<filefinder count=\"%1\" type=\"fromlogfilefilefinder\" />\n")).arg(m_urlSet.count()));
     int count = numExpectedHits;
     foreach(const QUrl &url, m_urlSet) {
         if (count <= 0) break;
@@ -109,7 +109,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
         if (count == 0)
             qWarning() << "No filenames found in" << m_logfilename;
 
-        const QString s = QString("<downloader count=\"%1\" type=\"fromlogfiledownloader\" />\n").arg(count);
+        const QString s = QString(QStringLiteral("<downloader count=\"%1\" type=\"fromlogfiledownloader\" />\n")).arg(count);
         emit report(s);
     } else
         qWarning() << "Could not find or open old log file" << m_logfilename;

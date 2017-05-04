@@ -52,7 +52,7 @@ WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QString
         filter.label = label;
         filter.foundHits = 0;
         QString rpl = label;
-        rpl = rpl.replace(".", "\\.").replace("?", ".").replace("*", "[^/ \"']*");
+        rpl = rpl.replace(QStringLiteral("."), QStringLiteral("\\.")).replace(QStringLiteral("?"), QStringLiteral(".")).replace(QStringLiteral("*"), QStringLiteral("[^/ \"']*"));
         filter.regExp = QRegExp(QString(QStringLiteral("(^|/)(%1)([?].+)?$")).arg(rpl));
         m_filterSet.append(filter);
     }
@@ -68,7 +68,7 @@ WebCrawler::~WebCrawler()
 void WebCrawler::startSearch(int numExpectedHits)
 {
     m_numExpectedHits = numExpectedHits;
-    if (m_startUrl.contains("transportstyrelsen.se")) {
+    if (m_startUrl.contains(QStringLiteral("transportstyrelsen.se"))) {
         /// Transportstyrelsen has a download-per-time limit
         m_maxParallelDownloads = 1;
         m_interDownloadDelay = 1750; /// milliseconds
@@ -85,7 +85,7 @@ void WebCrawler::startSearch(int numExpectedHits)
     m_knownUrls.clear();
     m_knownUrls << m_startUrl;
 
-    emit report(QString("<webcrawler numexpectedhits=\"%2\"><filepattern>%1</filepattern></webcrawler>\n").arg(DocScan::xmlify(regExpList.join(QChar('|')))).arg(m_numExpectedHits));
+    emit report(QString(QStringLiteral("<webcrawler numexpectedhits=\"%2\"><filepattern>%1</filepattern></webcrawler>\n")).arg(DocScan::xmlify(regExpList.join(QChar('|')))).arg(m_numExpectedHits));
 
     visitNextPage();
 }
@@ -194,7 +194,7 @@ void WebCrawler::finishedDownload()
         QString text(data);
 
         /// check if HTML page ...
-        if (text.left(256).contains("<html", Qt::CaseInsensitive)) {
+        if (text.left(256).contains(QStringLiteral("<html"), Qt::CaseInsensitive)) {
             emit report(QString(QStringLiteral("<webcrawler status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
             if (m_requiredContent.isEmpty() || text.contains(m_requiredContent)) {
 
@@ -258,7 +258,7 @@ void WebCrawler::finishedDownload()
                 }
             } else
                 emit report(QString(QStringLiteral("<webcrawler detailed=\"Required content not found\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
-        } else if (text.startsWith("%PDF-1.")) {
+        } else if (text.startsWith(QStringLiteral("%PDF-1."))) {
             const QString urlStr = reply->url().toString();
             bool regExpLookingForPDF = false;
             QList<Filter>::Iterator it = m_filterSet.begin();
@@ -296,7 +296,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
 
     /// Log all SSL/TLS errors
     foreach(const QSslError &error, list) {
-        const QString logText = QString("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n").arg(DocScan::xmlify(error.errorString())).arg(DocScan::xmlify(reply->url().toString()));
+        const QString logText = QString(QStringLiteral("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n")).arg(DocScan::xmlify(error.errorString())).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         qWarning() << "Ignoring SSL error: " << error.errorString();
     }
@@ -334,7 +334,7 @@ void WebCrawler::timeout(QObject *object)
         m_setRunningJobs->remove(reply);
         m_mutexRunningJobs->unlock();
         reply->close();
-        QString logText = QString("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString(QStringLiteral("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     } else
         m_mutexRunningJobs->unlock();

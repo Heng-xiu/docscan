@@ -121,7 +121,7 @@ void UrlDownloader::startNextDownload()
 
 void UrlDownloader::finalReport()
 {
-    QString logText = QString("<download count-fail=\"%2\" count-success=\"%1\">\n").arg(m_countSuccessfulDownloads).arg(m_countFailedDownloads);
+    QString logText = QString(QStringLiteral("<download count-fail=\"%2\" count-success=\"%1\">\n")).arg(m_countSuccessfulDownloads).arg(m_countFailedDownloads);
     for (QMap<QString, int>::ConstIterator it = m_domainCount.constBegin(); it != m_domainCount.constEnd(); ++it)
         logText += QString(QStringLiteral("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
     logText += QStringLiteral("</download>\n");
@@ -154,17 +154,17 @@ void UrlDownloader::finished()
         QByteArray data(reply->readAll());
         QString filename = m_filePattern;
 
-        const QString host = reply->url().host().replace(QRegExp("[^.0-9a-z-]", Qt::CaseInsensitive), "X");
+        const QString host = reply->url().host().replace(QRegExp(QStringLiteral("[^.0-9a-z-]"), Qt::CaseInsensitive), QStringLiteral("X"));
         QString domain = QString::null;
         if (domainRegExp.indexIn(host) >= 0) {
             domain = domainRegExp.cap(0);
-            filename = filename.replace("%{d}", domain);
+            filename = filename.replace(QStringLiteral("%{d}"), domain);
         } else if (!host.isEmpty())
-            filename = filename.replace("%{d}", host);
+            filename = filename.replace(QStringLiteral("%{d}"), host);
         else
-            filename = filename.replace("%{d}", QStringLiteral("DOMAIN"));
+            filename = filename.replace(QStringLiteral("%{d}"), QStringLiteral("DOMAIN"));
 
-        static const QRegExp dateTimeRegExp("%\\{D:([-_%a-zA-Z0-9]+)\\}");
+        static const QRegExp dateTimeRegExp(QStringLiteral("%\\{D:([-_%a-zA-Z0-9]+)\\}"));
         int p = -1;
         QDateTime dateTime = QDateTime::currentDateTime();
         while ((p = dateTimeRegExp.indexIn(filename, p + 1)) >= 0) {
@@ -186,7 +186,7 @@ void UrlDownloader::finished()
         }
 
         QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
-        static const QRegExp md5sumRegExp("%\\{h(:(\\d+))?\\}");
+        static const QRegExp md5sumRegExp(QStringLiteral("%\\{h(:(\\d+))?\\}"));
         p = -1;
         while ((p = md5sumRegExp.indexIn(filename, p + 1)) >= 0) {
             if (md5sumRegExp.cap(1).isEmpty())
@@ -199,9 +199,9 @@ void UrlDownloader::finished()
             }
         }
 
-        QString urlString = reply->url().toString().replace(QRegExp("\\?.*$"), "").replace(QRegExp("[^a-z0-9]", Qt::CaseInsensitive), "_");
-        urlString = urlString.replace(QRegExp("_([a-z0-9]{1,4}([._](lzma|xz|gz|bz2))?)$", Qt::CaseInsensitive), ".\\1").replace(QRegExp("_(lzma|xz|gz|bz2)$", Qt::CaseInsensitive), ".\\1");
-        filename = filename.replace("%{s}", urlString);
+        QString urlString = reply->url().toString().remove(QRegExp(QStringLiteral("\\?.*$"))).replace(QRegExp(QStringLiteral("[^a-z0-9]"), Qt::CaseInsensitive), QStringLiteral("_"));
+        urlString = urlString.replace(QRegExp(QStringLiteral("_([a-z0-9]{1,4}([._](lzma|xz|gz|bz2))?)$"), Qt::CaseInsensitive), QStringLiteral(".\\1")).replace(QRegExp(QStringLiteral("_(lzma|xz|gz|bz2)$"), Qt::CaseInsensitive), QStringLiteral(".\\1"));
+        filename = filename.replace(QStringLiteral("%{s}"), urlString);
 
         /// make known file extensions lower-case
         static const QStringList fileExtList = QStringList() << QStringLiteral(".pdf") << QStringLiteral(".pdf.xz") << QStringLiteral(".pdf.lzma") << QStringLiteral(".odt") << QStringLiteral(".doc") << QStringLiteral(".docx") << QStringLiteral(".rtf");
@@ -257,10 +257,10 @@ void UrlDownloader::finished()
                 fileExtension = QStringLiteral("zip");
             }
         }
-        filename = filename.replace("%{x}", fileExtension);
+        filename = filename.replace(QStringLiteral("%{x}"), fileExtension);
         ensureExtension(filename, fileExtension);
 
-        if ((p = filename.indexOf("%{")) >= 0)
+        if ((p = filename.indexOf(QStringLiteral("%{"))) >= 0)
             qWarning() << "gap was not filled:" << filename.mid(p);
 
         QFileInfo fi(filename);
@@ -315,7 +315,7 @@ void UrlDownloader::finished()
     }
 
     if (!succeeded) {
-        QString logText = QString("<download detailed=\"%1\" message=\"download-failed\" status=\"error\" url=\"%2\" />\n").arg(DocScan::xmlify(reply->errorString())).arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString(QStringLiteral("<download detailed=\"%1\" message=\"download-failed\" status=\"error\" url=\"%2\" />\n")).arg(DocScan::xmlify(reply->errorString()), DocScan::xmlify(reply->url().toString()));
         emit report(logText);
         ++m_countFailedDownloads;
     } else
@@ -335,7 +335,7 @@ void UrlDownloader::timeout(QObject *object)
         m_setRunningJobs->remove(reply);
         m_internalMutex->unlock();
         reply->close();
-        QString logText = QString("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString(QStringLiteral("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     } else
         m_internalMutex->unlock();
@@ -345,5 +345,5 @@ void UrlDownloader::timeout(QObject *object)
 const int UrlDownloader::maxParallelDownloads = 16;
 const int UrlDownloader::maxParallelDownloadsPerHost = 4;
 /// Most likely outdated by the constant addition of new top-level domains
-const QRegExp UrlDownloader::domainRegExp = QRegExp("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqstwxz]|aero|arpa|((com|edu|gob|gov|int|mil|net|org|tur)\\.)?ar|((com|net|org|edu|gov|csiro|asn|id)\\.)?au)|(((adm|adv|agr|am|arq|art|ato|b|bio|blog|bmd|cim|cng|cnt|com|coop|ecn|edu|eng|esp|etc|eti|far|flog|fm|fnd|fot|fst||ggf|gov|imb|ind|inf|jor|jus|lel|mat|med|mil|mus|net|nom|not|ntr|odo|org|ppg|pro|psc|psi|qsl|radio|rec|slg|srv|taxi|teo|tmp|trd|tur|tv|vet|vlog|wiki|zlg)\\.)?br|b[abdefghijmnorstvwyz]|biz)|(((ab|bc|mb|nb|nf|nl|ns|nt|nu|on|pe|qc|sk|yk)\\.)?ca|c[cdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emo]|jobs|((ac|ad|co|ed|go|gr|lg|ne|or)\\.)?jp)|(k[eghimnpwyz]|((co|ne|or|re|pe|go|mil|ac|hs|ms|es|sc|kg)\\.)?kr)|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghkmnrstwy]|pro|((com|biz|net|art|edu|org|ngo|gov|info|mil)\\.)?pl)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|((ac|co|gov|ltd|me|mod|org|sch)\\.uk)|(((dni|fed|isa|kids|nsn|ak|al|ar|as|az|ca|co|ct|dc|de|fl|ga|gu|hi|ia|id|il|in|ks|ky|la|ma|md|me|mi|mn|mo|mp|ms|mt|nc|nd|ne|nh|nj|nm|nv|ny|oh|ok|or|pa|pr|ri|sc|sd|tn|tx|um|ut|va|vi|vt|wa|wi|wv|wy)\\.)?us|u[agmyz])|v[aceginu]|w[fs]|y[etu]|z[amw])$");
+const QRegExp UrlDownloader::domainRegExp = QRegExp(QStringLiteral("[a-z0-9][-a-z0-9]*[a-z0-9]\\.((a[cdefgilmnoqstwxz]|aero|arpa|((com|edu|gob|gov|int|mil|net|org|tur)\\.)?ar|((com|net|org|edu|gov|csiro|asn|id)\\.)?au)|(((adm|adv|agr|am|arq|art|ato|b|bio|blog|bmd|cim|cng|cnt|com|coop|ecn|edu|eng|esp|etc|eti|far|flog|fm|fnd|fot|fst||ggf|gov|imb|ind|inf|jor|jus|lel|mat|med|mil|mus|net|nom|not|ntr|odo|org|ppg|pro|psc|psi|qsl|radio|rec|slg|srv|taxi|teo|tmp|trd|tur|tv|vet|vlog|wiki|zlg)\\.)?br|b[abdefghijmnorstvwyz]|biz)|(((ab|bc|mb|nb|nf|nl|ns|nt|nu|on|pe|qc|sk|yk)\\.)?ca|c[cdfghiklmnorsuvxyz]|cat|com|coop)|d[ejkmoz]|(e[ceghrstu]|edu)|f[ijkmor]|(g[abdefghilmnpqrstuwy]|gov)|h[kmnrtu]|(i[delmnoqrst]|info|int)|(j[emo]|jobs|((ac|ad|co|ed|go|gr|lg|ne|or)\\.)?jp)|(k[eghimnpwyz]|((co|ne|or|re|pe|go|mil|ac|hs|ms|es|sc|kg)\\.)?kr)|l[abcikrstuvy]|(m[acdghklmnopqrstuvwxyz]|mil|mobi|museum)|(n[acefgilopruz]|name|net)|(om|org)|(p[aefghkmnrstwy]|pro|((com|biz|net|art|edu|org|ngo|gov|info|mil)\\.)?pl)|qa|r[eouw]|s[abcdeghijklmnortvyz]|(t[cdfghjklmnoprtvwz]|travel)|((ac|co|gov|ltd|me|mod|org|sch)\\.uk)|(((dni|fed|isa|kids|nsn|ak|al|ar|as|az|ca|co|ct|dc|de|fl|ga|gu|hi|ia|id|il|in|ks|ky|la|ma|md|me|mi|mn|mo|mp|ms|mt|nc|nd|ne|nh|nj|nm|nv|ny|oh|ok|or|pa|pr|ri|sc|sd|tn|tx|um|ut|va|vi|vt|wa|wi|wv|wy)\\.)?us|u[agmyz])|v[aceginu]|w[fs]|y[etu]|z[amw])$"));
 

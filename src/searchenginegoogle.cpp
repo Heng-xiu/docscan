@@ -43,15 +43,15 @@ void SearchEngineGoogle::startSearch(int num)
     ++m_runningSearches;
     m_hitsPerPage = qMin(num, defaultHitsPerPage);
 
-    QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
+    QUrl url(QString(QStringLiteral("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1")).arg(m_hitsPerPage));
     QUrlQuery query;
-    query.addQueryItem("q", m_searchTerm);
+    query.addQueryItem(QStringLiteral("q"), m_searchTerm);
     url.setQuery(query);
     m_numExpectedHits = num;
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString("<searchengine search=\"%1\" type=\"google\" />\n").arg(DocScan::xmlify(url.toString())));
+    emit report(QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
 
     QNetworkRequest request(url);
     m_networkAccessManager->setRequestHeaders(request);
@@ -73,19 +73,19 @@ void SearchEngineGoogle::finished()
 
         if (m_currentPage == 0) {
             /// Google has different layouts for web result pages, so different regular expressions are necessary
-            const QRegExp countHitsRegExp1("of (about )?<b>([0-9][0-9,. ]*)</b> for");
+            const QRegExp countHitsRegExp1(QStringLiteral("of (about )?<b>([0-9][0-9,. ]*)</b> for"));
             if (countHitsRegExp1.indexIn(htmlText) >= 0)
-                emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp1.cap(2).replace(QRegExp("[, .]+"), QString())));
+                emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp1.cap(2).remove(QRegExp(QStringLiteral("[, .]+")))));
             else {
                 const QRegExp countHitsRegExp2("\\b([0-9][0-9,. ]*) results");
                 if (countHitsRegExp2.indexIn(htmlText) >= 0)
-                    emit report(QString("<searchengine numresults=\"%1\" type=\"google\" />\n").arg(countHitsRegExp2.cap(1).replace(QRegExp("[, .]+"), QString())));
+                    emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp2.cap(1).remove(QRegExp(QStringLiteral("[, .]+")))));
                 else
                     emit report(QStringLiteral("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
             }
         }
 
-        const QRegExp searchHitRegExp("<h3 class=\"r\"><a href=\"([^\"]+)\"");
+        const QRegExp searchHitRegExp(QStringLiteral("<h3 class=\"r\"><a href=\"([^\"]+)\""));
         int p = -1;
         while ((p = searchHitRegExp.indexIn(htmlText, p + 1)) >= 0) {
             QString urlText = searchHitRegExp.cap(1);
@@ -104,7 +104,7 @@ void SearchEngineGoogle::finished()
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
+                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
                 emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
@@ -112,12 +112,12 @@ void SearchEngineGoogle::finished()
 
         ++m_currentPage;
         if (m_currentPage * m_hitsPerPage < m_numExpectedHits) {
-            QUrl url(QString("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1").arg(m_hitsPerPage));
+            QUrl url(QString(QStringLiteral("http://www.google.com/search?hl=en&prmd=ivns&filter=0&ie=UTF-8&oe=UTF-8&num=%1")).arg(m_hitsPerPage));
             QUrlQuery query;
-            query.addQueryItem("q", m_searchTerm);
-            query.addQueryItem("start", QString::number(m_currentPage * m_hitsPerPage));
+            query.addQueryItem(QStringLiteral("q"), m_searchTerm);
+            query.addQueryItem(QStringLiteral("start"), QString::number(m_currentPage * m_hitsPerPage));
             url.setQuery(query);
-            emit report(QString("<searchengine search=\"%1\" type=\"google\" />\n").arg(DocScan::xmlify(url.toString())));
+            emit report(QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
             QNetworkRequest request(url);
             m_networkAccessManager->setRequestHeaders(request);
@@ -125,7 +125,7 @@ void SearchEngineGoogle::finished()
             connect(reply, SIGNAL(finished()), this, SLOT(finished()));
         }
     } else {
-        QString logText = QString("<searchengine status=\"error\" type=\"google\" url=\"%1\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString(QStringLiteral("<searchengine status=\"error\" type=\"google\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
 

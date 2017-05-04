@@ -47,7 +47,7 @@ void FileFinderList::startSearch(int numExpectedHits) {
             const QString filename = ts.readLine();
             QFileInfo fi(filename);
             if (fi.exists() && fi.isFile()) {
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(DocScan::xmlify(filename)));
+                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(filename)));
                 emit foundUrl(QUrl::fromLocalFile(filename));
                 ++hits;
             } else
@@ -57,7 +57,7 @@ void FileFinderList::startSearch(int numExpectedHits) {
     } else
         qWarning() << "Could not open file: " << m_listFile;
 
-    emit report(QString("<filefinderlist listfile=\"%2\" numresults=\"%1\" />\n").arg(QString::number(hits)).arg(DocScan::xmlify(m_listFile)));
+    emit report(QString(QStringLiteral("<filefinderlist listfile=\"%2\" numresults=\"%1\" />\n")).arg(QString::number(hits), DocScan::xmlify(m_listFile)));
     m_alive = false;
 }
 

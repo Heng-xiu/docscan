@@ -75,7 +75,7 @@ bool evaluateConfigfile(const QString &filename)
                 QString key = line.left(i).simplified().toLower();
                 QString value = line.mid(i + 1).simplified();
 
-                if (key == "textextraction") {
+                if (key == QStringLiteral("textextraction")) {
                     if (value.compare(QStringLiteral("none"), Qt::CaseInsensitive) == 0)
                         textExtraction = FileAnalyzerAbstract::teNone;
                     else if (value.compare(QStringLiteral("length"), Qt::CaseInsensitive) == 0)
@@ -86,10 +86,10 @@ bool evaluateConfigfile(const QString &filename)
                         textExtraction = FileAnalyzerAbstract::teAspell;
                     else
                         qWarning() << "Invalid value for \"textExtraction\":" << value;
-                } else if (key == "requiredcontent") {
+                } else if (key == QStringLiteral("requiredcontent")) {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
-                } else if (key == "jhove") {
+                } else if (key == QStringLiteral("jhove")) {
                     const QStringList param = value.split(QChar('|'));
                     if (param.count() >= 2) {
                         jhoveShellscript = param[0];
@@ -102,74 +102,74 @@ bool evaluateConfigfile(const QString &filename)
                         if (jhoveShellscript.isEmpty() || !script.exists() || !script.isExecutable())
                             qCritical() << "Value for jhoveShellscript does not refer to an existing, executable script or program";
                     }
-                } else if (key == "verapdf") {
+                } else if (key == QStringLiteral("verapdf")) {
                     veraPDFcliTool = value;
                     qDebug() << "veraPDFcliTool = " << veraPDFcliTool;
                     const QFileInfo script(veraPDFcliTool);
                     if (veraPDFcliTool.isEmpty() || !script.exists() || !script.isExecutable())
                         qCritical() << "Value for verapdf does not refer to an existing, executable script or program";
-                } else if (key == "pdfboxvalidator") {
+                } else if (key == QStringLiteral("pdfboxvalidator")) {
                     pdfboxValidatorJavaClass = value;
                     qDebug() << "pdfboxvalidator = " << pdfboxValidatorJavaClass;
                     const QFileInfo javaClass(pdfboxValidatorJavaClass);
                     if (pdfboxValidatorJavaClass.isEmpty() || !javaClass.exists() || javaClass.isExecutable())
                         qCritical() << "Value for pdfboxValidatorJavaClass does not refer to an non-existing xor executable file";
-                } else if (key == "callaspdfapilot") {
+                } else if (key == QStringLiteral("callaspdfapilot")) {
                     callasPdfAPilotCLI = value;
                     qDebug() << "callaspdfapilot = " << callasPdfAPilotCLI;
                     const QFileInfo program(callasPdfAPilotCLI);
                     if (callasPdfAPilotCLI.isEmpty() || !program.exists() || !program.isExecutable())
                         qCritical() << "Value for callaspdfapilot does not refer to an existing, executable script or program";
-                } else if (key == "webcrawler:starturl") {
+                } else if (key == QStringLiteral("webcrawler:starturl")) {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
-                } else if (key == "filter") {
+                } else if (key == QStringLiteral("filter")) {
                     qDebug() << "filter =" << value;
                     filter = value.split(QChar('|'), QString::SkipEmptyParts);
-                } else if (key == "springerlinkcategory") {
+                } else if (key == QStringLiteral("springerlinkcategory")) {
                     springerLinkCategory = value;
                     qDebug() << "springerlinkcategory =" << springerLinkCategory;
-                } else if (key == "springerlinkcontenttype") {
+                } else if (key == QStringLiteral("springerlinkcontenttype")) {
                     springerLinkContentType = value;
                     qDebug() << "springerlinkcontenttype =" << springerLinkContentType;
-                } else if (key == "springerlinksubject") {
+                } else if (key == QStringLiteral("springerlinksubject")) {
                     springerLinkSubject = value;
                     qDebug() << "springerlinksubject =" << springerLinkSubject;
-                } else if (key == "springerlinkyear") {
+                } else if (key == QStringLiteral("springerlinkyear")) {
                     bool ok = false;
                     springerLinkYear = value.toInt(&ok);
                     if (!ok) springerLinkYear = SearchEngineSpringerLink::AllYears;
                     qDebug() << "springerlinkyear =" << (springerLinkYear == SearchEngineSpringerLink::AllYears ? QStringLiteral("No Year") : QString::number(springerLinkYear));
-                } else if (key == "webcrawler:maxvisitedpages") {
+                } else if (key == QStringLiteral("webcrawler:maxvisitedpages")) {
                     bool ok = false;
                     webcrawlermaxvisitedpages = value.toInt(&ok);
                     if (!ok) webcrawlermaxvisitedpages = 1024;
                     qDebug() << "webcrawler:maxvisitedpages =" << webcrawlermaxvisitedpages;
-                } else if (key == "webcrawler" && finder == nullptr) {
+                } else if (key == QStringLiteral("webcrawler") && finder == nullptr) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
                     finder = new WebCrawler(netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, webcrawlermaxvisitedpages == 0 ? qMin(qMax(numHits * filter.count() * 256, 256), 4096) : webcrawlermaxvisitedpages);
-                } else if (key == "searchenginegoogle" && finder == nullptr) {
+                } else if (key == QStringLiteral("searchenginegoogle") && finder == nullptr) {
                     qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(netAccMan, value);
-                } else if (key == "searchenginebing" && finder == nullptr) {
+                } else if (key == QStringLiteral("searchenginebing") && finder == nullptr) {
                     qDebug() << "searchenginebing =" << value;
                     finder = new SearchEngineBing(netAccMan, value);
-                } else if (key == "searchenginespringerlink" && finder == nullptr) {
+                } else if (key == QStringLiteral("searchenginespringerlink") && finder == nullptr) {
                     qDebug() << "searchenginespringerlink =" << value;
                     finder = new SearchEngineSpringerLink(netAccMan, value, springerLinkCategory, springerLinkContentType, springerLinkSubject, springerLinkYear);
-                } else if (key == "filesystemscan" && finder == nullptr) {
+                } else if (key == QStringLiteral("filesystemscan") && finder == nullptr) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
-                } else if (key == "filefinderlist" && finder == nullptr) {
+                } else if (key == QStringLiteral("filefinderlist") && finder == nullptr) {
                     qDebug() << "filefinderlist =" << value;
                     finder = new FileFinderList(value);
-                } else if (key == "fromlogfilefilefinder" && finder == nullptr) {
+                } else if (key == QStringLiteral("fromlogfilefilefinder") && finder == nullptr) {
                     qDebug() << "fromlogfilefilefinder =" << value;
                     finder = new FromLogFileFileFinder(value, filter);
-                } else if (key == "fromlogfiledownloader" && downloader == nullptr) {
+                } else if (key == QStringLiteral("fromlogfiledownloader") && downloader == nullptr) {
                     qDebug() << "fromlogfiledownloader =" << value;
                     downloader = new FromLogFileDownloader(value, filter);
-                } else if (key == "urldownloader" && downloader == nullptr) {
+                } else if (key == QStringLiteral("urldownloader") && downloader == nullptr) {
                     if (numHits > 0) {
                         qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
                         downloader = new UrlDownloader(netAccMan, value, numHits);
@@ -177,32 +177,32 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "urldownloader =" << value;
                         downloader = new UrlDownloader(netAccMan, value);
                     }
-                } else if (key == "fakedownloader" && downloader == nullptr) {
+                } else if (key == QStringLiteral("fakedownloader") && downloader == nullptr) {
                     qDebug() << "fakedownloader";
                     downloader = new FakeDownloader(netAccMan);
-                } else if (key == "logcollector" && logCollector == nullptr) {
+                } else if (key == QStringLiteral("logcollector") && logCollector == nullptr) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
                     logOutput->open(QFile::WriteOnly);
                     logCollector = new LogCollector(logOutput);
-                } else if (key == "finder:numhits") {
+                } else if (key == QStringLiteral("finder:numhits")) {
                     bool ok = false;
                     numHits = value.toInt(&ok);
                     if (!ok) numHits = 10;
                     qDebug() << "finder:numhits =" << numHits;
-                } else if (key == "fileanalyzer") {
-                    if (value.contains("multiplexer")) {
+                } else if (key == QStringLiteral("fileanalyzer")) {
+                    if (value.contains(QStringLiteral("multiplexer"))) {
                         if (filter.isEmpty())
                             qWarning() << "Attempting to create a FileAnalyzerMultiplexer with empty filter";
                         fileAnalyzer = new FileAnalyzerMultiplexer(filter);
                         qDebug() << "fileanalyzer = FileAnalyzerMultiplexer";
-                    } else if (value.contains("odf")) {
+                    } else if (value.contains(QStringLiteral("odf"))) {
                         fileAnalyzer = new FileAnalyzerODF();
                         qDebug() << "fileanalyzer = FileAnalyzerODF";
-                    } else if (value.contains("openxml")) {
+                    } else if (value.contains(QStringLiteral("openxml"))) {
                         fileAnalyzer = new FileAnalyzerOpenXML();
                         qDebug() << "fileanalyzer = FileAnalyzerOpenXML";
-                    } else if (value.contains("pdf")) {
+                    } else if (value.contains(QStringLiteral("pdf"))) {
                         fileAnalyzer = new FileAnalyzerPDF();
                         qDebug() << "fileanalyzer = FileAnalyzerPDF";
 #ifdef HAVE_WV2

@@ -216,7 +216,7 @@ QStringList PopplerWrapper::fontNames() const
         std::vector<poppler::font_info> fonts = it->next();
         // do domething with the fonts
         for (std::vector<poppler::font_info>::const_iterator fit = fonts.begin(); fit != fonts.end(); ++fit) {
-            QString fontType = "???";
+            QString fontType = QStringLiteral("???");
             poppler::font_info fi = *fit;
 
             /* FIXME

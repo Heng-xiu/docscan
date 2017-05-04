@@ -78,23 +78,23 @@ QString dexmlify(const QString &xml)
 
 QString formatDate(const QDate &date, const QString &base)
 {
-    return QString("<date base=\"%5\" day=\"%3\" epoch=\"%6\" month=\"%2\" year=\"%1\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
+    return QString(QStringLiteral("<date base=\"%5\" day=\"%3\" epoch=\"%6\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base).arg(QString::number(QDateTime(date).toTime_t()));
 }
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs)
 {
     if (attrs.isEmpty()) return QStringLiteral("");
 
-    const QString body = DocScan::xmlify(attrs[""]);
-    QString result = QString("<%1").arg(key);
+    const QString body = DocScan::xmlify(attrs[QStringLiteral("")]);
+    QString result = QString(QStringLiteral("<%1")).arg(key);
     for (QHash<QString, QString>::ConstIterator it = attrs.constBegin(); it != attrs.constEnd(); ++it)
         if (!it.key().isEmpty())
-            result.append(QString(" %1=\"%2\"").arg(it.key()).arg(DocScan::xmlify(it.value())));
+            result.append(QString(QStringLiteral(" %1=\"%2\"")).arg(it.key(), DocScan::xmlify(it.value())));
 
     if (body.isEmpty())
         result.append(" />\n");
     else
-        result.append(">").append(body).append(QString("</%1>\n").arg(key));
+        result.append(">").append(body).append(QString(QStringLiteral("</%1>\n")).arg(key));
 
     return result;
 }

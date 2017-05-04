@@ -44,8 +44,8 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
 {
     QStringList wordList;
     QProcess aspell(QCoreApplication::instance());
-    QStringList args = QStringList() << "-d" << dictionary << "list";
-    aspell.start("/usr/bin/aspell", args);
+    QStringList args = QStringList() << QStringLiteral("-d") << dictionary << QStringLiteral("list");
+    aspell.start(QStringLiteral("/usr/bin/aspell"), args);
     if (aspell.waitForStarted(10000)) {
         qint64 bytesWritten = aspell.write(text.toUtf8());
         if (bytesWritten < 0) return QStringList(); /// something went wrong
@@ -86,8 +86,8 @@ QStringList FileAnalyzerAbstract::getAspellLanguages() const
     if (aspellLanguages.isEmpty()) {
         QRegExp language(QStringLiteral("^[a-z]{2}(_[A-Z]{2})?$"));
         QProcess aspell(qApp);
-        QStringList args = QStringList() << "dicts";
-        aspell.start("/usr/bin/aspell", args);
+        QStringList args = QStringList() << QStringLiteral("dicts");
+        aspell.start(QStringLiteral("/usr/bin/aspell"), args);
         if (aspell.waitForStarted(10000)) {
             aspell.closeWriteChannel();
             while (aspell.waitForReadyRead(10000)) {
@@ -102,7 +102,7 @@ QStringList FileAnalyzerAbstract::getAspellLanguages() const
                 aspell.kill();
         }
 
-        //emit analysisReport(QString("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(aspellLanguages.join(",")));
+        //emit analysisReport(QString(QStringLiteral("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(aspellLanguages.join(","))));
     }
 
     return aspellLanguages;
@@ -128,7 +128,7 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
 
 QString FileAnalyzerAbstract::formatDate(const QDate &date, const QString &base) const
 {
-    return QString("<date epoch=\"%6\" %5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n").arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate)).arg(base.isEmpty() ? QStringLiteral("") : QString("base=\"%1\"").arg(base)).arg(QString::number(QDateTime(date).toTime_t()));
+    return QString(QStringLiteral("<date epoch=\"%6\" %5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n")).arg(QString::number(date.year()), QString::number(date.month()), QString::number(date.day()), date.toString(Qt::ISODate), base.isEmpty() ? QString() : QString(QStringLiteral("base=\"%1\"")).arg(base), QString::number(QDateTime(date).toTime_t()));
 }
 
 QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
@@ -136,23 +136,25 @@ QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
     QString formatName;
 
     if (mmw >= 208 && mmw <= 212 && mmh >= 295 && mmh <= 299)
-        formatName = "A4";
+        formatName = QStringLiteral("A4");
     else if (mmh >= 208 && mmh <= 212 && mmw >= 295 && mmw <= 299)
-        formatName = "A4";
+        formatName = QStringLiteral("A4");
     else if (mmw >= 214 && mmw <= 218 && mmh >= 277 && mmh <= 281)
-        formatName = "Letter";
+        formatName = QStringLiteral("Letter");
     else if (mmh >= 214 && mmh <= 218 && mmw >= 277 && mmw <= 281)
-        formatName = "Letter";
+        formatName = QStringLiteral("Letter");
     else if (mmw >= 214 && mmw <= 218 && mmh >= 254 && mmh <= 258)
-        formatName = "Legal";
+        formatName = QStringLiteral("Legal");
     else if (mmh >= 214 && mmh <= 218 && mmw >= 254 && mmw <= 258)
-        formatName = "Legal";
+        formatName = QStringLiteral("Legal");
 
-    return QString("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n").arg(mmh).arg(mmw).arg(formatName).arg(mmw > mmh ? "landscape" : "portrait");
+    return formatName.isEmpty()
+           ? QString(QStringLiteral("<papersize height=\"%1\" width=\"%2\" orientation=\"%3\" />\n")).arg(QString::number(mmh), QString::number(mmw), mmw > mmh ? QStringLiteral("landscape") : QStringLiteral("portrait"))
+           : QString(QStringLiteral("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n")).arg(QString::number(mmh), QString::number(mmw), formatName, mmw > mmh ? QStringLiteral("landscape") : QStringLiteral("portrait"));
 }
 
 QStringList FileAnalyzerAbstract::aspellLanguages;
 
-const QRegExp FileAnalyzerAbstract::microsoftToolRegExp("^(Microsoft\\s(.+\\S) [ -][ ]?(\\S.*)$");
+const QRegExp FileAnalyzerAbstract::microsoftToolRegExp(QStringLiteral("^(Microsoft\\s(.+\\S) [ -][ ]?(\\S.*)$"));
 const QString FileAnalyzerAbstract::creationDate = QStringLiteral("creation");
 const QString FileAnalyzerAbstract::modificationDate = QStringLiteral("modification");

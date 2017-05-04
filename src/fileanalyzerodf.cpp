@@ -35,7 +35,6 @@
 #include "watchdog.h"
 #include "general.h"
 
-
 class FileAnalyzerODF::ODFContentFileHandler: public QXmlDefaultHandler
 {
 private:
@@ -52,15 +51,15 @@ public:
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
-        m_insideText |= (qName == "office:text" || qName == "office:presentation" || qName == "office:spreadsheet") && m_nodeName.count() >= 2 && m_nodeName.at(m_nodeName.count() - 2) == "office:body";
-        if (qName == "draw:page" || qName == "table:table") ++m_pageCount;
+        m_insideText |= (qName == QStringLiteral("office:text") || qName == QStringLiteral("office:presentation") || qName == QStringLiteral("office:spreadsheet")) && m_nodeName.count() >= 2 && m_nodeName.at(m_nodeName.count() - 2) == QStringLiteral("office:body");
+        if (qName == QStringLiteral("draw:page") || qName == QStringLiteral("table:table")) ++m_pageCount;
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
-        if (qName == "office:text" || qName == "office:presentation" ||  qName == "office:spreadsheet" || qName == "office:body") m_insideText = false;
-        if (qName == "office:document-content" && m_pageCount > 0 && result.pageCountOrigin == 0) {
+        if (qName == QStringLiteral("office:text") || qName == QStringLiteral("office:presentation") ||  qName == QStringLiteral("office:spreadsheet") || qName == QStringLiteral("office:body")) m_insideText = false;
+        if (qName == QStringLiteral("office:document-content") && m_pageCount > 0 && result.pageCountOrigin == 0) {
             result.pageCountOrigin = pcoOwnCount;
             result.pageCount = m_pageCount;
         }
@@ -92,12 +91,12 @@ public:
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
 
-        if (m_nodeName.count() >= 2 && qName == "style:master-page" && atts.value("style:name") == "Standard" && m_nodeName.at(m_nodeName.count() - 2) == "office:master-styles")
-            stylepagelayoutname = atts.value("style:page-layout-name");
-        else if (qName == "style:page-layout")
-            m_lastStyleName = atts.value("style:name");
-        else if (m_nodeName.count() >= 2 && qName == "style:page-layout-properties" && m_nodeName.at(m_nodeName.count() - 2) == "style:page-layout") {
-            stylepagelayoutproperties.insert(m_lastStyleName, atts.value("fo:page-width") + "|" + atts.value("fo:page-height"));
+        if (m_nodeName.count() >= 2 && qName == QStringLiteral("style:master-page") && atts.value(QStringLiteral("style:name")) == QStringLiteral("Standard") && m_nodeName.at(m_nodeName.count() - 2) == QStringLiteral("office:master-styles"))
+            stylepagelayoutname = atts.value(QStringLiteral("style:page-layout-name"));
+        else if (qName == QStringLiteral("style:page-layout"))
+            m_lastStyleName = atts.value(QStringLiteral("style:name"));
+        else if (m_nodeName.count() >= 2 && qName == QStringLiteral("style:page-layout-properties") && m_nodeName.at(m_nodeName.count() - 2) == QStringLiteral("style:page-layout")) {
+            stylepagelayoutproperties.insert(m_lastStyleName, atts.value(QStringLiteral("fo:page-width")) + "|" + atts.value(QStringLiteral("fo:page-height")));
         }
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
@@ -106,21 +105,19 @@ public:
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
 
-        if (qName == "office:document-styles") {
+        if (qName == QStringLiteral("office:document-styles")) {
             /// end of file
-
-            QString documentProperties;
             if (!stylepagelayoutname.isEmpty() && stylepagelayoutproperties.contains(stylepagelayoutname)) {
-                QStringList sizes = stylepagelayoutproperties[stylepagelayoutname].split("|");
-                if (sizes[0].endsWith("in")) {
+                QStringList sizes = stylepagelayoutproperties[stylepagelayoutname].split(QStringLiteral("|"));
+                if (sizes[0].endsWith(QStringLiteral("in"))) {
                     bool ok = false;
                     result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok) * 25.4;
                     result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok) * 25.4;
-                } else if (sizes[0].endsWith("cm")) {
+                } else if (sizes[0].endsWith(QStringLiteral("cm"))) {
                     bool ok = false;
                     result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok) * 10;
                     result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok) * 10;
-                } else if (sizes[0].endsWith("mm")) {
+                } else if (sizes[0].endsWith(QStringLiteral("mm"))) {
                     bool ok = false;
                     result.paperSizeWidth = sizes[0].left(sizes[0].length() - 2).toDouble(&ok);
                     result.paperSizeHeight = sizes[1].left(sizes[1].length() - 2).toDouble(&ok);
@@ -156,15 +153,15 @@ public:
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         nodeNameStack.push(qName);
 
-        if (result.pageCountOrigin == 0 && qName == "meta:document-statistic" && !atts.value("meta:page-count").isEmpty()) {
+        if (result.pageCountOrigin == 0 && qName == QStringLiteral("meta:document-statistic") && !atts.value(QStringLiteral("meta:page-count")).isEmpty()) {
             bool ok = false;
-            result.pageCount = atts.value("meta:page-count").toInt(&ok);
+            result.pageCount = atts.value(QStringLiteral("meta:page-count")).toInt(&ok);
             if (!ok)
                 result.pageCount = 0;
             else
                 result.pageCountOrigin = pcoDocument;
-        } else if (qName == "office:document-meta" && !atts.value("office:version").isEmpty()) {
-            result.documentVersionNumbers = atts.value("office:version").split(".");
+        } else if (qName == QStringLiteral("office:document-meta") && !atts.value(QStringLiteral("office:version")).isEmpty()) {
+            result.documentVersionNumbers = atts.value(QStringLiteral("office:version")).split(QStringLiteral("."));
         }
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
@@ -178,27 +175,27 @@ public:
     virtual bool characters(const QString &text) {
         QString nodeName = nodeNameStack.top().toLower();
 
-        if (nodeName == "meta:generator") {
+        if (nodeName == QStringLiteral("meta:generator")) {
             QString guess = p->guessTool(text);
             if (!guess.isEmpty())
-                result.toolGenerator = QString("<tool type=\"generator\">\n%1</tool>\n").arg(guess);
-        } else if (nodeName == "dc:initial-creator") {
-            result.authorInitial = QString("<author type=\"first\">%1</author>\n").arg(DocScan::xmlify(text));
-        } else if (nodeName == "dc:creator") {
-            result.authorLast = QString("<author type=\"last\">%1</author>\n").arg(DocScan::xmlify(text));
-        } else if (nodeName == "dc:title") {
-            result.title = QString("<title>%1</title>\n").arg(DocScan::xmlify(text));
-        } else if (nodeName == "dc:subject") {
-            result.subject = QString("<subject>%1</subject>\n").arg(DocScan::xmlify(text));
-        } else if (nodeName == "dc:language") {
-            result.language = QString("<language origin=\"document\">%1</language>\n").arg(text);
+                result.toolGenerator = QString(QStringLiteral("<tool type=\"generator\">\n%1</tool>\n")).arg(guess);
+        } else if (nodeName == QStringLiteral("dc:initial-creator")) {
+            result.authorInitial = QString(QStringLiteral("<author type=\"first\">%1</author>\n")).arg(DocScan::xmlify(text));
+        } else if (nodeName == QStringLiteral("dc:creator")) {
+            result.authorLast = QString(QStringLiteral("<author type=\"last\">%1</author>\n")).arg(DocScan::xmlify(text));
+        } else if (nodeName == QStringLiteral("dc:title")) {
+            result.title = QString(QStringLiteral("<title>%1</title>\n")).arg(DocScan::xmlify(text));
+        } else if (nodeName == QStringLiteral("dc:subject")) {
+            result.subject = QString(QStringLiteral("<subject>%1</subject>\n")).arg(DocScan::xmlify(text));
+        } else if (nodeName == QStringLiteral("dc:language")) {
+            result.language = QString(QStringLiteral("<language origin=\"document\">%1</language>\n")).arg(text);
         } else {
-            QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
-            if (nodeName == "meta:creation-date" && date.isValid()) {
+            QDate date = QDate::fromString(text.left(10), QStringLiteral("yyyy-MM-dd"));
+            if (nodeName == QStringLiteral("meta:creation-date") && date.isValid()) {
                 result.dateCreation = date;
-            } else if (nodeName == "dc:date" && date.isValid()) {
+            } else if (nodeName == QStringLiteral("dc:date") && date.isValid()) {
                 result.dateModification = date;
-            } else if (nodeName == "meta:print-date" && date.isValid()) {
+            } else if (nodeName == QStringLiteral("meta:print-date") && date.isValid()) {
                 result.datePrint = date;
             }
         }
@@ -230,35 +227,35 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         result.pageCountOrigin = (PageCountOrigin)0;
 
         /// evaluate meta.xml file
-        if (zipFile.setCurrentFile("meta.xml", QuaZip::csInsensitive)) {
+        if (zipFile.setCurrentFile(QStringLiteral("meta.xml"), QuaZip::csInsensitive)) {
             QuaZipFile metaXML(&zipFile, parent());
             analyzeMetaXML(metaXML, result);
         } else {
-            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-meta\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-meta\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
         /// evaluate styles.xml file
-        if (zipFile.setCurrentFile("styles.xml", QuaZip::csInsensitive)) {
+        if (zipFile.setCurrentFile(QStringLiteral("styles.xml"), QuaZip::csInsensitive)) {
             QuaZipFile stylesXML(&zipFile, parent());
             analyzeStylesXML(stylesXML, result);
         } else {
-            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-styles\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-styles\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
         /// evaluate content.xml file
-        if (zipFile.setCurrentFile("content.xml", QuaZip::csInsensitive)) {
+        if (zipFile.setCurrentFile(QStringLiteral("content.xml"), QuaZip::csInsensitive)) {
             QuaZipFile contentXML(&zipFile, parent());
             text(contentXML, result);
         } else {
-            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-content\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-content\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
         /// determine mime type
-        QString mimetype = "application/octet-stream";
-        if (zipFile.setCurrentFile("mimetype", QuaZip::csInsensitive)) {
+        QString mimetype = QStringLiteral("application/octet-stream");
+        if (zipFile.setCurrentFile(QStringLiteral("mimetype"), QuaZip::csInsensitive)) {
             QuaZipFile mimetypeFile(&zipFile, parent());
             if (mimetypeFile.open(QIODevice::ReadOnly)) {
                 QTextStream ts(&mimetypeFile);
@@ -267,21 +264,21 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             }
         }
 
-        QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
+        QString logText = QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\">\n")).arg(DocScan::xmlify(filename));
         QString metaText = QStringLiteral("<meta>\n");
         QString headerText = QStringLiteral("<header>\n");
 
         /// file format including mime type and file format version
-        const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QString::null;
+        const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QString();
         const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QStringLiteral("0");
-        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
+        metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n")).arg(mimetype));
         if (result.documentVersionNumbers.count() > 0 && !majorVersion.isNull())
-            metaText.append(QString("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n").arg(majorVersion).arg(minorVersion));
+            metaText.append(QString(QStringLiteral("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n")).arg(majorVersion, minorVersion));
         metaText.append(QStringLiteral("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
-        metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
+        metaText.append(QString(QStringLiteral("<file size=\"%1\" />")).arg(fi.size()));
 
         /// evaluate used tool
         if (!result.toolGenerator.isEmpty())
@@ -306,7 +303,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             headerText.append(result.language);
         /* Disabling aspell, computationally expensive
         if (result.plainText.length() > 1024)
-            headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(guessLanguage(result.plainText)));
+            headerText.append(QString(QStringLiteral("<language origin=\"aspell\">%1</language>\n")).arg(guessLanguage(result.plainText)));
          */
 
         /// evaluate paper size
@@ -315,7 +312,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
 
         /// evaluate number of pages
         if (result.pageCount > 0)
-            headerText.append(QString("<num-pages origin=\"%2\">%1</num-pages>\n").arg(result.pageCount).arg(result.pageCountOrigin == pcoDocument ? "document" : "own-count"));
+            headerText.append(QString(QStringLiteral("<num-pages origin=\"%2\">%1</num-pages>\n").arg(QString::number(result.pageCount), result.pageCountOrigin == pcoDocument ? QStringLiteral("document") : QStringLiteral("own-count"))));
 
         /// evaluate dates
         if (result.dateCreation.isValid())
@@ -327,7 +324,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
 
         // TODO fonts
 
-        QString bodyText = QString("<body length=\"%1\" />\n").arg(result.plainText.length());
+        QString bodyText = QString(QStringLiteral("<body length=\"%1\" />\n")).arg(result.plainText.length());
 
         /// close all tags, merge text
         metaText += QStringLiteral("</meta>\n");
@@ -340,7 +337,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         emit analysisReport(logText);
         zipFile.close();
     } else
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
 
     m_isAlive = false;
 }

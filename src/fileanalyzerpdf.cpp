@@ -311,7 +311,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         wrapper->getPdfVersion(majorVersion, minorVersion);
-        metaText.append(QString("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n").arg(majorVersion).arg(minorVersion).arg(wrapper->isLocked() ? QStringLiteral("yes") : QStringLiteral("no")).arg(wrapper->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
+        metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n")).arg(QString::number(majorVersion), QString::number(minorVersion), wrapper->isLocked() ? QStringLiteral("yes") : QStringLiteral("no"), wrapper->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
 
         if (jhoveExitCode > INT_MIN) {
             /// insert data from jHove
@@ -382,29 +382,29 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
-        metaText.append(QString("<file size=\"%1\" />\n").arg(fi.size()));
+        metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
 
         /// guess and evaluate editor (a.k.a. creator)
         QString creator = wrapper->info("Creator");
         guess.clear();
         if (!creator.isEmpty())
-            guess = guessTool(creator, wrapper->info("Title"));
+            guess = guessTool(creator, wrapper->info(QStringLiteral("Title")));
         if (!guess.isEmpty())
-            metaText.append(QString("<tool type=\"editor\">\n%1</tool>\n").arg(guess));
+            metaText.append(QString(QStringLiteral("<tool type=\"editor\">\n%1</tool>\n")).arg(guess));
         /// guess and evaluate producer
-        QString producer = wrapper->info("Producer");
+        QString producer = wrapper->info(QStringLiteral("Producer"));
         guess.clear();
         if (!producer.isEmpty())
-            guess = guessTool(producer, wrapper->info("Title"));
+            guess = guessTool(producer, wrapper->info(QStringLiteral("Title")));
         if (!guess.isEmpty())
-            metaText.append(QString("<tool type=\"producer\">\n%1</tool>\n").arg(guess));
+            metaText.append(QString(QStringLiteral("<tool type=\"producer\">\n%1</tool>\n")).arg(guess));
 
         if (!wrapper->isLocked()) {
             /// some functions are sensitive if PDF is locked
 
             /// retrieve font information
             const QStringList fontNames = wrapper->fontNames();
-            static QRegExp fontNameNormalizer("^[A-Z]+\\+", Qt::CaseInsensitive);
+            static QRegExp fontNameNormalizer(QStringLiteral("^[A-Z]+\\+"), Qt::CaseInsensitive);
             QSet<QString> knownFonts;
             QString fontXMLtext;
             foreach(const QString &fi, fontNames) {
@@ -427,36 +427,36 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         }
 
         /// format creation date
-        QDate date = wrapper->date("CreationDate").toUTC().date();
+        QDate date = wrapper->date(QStringLiteral("CreationDate")).toUTC().date();
         if (date.isValid())
             headerText.append(formatDate(date, creationDate));
         /// format modification date
-        date = wrapper->date("ModDate").toUTC().date();
+        date = wrapper->date(QStringLiteral("ModDate")).toUTC().date();
         if (date.isValid())
             headerText.append(formatDate(date, modificationDate));
 
         /// retrieve author
-        QString author = wrapper->info("Author").simplified();
+        QString author = wrapper->info(QStringLiteral("Author")).simplified();
         if (!author.isEmpty())
-            headerText.append(QString("<author>%1</author>\n").arg(DocScan::xmlify(author)));
+            headerText.append(QString(QStringLiteral("<author>%1</author>\n")).arg(DocScan::xmlify(author)));
 
         /// retrieve title
-        QString title = wrapper->info("Title").simplified();
+        QString title = wrapper->info(QStringLiteral("Title")).simplified();
         /// clean-up title
         if (microsoftToolRegExp.indexIn(title) == 0)
             title = microsoftToolRegExp.cap(3);
         if (!title.isEmpty())
-            headerText.append(QString("<title>%1</title>\n").arg(DocScan::xmlify(title)));
+            headerText.append(QString(QStringLiteral("<title>%1</title>\n")).arg(DocScan::xmlify(title)));
 
         /// retrieve subject
-        QString subject = wrapper->info("Subject").simplified();
+        QString subject = wrapper->info(QStringLiteral("Subject")).simplified();
         if (!subject.isEmpty())
-            headerText.append(QString("<subject>%1</subject>\n").arg(DocScan::xmlify(subject)));
+            headerText.append(QString(QStringLiteral("<subject>%1</subject>\n")).arg(DocScan::xmlify(subject)));
 
         /// retrieve keywords
-        QString keywords = wrapper->info("Keywords").simplified();
+        QString keywords = wrapper->info(QStringLiteral("Keywords")).simplified();
         if (!keywords.isEmpty())
-            headerText.append(QString("<keyword>%1</keyword>\n").arg(DocScan::xmlify(keywords)));
+            headerText.append(QString(QStringLiteral("<keyword>%1</keyword>\n")).arg(DocScan::xmlify(keywords)));
 
         if (!wrapper->isLocked()) {
             /// some functions are sensitive if PDF is locked
@@ -468,7 +468,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (textExtraction >= teAspell) {
                     language = guessLanguage(text);
                     if (!language.isEmpty())
-                        headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(language));
+                        headerText.append(QString(QStringLiteral("<language origin=\"aspell\">%1</language>\n")).arg(language));
                 }
                 bodyText = QString(QStringLiteral("<body length=\"%1\"")).arg(length);
                 if (textExtraction >= teFullText)
@@ -479,7 +479,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
             /// look into first page for info
             int numPages = wrapper->numPages();
-            headerText.append(QString("<num-pages>%1</num-pages>\n").arg(numPages));
+            headerText.append(QString(QStringLiteral("<num-pages>%1</num-pages>\n")).arg(numPages));
             if (numPages > 0) {
                 /// retrieve and evaluate paper size
                 QSizeF size = wrapper->pageSize();
@@ -502,13 +502,13 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         logText += QStringLiteral("</fileanalysis>\n");
 
         const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-        logText.prepend(QString("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n").arg(DocScan::xmlify(filename)).arg(endTime - startTime).arg(externalProgramsEndTime - startTime));
+        logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime)).arg(QString::number(externalProgramsEndTime - startTime)));
 
         emit analysisReport(logText);
 
         delete wrapper;
     } else
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n").arg(filename).arg(externalProgramsEndTime - startTime));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)));
 
 
     m_isAlive = false;

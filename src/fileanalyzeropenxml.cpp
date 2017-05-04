@@ -50,14 +50,14 @@ public:
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
         m_nodeName.push(qName);
-        m_insideText |= qName == "w:t";
+        m_insideText |= qName == QStringLiteral("w:t");
 
         if (result.paperSizeWidth == 0 && qName == QStringLiteral("w:pgSz")) {
             bool ok = false;
             int mmw = atts.value(QStringLiteral("w:w")).toInt(&ok) / 56.695238f;
             if (ok) {
                 result.paperSizeWidth = mmw;
-                int mmh = atts.value("w:h").toInt(&ok) / 56.695238f;
+                int mmh = atts.value(QStringLiteral("w:h")).toInt(&ok) / 56.695238f;
                 if (ok)
                     result.paperSizeHeight = mmh;
             }
@@ -69,8 +69,8 @@ public:
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
-        if (qName == "w:t") m_insideText = false;
-        if (qName == "w:p") result.plainText += "\n";
+        if (qName == QStringLiteral("w:t")) m_insideText = false;
+        if (qName == QStringLiteral("w:p")) result.plainText += QStringLiteral("\n");
 
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
@@ -94,14 +94,14 @@ public:
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
-        if (qName == "w:themeFontLang")
-            m_language = atts.value("w:val");
+        if (qName == QStringLiteral("w:themeFontLang"))
+            m_language = atts.value(QStringLiteral("w:val"));
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
-        if (qName == "w:document" && !m_language.isEmpty()) {
+        if (qName == QStringLiteral("w:document") && !m_language.isEmpty()) {
             result.languageDocument = m_language;
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
@@ -121,14 +121,14 @@ public:
     }
 
     virtual bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) {
-        if (qName == "a:rPr")
-            m_language = atts.value("lang");
+        if (qName == QStringLiteral("a:rPr"))
+            m_language = atts.value(QStringLiteral("lang"));
 
         return QXmlDefaultHandler::startElement(namespaceURI, localName, qName, atts);
     }
 
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
-        if (qName == "p:sld" && !m_language.isEmpty()) {
+        if (qName == QStringLiteral("p:sld") && !m_language.isEmpty()) {
             result.languageDocument = m_language;
 
         }
@@ -159,20 +159,20 @@ public:
     }
 
     virtual bool characters(const QString &text) {
-        if (m_nodeName.top() == "dc:creator")
-            result.authorInitial = QString("<author type=\"first\">%1</author>\n").arg(DocScan::xmlify(text));
-        else if (m_nodeName.top() == "cp:lastModifiedBy")
-            result.authorLast = QString("<author type=\"last\">%1</author>\n").arg(DocScan::xmlify(text));
-        else if (m_nodeName.top() == "dcterms:created") {
-            QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
-            result.dateCreation = DocScan::formatDate(date, "creation");
-        } else if (m_nodeName.top() == "dcterms:modified") {
-            QDate date = QDate::fromString(text.left(10), "yyyy-MM-dd");
-            result.dateModification = DocScan::formatDate(date, "modification");
-        } else if (m_nodeName.top() == "dc:title")
-            result.title = QString("<title>%1</title>\n").arg(DocScan::xmlify(text));
-        else if (m_nodeName.top() == "dc:subject")
-            result.subject = QString("<subject>%1</subject>\n").arg(DocScan::xmlify(text));
+        if (m_nodeName.top() == QStringLiteral("dc:creator"))
+            result.authorInitial = QString(QStringLiteral("<author type=\"first\">%1</author>\n")).arg(DocScan::xmlify(text));
+        else if (m_nodeName.top() == QStringLiteral("cp:lastModifiedBy"))
+            result.authorLast = QString(QStringLiteral("<author type=\"last\">%1</author>\n")).arg(DocScan::xmlify(text));
+        else if (m_nodeName.top() == QStringLiteral("dcterms:created")) {
+            QDate date = QDate::fromString(text.left(10), QStringLiteral("yyyy-MM-dd"));
+            result.dateCreation = DocScan::formatDate(date, QStringLiteral("creation"));
+        } else if (m_nodeName.top() == QStringLiteral("dcterms:modified")) {
+            QDate date = QDate::fromString(text.left(10), QStringLiteral("yyyy-MM-dd"));
+            result.dateModification = DocScan::formatDate(date, QStringLiteral("modification"));
+        } else if (m_nodeName.top() == QStringLiteral("dc:title"))
+            result.title = QString(QStringLiteral("<title>%1</title>\n")).arg(DocScan::xmlify(text));
+        else if (m_nodeName.top() == QStringLiteral("dc:subject"))
+            result.subject = QString(QStringLiteral("<subject>%1</subject>\n")).arg(DocScan::xmlify(text));
 
         return QXmlDefaultHandler::characters(text);
     }
@@ -200,27 +200,27 @@ public:
     virtual bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) {
         m_nodeName.pop();
 
-        if (qName == "Properties") {
+        if (qName == QStringLiteral("Properties")) {
             QString toolString = application;
-            if (!toolString.contains(QRegExp("\\d\\.\\d")))
+            if (!toolString.contains(QRegExp(QStringLiteral("\\d\\.\\d"))))
                 toolString.append(" " + appVersion); /// avoid duplicate version numbers
             QString guess = p->guessTool(toolString);
             if (!guess.isEmpty())
-                result.toolGenerator = QString("<tool type=\"generator\">\n%1</tool>\n").arg(guess);
+                result.toolGenerator = QString(QStringLiteral("<tool type=\"generator\">\n%1</tool>\n")).arg(guess);
         }
         return QXmlDefaultHandler::endElement(namespaceURI, localName, qName);
     }
 
     virtual bool characters(const QString &text) {
-        if (m_nodeName.top() == "Application")
+        if (m_nodeName.top() == QStringLiteral("Application"))
             application = text;
-        else if (m_nodeName.top() == "AppVersion")
-            appVersion = QString(text).replace("0000", "0");
-        else if (m_nodeName.top() == "Characters") {
+        else if (m_nodeName.top() == QStringLiteral("AppVersion"))
+            appVersion = QString(text).replace(QStringLiteral("0000"), QStringLiteral("0"));
+        else if (m_nodeName.top() == QStringLiteral("Characters")) {
             bool ok = false;
             result.characterCount = text.toInt(&ok);
             if (!ok) result.characterCount = 0;
-        } else if (m_nodeName.top() == "Pages") {
+        } else if (m_nodeName.top() == QStringLiteral("Pages")) {
             bool ok = false;
             result.pageCount = text.toInt(&ok);
             if (!ok) result.pageCount = 0;
@@ -254,8 +254,8 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
     if (zipFile.open(QuaZip::mdUnzip)) {
 
         /// determine mime type
-        QString mimetype = "application/octet-stream";
-        if (zipFile.setCurrentFile("[Content_Types].xml", QuaZip::csInsensitive)) {
+        QString mimetype = QStringLiteral("application/octet-stream");
+        if (zipFile.setCurrentFile(QStringLiteral("[Content_Types].xml"), QuaZip::csInsensitive)) {
             QuaZipFile contentTypeFile(&zipFile, parent());
             if (contentTypeFile.open(QIODevice::ReadOnly)) {
                 QTextStream ts(&contentTypeFile);
@@ -267,43 +267,43 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
             }
         }
 
-        if (mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        if (mimetype == QStringLiteral("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
             if (!processWordFile(zipFile, result)) {
-                emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-document\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+                emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-document\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
                 return;
             }
         }
 
         if (!processCore(zipFile, result)) {
-            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-corefile\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-corefile\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
         if (!processApp(zipFile, result)) {
-            emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-appfile\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-appfile\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
         if (!processSettings(zipFile, result)) {
             if (!processSlides(zipFile, result)) {
-                emit analysisReport(QString("<fileanalysis filename=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+                emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
                 return;
             }
         }
 
-        QString logText = QString("<fileanalysis filename=\"%1\" status=\"ok\">\n").arg(DocScan::xmlify(filename));
+        QString logText = QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\">\n")).arg(DocScan::xmlify(filename));
         QString metaText = QStringLiteral("<meta>\n");
         QString headerText = QStringLiteral("<header>\n");
 
         /// file format including mime type and file format version
-        metaText.append(QString("<fileformat>\n<mimetype>%1</mimetype>\n").arg(mimetype));
+        metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n")).arg(mimetype));
         if (!result.formatVersion.isEmpty())
-            metaText.append(QString("<version>%1</version>\n").arg(result.formatVersion));
+            metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(result.formatVersion));
         metaText.append(QStringLiteral("</fileformat>"));
 
         /// file information including size
         QFileInfo fi = QFileInfo(filename);
-        metaText.append(QString("<file size=\"%1\" />").arg(fi.size()));
+        metaText.append(QString(QStringLiteral("<file size=\"%1\" />")).arg(fi.size()));
 
         /// evaluate used tool
         if (!result.toolGenerator.isEmpty())
@@ -325,9 +325,9 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         /// evaluate language
         if (!result.languageDocument.isEmpty())
-            headerText.append(QString("<language origin=\"document\">%1</language>\n").arg(result.languageDocument));
+            headerText.append(QString(QStringLiteral("<language origin=\"document\">%1</language>\n")).arg(result.languageDocument));
         if (!result.languageAspell.isEmpty())
-            headerText.append(QString("<language origin=\"aspell\">%1</language>\n").arg(result.languageAspell));
+            headerText.append(QString(QStringLiteral("<language origin=\"aspell\">%1</language>\n")).arg(result.languageAspell));
 
         /// evaluate paper size
         if (result.paperSizeHeight > 0 && result.paperSizeWidth > 0)
@@ -335,7 +335,7 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         /// evaluate number of pages
         if (result.pageCount > 0)
-            headerText.append(QString("<num-pages origin=\"document\">%1</num-pages>\n").arg(result.pageCount));
+            headerText.append(QString(QStringLiteral("<num-pages origin=\"document\">%1</num-pages>\n")).arg(result.pageCount));
 
         /// evaluate dates
         if (!result.dateCreation.isEmpty())
@@ -345,7 +345,7 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         // TODO fonts
 
-        QString bodyText = QString("<body length=\"%1\" />\n").arg(result.characterCount);
+        QString bodyText = QString(QStringLiteral("<body length=\"%1\" />\n")).arg(result.characterCount);
 
 /// close all tags, merge text
         metaText += QStringLiteral("</meta>\n");
@@ -359,14 +359,14 @@ void FileAnalyzerOpenXML::analyzeFile(const QString &filename)
 
         zipFile.close();
     } else
-        emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n").arg(DocScan::xmlify(filename)));
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
 
     m_isAlive = false;
 }
 
 bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, ResultContainer &result)
 {
-    if (zipFile.setCurrentFile("word/document.xml", QuaZip::csInsensitive)) {
+    if (zipFile.setCurrentFile(QStringLiteral("word/document.xml"), QuaZip::csInsensitive)) {
         QuaZipFile documentFile(&zipFile, parent());
         if (documentFile.open(QIODevice::ReadOnly)) {
             text(documentFile, result);
@@ -384,7 +384,7 @@ bool FileAnalyzerOpenXML::processWordFile(QuaZip &zipFile, ResultContainer &resu
 
 bool FileAnalyzerOpenXML::processCore(QuaZip &zipFile, ResultContainer &result)
 {
-    if (zipFile.setCurrentFile("docProps/core.xml", QuaZip::csInsensitive)) {
+    if (zipFile.setCurrentFile(QStringLiteral("docProps/core.xml"), QuaZip::csInsensitive)) {
         QuaZipFile coreFile(&zipFile, parent());
         if (coreFile.open(QIODevice::ReadOnly)) {
             OpenXMLCoreHandler handler(this, result);
@@ -402,7 +402,7 @@ bool FileAnalyzerOpenXML::processCore(QuaZip &zipFile, ResultContainer &result)
 
 bool FileAnalyzerOpenXML::processApp(QuaZip &zipFile, ResultContainer &result)
 {
-    if (zipFile.setCurrentFile("docProps/app.xml", QuaZip::csInsensitive)) {
+    if (zipFile.setCurrentFile(QStringLiteral("docProps/app.xml"), QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
             OpenXMLAppHandler handler(this, result);
@@ -420,7 +420,7 @@ bool FileAnalyzerOpenXML::processApp(QuaZip &zipFile, ResultContainer &result)
 
 bool FileAnalyzerOpenXML::processSettings(QuaZip &zipFile, ResultContainer &result)
 {
-    if (zipFile.setCurrentFile("word/settings.xml", QuaZip::csInsensitive)) {
+    if (zipFile.setCurrentFile(QStringLiteral("word/settings.xml"), QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
             OpenXMLSettingsHandler handler(this, result);
@@ -438,7 +438,7 @@ bool FileAnalyzerOpenXML::processSettings(QuaZip &zipFile, ResultContainer &resu
 
 bool FileAnalyzerOpenXML::processSlides(QuaZip &zipFile, ResultContainer &result)
 {
-    if (zipFile.setCurrentFile("ppt/slides/slide1.xml", QuaZip::csInsensitive)) {
+    if (zipFile.setCurrentFile(QStringLiteral("ppt/slides/slide1.xml"), QuaZip::csInsensitive)) {
         QuaZipFile appFile(&zipFile, parent());
         if (appFile.open(QIODevice::ReadOnly)) {
             OpenXMLSlideHandler handler(this, result);

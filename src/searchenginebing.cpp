@@ -44,13 +44,13 @@ void SearchEngineBing::startSearch(int num)
 
     QUrl url(QStringLiteral("http://www.bing.com/search?setmkt=en-US&setlang=match"));
     QUrlQuery query;
-    query.addQueryItem("q", m_searchTerm);
+    query.addQueryItem(QStringLiteral("q"), m_searchTerm);
     url.setQuery(query);
     m_numExpectedHits = num;
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString("<searchengine search=\"%1\" type=\"bing\" />\n").arg(DocScan::xmlify(url.toString())));
+    emit report(QString(QStringLiteral("<searchengine search=\"%1\" type=\"bing\" />\n")).arg(DocScan::xmlify(url.toString())));
 
     QNetworkRequest request(url);
     m_networkAccessManager->setRequestHeaders(request);
@@ -74,7 +74,7 @@ void SearchEngineBing::finished()
             const QRegExp countHitsRegExp(QStringLiteral("([0-9]+([ ,][0-9]+)*) result"), Qt::CaseInsensitive);
             if (countHitsRegExp.indexIn(htmlText) >= 0) {
                 const QString hits = countHitsRegExp.cap(1).replace(QRegExp(QStringLiteral("[, ]+")), QString());
-                emit report(QString("<searchengine type=\"bing\" numresults=\"%1\" />\n").arg(hits));
+                emit report(QString(QStringLiteral("<searchengine type=\"bing\" numresults=\"%1\" />\n")).arg(hits));
             } else
                 emit report(QStringLiteral("<searchengine type=\"bing\">\nCannot determine number of results\n</searchengine>\n"));
         }
@@ -86,7 +86,7 @@ void SearchEngineBing::finished()
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Bing found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "): " << url.toString();
-                emit report(QString("<filefinder event=\"hit\" href=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
+                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
                 emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
@@ -94,11 +94,11 @@ void SearchEngineBing::finished()
 
         ++m_currentPage;
         if (m_currentPage * 10 < m_numExpectedHits) {
-            QRegExp nextPageRegExp("<li><a href=\"(/search[^\"]+)\"[^>]*>Next</a></li>");
+            QRegExp nextPageRegExp(QStringLiteral("<li><a href=\"(/search[^\"]+)\"[^>]*>Next</a></li>"));
             QUrl url(reply->url());
             if (nextPageRegExp.indexIn(htmlText) >= 0 && !nextPageRegExp.cap(1).isEmpty()) {
                 url.setPath(nextPageRegExp.cap(1));
-                emit report(QString("<searchengine type=\"bing\" search=\"%1\" />\n").arg(DocScan::xmlify(url.toString())));
+                emit report(QString(QStringLiteral("<searchengine type=\"bing\" search=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
                 ++m_runningSearches;
                 QNetworkRequest request(url);
                 m_networkAccessManager->setRequestHeaders(request);
@@ -108,7 +108,7 @@ void SearchEngineBing::finished()
                 qDebug() << "Cannot find link to continue";
         }
     } else {
-        QString logText = QString("<searchengine type=\"bing\" url=\"%1\" status=\"error\" />\n").arg(DocScan::xmlify(reply->url().toString()));
+        QString logText = QString(QStringLiteral("<searchengine type=\"bing\" url=\"%1\" status=\"error\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
         emit report(logText);
     }
 
