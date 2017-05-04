@@ -299,7 +299,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
 
     PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
-    if (wrapper != NULL) {
+    if (wrapper != nullptr) {
         QString guess;
 
         QString logText;

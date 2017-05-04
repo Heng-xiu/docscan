@@ -45,7 +45,7 @@ public:
      * @param logfilename old log file to parse
      * @param filters list of filters, i.e. which filenames to extract. May contain strings like "*.doc" or "*.pdf". If empty, all downloaded files will get "found".
      */
-    explicit FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
+    explicit FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();
@@ -70,7 +70,7 @@ public:
      * @param logfilename old log file to parse
      * @param filters list of filters, i.e. which filenames to extract. May contain strings like "*.doc" or "*.pdf". If empty, all downloaded files will get "found".
      */
-    explicit FromLogFileDownloader(const QString &logfilename, const QStringList &filters, QObject *parent = 0);
+    explicit FromLogFileDownloader(const QString &logfilename, const QStringList &filters, QObject *parent = nullptr);
 
     virtual bool isAlive();
 

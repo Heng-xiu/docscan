@@ -38,7 +38,7 @@ class FileAnalyzerODF : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerODF(QObject *parent = 0);
+    explicit FileAnalyzerODF(QObject *parent = nullptr);
 
     virtual bool isAlive();
 

@@ -45,7 +45,7 @@ class WebCrawler : public FileFinder
 public:
     static const int maxVisitedPages;
 
-    explicit WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages = WebCrawler::maxVisitedPages, QObject *parent = 0);
+    explicit WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages = WebCrawler::maxVisitedPages, QObject *parent = nullptr);
     ~WebCrawler();
 
     virtual void startSearch(int numExpectedHits);

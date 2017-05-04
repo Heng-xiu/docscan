@@ -40,7 +40,7 @@ class FileAnalyzerPDF : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerPDF(QObject *parent = 0);
+    explicit FileAnalyzerPDF(QObject *parent = nullptr);
 
     virtual bool isAlive();
 

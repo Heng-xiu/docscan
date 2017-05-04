@@ -39,7 +39,7 @@ class SearchEngineGoogle : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit SearchEngineGoogle(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
+    explicit SearchEngineGoogle(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();

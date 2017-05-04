@@ -34,7 +34,7 @@ class FakeDownloader : public Downloader
 {
     Q_OBJECT
 public:
-    FakeDownloader(QObject *parent = 0);
+    FakeDownloader(QObject *parent = nullptr);
 
     virtual bool isAlive();
 

@@ -39,7 +39,7 @@ class SearchEngineBing : public SearchEngineAbstract
 {
     Q_OBJECT
 public:
-    explicit SearchEngineBing(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = 0);
+    explicit SearchEngineBing(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();

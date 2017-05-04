@@ -38,7 +38,7 @@ class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerCompoundBinary(QObject *parent = 0);
+    explicit FileAnalyzerCompoundBinary(QObject *parent = nullptr);
 
     virtual bool isAlive();
 

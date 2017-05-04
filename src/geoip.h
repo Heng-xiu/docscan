@@ -52,7 +52,7 @@ public:
     /**
      * Create instance and use the supplied network access manager for network connections.
      */
-    explicit GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent = 0);
+    explicit GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent = nullptr);
     ~GeoIP();
 
     /**

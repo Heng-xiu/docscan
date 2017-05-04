@@ -28,7 +28,7 @@
 class NetworkAccessManager : public QNetworkAccessManager
 {
 public:
-    NetworkAccessManager(QObject *parent = 0);
+    NetworkAccessManager(QObject *parent = nullptr);
 
     void setRequestHeaders(QNetworkRequest &request);
 

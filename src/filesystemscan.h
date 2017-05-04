@@ -42,7 +42,7 @@ public:
      * @param filters list of filters following for format specified in QDir
      * @param baseDir local directory to start searching from
      */
-    explicit FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent = 0);
+    explicit FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();

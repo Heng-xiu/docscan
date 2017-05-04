@@ -32,7 +32,7 @@
 class SearchEngineAbstract : public FileFinder
 {
 public:
-    explicit SearchEngineAbstract(QObject *parent = 0);
+    explicit SearchEngineAbstract(QObject *parent = nullptr);
 };
 
 #endif // SEARCHENGINEABSTRACT_H

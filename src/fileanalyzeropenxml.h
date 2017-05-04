@@ -38,7 +38,7 @@ class FileAnalyzerOpenXML : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerOpenXML(QObject *parent = 0);
+    explicit FileAnalyzerOpenXML(QObject *parent = nullptr);
 
     virtual bool isAlive();
 

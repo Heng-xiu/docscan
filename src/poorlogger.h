@@ -29,7 +29,7 @@ class PoorLogger : public QObject
     Q_OBJECT
 
 public:
-    PoorLogger(QObject *parent = NULL);
+    PoorLogger(QObject *parent = nullptr);
     virtual ~PoorLogger();
 
 public slots:

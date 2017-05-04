@@ -28,7 +28,7 @@ class FileFinderList : public FileFinder
 {
     Q_OBJECT
 public:
-    explicit FileFinderList(const QString &listFile, QObject *parent = 0);
+    explicit FileFinderList(const QString &listFile, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();

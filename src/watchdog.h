@@ -41,7 +41,7 @@ class WatchDog : public QObject
 {
     Q_OBJECT
 public:
-    explicit WatchDog(QObject *parent = 0);
+    explicit WatchDog(QObject *parent = nullptr);
 
     /**
      * Add an object to the set of objects to be watched.

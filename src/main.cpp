@@ -145,31 +145,31 @@ bool evaluateConfigfile(const QString &filename)
                     webcrawlermaxvisitedpages = value.toInt(&ok);
                     if (!ok) webcrawlermaxvisitedpages = 1024;
                     qDebug() << "webcrawler:maxvisitedpages =" << webcrawlermaxvisitedpages;
-                } else if (key == "webcrawler" && finder == NULL) {
+                } else if (key == "webcrawler" && finder == nullptr) {
                     qDebug() << "webcrawler =" << value << "using filter" << filter;
                     finder = new WebCrawler(netAccMan, filter, value, startUrl.isEmpty() ? QUrl(value) : startUrl, requiredContent, webcrawlermaxvisitedpages == 0 ? qMin(qMax(numHits * filter.count() * 256, 256), 4096) : webcrawlermaxvisitedpages);
-                } else if (key == "searchenginegoogle" && finder == NULL) {
+                } else if (key == "searchenginegoogle" && finder == nullptr) {
                     qDebug() << "searchenginegoogle =" << value;
                     finder = new SearchEngineGoogle(netAccMan, value);
-                } else if (key == "searchenginebing" && finder == NULL) {
+                } else if (key == "searchenginebing" && finder == nullptr) {
                     qDebug() << "searchenginebing =" << value;
                     finder = new SearchEngineBing(netAccMan, value);
-                } else if (key == "searchenginespringerlink" && finder == NULL) {
+                } else if (key == "searchenginespringerlink" && finder == nullptr) {
                     qDebug() << "searchenginespringerlink =" << value;
                     finder = new SearchEngineSpringerLink(netAccMan, value, springerLinkCategory, springerLinkContentType, springerLinkSubject, springerLinkYear);
-                } else if (key == "filesystemscan" && finder == NULL) {
+                } else if (key == "filesystemscan" && finder == nullptr) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
-                } else if (key == "filefinderlist" && finder == NULL) {
+                } else if (key == "filefinderlist" && finder == nullptr) {
                     qDebug() << "filefinderlist =" << value;
                     finder = new FileFinderList(value);
-                } else if (key == "fromlogfilefilefinder" && finder == NULL) {
+                } else if (key == "fromlogfilefilefinder" && finder == nullptr) {
                     qDebug() << "fromlogfilefilefinder =" << value;
                     finder = new FromLogFileFileFinder(value, filter);
-                } else if (key == "fromlogfiledownloader" && downloader == NULL) {
+                } else if (key == "fromlogfiledownloader" && downloader == nullptr) {
                     qDebug() << "fromlogfiledownloader =" << value;
                     downloader = new FromLogFileDownloader(value, filter);
-                } else if (key == "urldownloader" && downloader == NULL) {
+                } else if (key == "urldownloader" && downloader == nullptr) {
                     if (numHits > 0) {
                         qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
                         downloader = new UrlDownloader(netAccMan, value, numHits);
@@ -177,10 +177,10 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "urldownloader =" << value;
                         downloader = new UrlDownloader(netAccMan, value);
                     }
-                } else if (key == "fakedownloader" && downloader == NULL) {
+                } else if (key == "fakedownloader" && downloader == nullptr) {
                     qDebug() << "fakedownloader";
                     downloader = new FakeDownloader(netAccMan);
-                } else if (key == "logcollector" && logCollector == NULL) {
+                } else if (key == "logcollector" && logCollector == nullptr) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
                     logOutput->open(QFile::WriteOnly);
@@ -211,7 +211,7 @@ bool evaluateConfigfile(const QString &filename)
                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
 #endif // HAVE_WV2
                     } else
-                        fileAnalyzer = NULL;
+                        fileAnalyzer = nullptr;
                 } else {
                     qDebug() << "UNKNOWN CONFIG:" << key << "=" << value;
                 }
@@ -255,10 +255,10 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     netAccMan = new NetworkAccessManager(&a);
-    fileAnalyzer = NULL;
-    logCollector = NULL;
-    downloader = NULL;
-    finder = NULL;
+    fileAnalyzer = nullptr;
+    logCollector = nullptr;
+    downloader = nullptr;
+    finder = nullptr;
     numHits = 0;
     webcrawlermaxvisitedpages = 0;
     textExtraction = FileAnalyzerAbstract::teNone;
@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
     } else if (!evaluateConfigfile(QString::fromUtf8(argv[argc - 1]))) {
         fprintf(stderr, "Evaluation of configuration file failed\n");
         return 1;
-    } else if (logCollector == NULL) {
+    } else if (logCollector == nullptr) {
         fprintf(stderr, "Failed to instanciate log collector\n");
         return 1;
     } else if (numHits <= 0) {
@@ -277,21 +277,21 @@ int main(int argc, char *argv[])
         return 1;
     } else {
         WatchDog watchDog;
-        if (fileAnalyzer != NULL) {
+        if (fileAnalyzer != nullptr) {
             watchDog.addWatchable(fileAnalyzer);
             fileAnalyzer->setTextExtraction(textExtraction);
         }
-        if (downloader != NULL) watchDog.addWatchable(downloader);
-        if (finder != NULL) watchDog.addWatchable(finder);
+        if (downloader != nullptr) watchDog.addWatchable(downloader);
+        if (finder != nullptr) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
         if (!jhoveShellscript.isEmpty() && !jhoveConfigFile.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != NULL) {
+            if (fileAnalyzerPDF != nullptr) {
                 fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != NULL) {
+                if (fileAnalyzerMultiplexer != nullptr) {
                     fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
                 }
             }
@@ -299,11 +299,11 @@ int main(int argc, char *argv[])
 
         if (!veraPDFcliTool.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != NULL) {
+            if (fileAnalyzerPDF != nullptr) {
                 fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != NULL) {
+                if (fileAnalyzerMultiplexer != nullptr) {
                     fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
                 }
             }
@@ -311,11 +311,11 @@ int main(int argc, char *argv[])
 
         if (!pdfboxValidatorJavaClass.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != NULL) {
+            if (fileAnalyzerPDF != nullptr) {
                 fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != NULL) {
+                if (fileAnalyzerMultiplexer != nullptr) {
                     fileAnalyzerMultiplexer->setupPdfBoXValidator(pdfboxValidatorJavaClass);
                 }
             }
@@ -323,26 +323,26 @@ int main(int argc, char *argv[])
 
         if (!callasPdfAPilotCLI.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != NULL) {
+            if (fileAnalyzerPDF != nullptr) {
                 fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != NULL) {
+                if (fileAnalyzerMultiplexer != nullptr) {
                     fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
                 }
             }
         }
 
-        if (downloader != NULL && finder != NULL) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
-        if (downloader != NULL && fileAnalyzer != NULL) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
+        if (downloader != nullptr && finder != nullptr) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
+        if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
         QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
-        if (downloader != NULL) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (fileAnalyzer != NULL) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (finder != NULL) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (downloader != NULL) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
+        if (downloader != nullptr) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (finder != nullptr) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (downloader != nullptr) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
         QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
 
-        if (finder != NULL) finder->startSearch(numHits);
+        if (finder != nullptr) finder->startSearch(numHits);
 
         qDebug() << "activeThreadCount" << QThreadPool::globalInstance()->activeThreadCount() << "   maxThreadCount" << QThreadPool::globalInstance()->maxThreadCount();
 

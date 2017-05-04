@@ -37,7 +37,7 @@ class Downloader : public QObject, public Watchable
 {
     Q_OBJECT
 public:
-    explicit Downloader(QObject *parent = 0);
+    explicit Downloader(QObject *parent = nullptr);
 
 public slots:
     /**

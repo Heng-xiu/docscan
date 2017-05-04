@@ -42,7 +42,7 @@ public:
     static const QString AllContentTypes;
     static const QString AllSubjects;
 
-    explicit SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category = AllCategories, const QString &contentType = AllContentTypes, const QString &subject = AllSubjects, int year = AllYears, QObject *parent = 0);
+    explicit SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category = AllCategories, const QString &contentType = AllContentTypes, const QString &subject = AllSubjects, int year = AllYears, QObject *parent = nullptr);
 
     virtual void startSearch(int numExpectedHits);
     virtual bool isAlive();

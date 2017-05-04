@@ -40,7 +40,7 @@ class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
-    explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = 0);
+    explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = nullptr);
 
     virtual bool isAlive();
 

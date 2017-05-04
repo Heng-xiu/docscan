@@ -47,7 +47,7 @@ public:
      *
      * @param output device to log messages to
      */
-    explicit LogCollector(QIODevice *output, QObject *parent = 0);
+    explicit LogCollector(QIODevice *output, QObject *parent = nullptr);
 
     virtual bool isAlive();
 

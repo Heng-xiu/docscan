@@ -177,8 +177,8 @@ bool FileAnalyzerCompoundBinary::getEditor(unsigned short wMagic, QString &edito
 void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWare::Word97::FIB &fib, ResultContainer &result)
 {
     wvWare::OLEStreamReader *table = storage.createStreamReader(fib.fWhichTblStm ? "1Table" : "0Table");
-    if (table == NULL || !table->isValid()) {
-        if (table != NULL)  delete table;
+    if (table == nullptr || !table->isValid()) {
+        if (table != nullptr)  delete table;
         return;
     }
 
@@ -214,7 +214,7 @@ void FileAnalyzerCompoundBinary::analyzeTable(wvWare::OLEStorage &storage, wvWar
 void FileAnalyzerCompoundBinary::analyzeWithParser(std::string &filename, ResultContainer &result)
 {
     wvWare::SharedPtr<wvWare::Parser> parser(wvWare::ParserFactory::createParser(filename));
-    if (parser != NULL) {
+    if (parser != nullptr) {
         if (parser->isOk()) {
             DocScanTextHandler *textHandler = new DocScanTextHandler(result);
             parser->setTextHandler(textHandler);
@@ -257,8 +257,8 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
         return;
     }
     wvWare::OLEStreamReader *document = storage.createStreamReader("WordDocument");
-    if (document == NULL || !document->isValid()) {
-        if (document != NULL)  delete document;
+    if (document == nullptr || !document->isValid()) {
+        if (document != nullptr)  delete document;
         emit analysisReport(QString("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n").arg(filename));
         m_isAlive = false;
         return;

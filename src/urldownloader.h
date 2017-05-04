@@ -52,7 +52,7 @@ public:
      * @param filePattern pattern used to rename downloaded files to make it easier to store and categorize them
      * @param parent parent object
      */
-    explicit UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, int maxDownloads = 0x0fffffff, QObject *parent = 0);
+    explicit UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, int maxDownloads = 0x0fffffff, QObject *parent = nullptr);
     ~UrlDownloader();
 
     virtual bool isAlive();

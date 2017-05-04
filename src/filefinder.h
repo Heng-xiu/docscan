@@ -43,7 +43,7 @@ public:
     /// Result value for various functions if function had some error (not specified).
     static const int ResultUnspecifiedError;
 
-    explicit FileFinder(QObject *parent = 0);
+    explicit FileFinder(QObject *parent = nullptr);
 
     /**
      * Start searching as specified in another function.

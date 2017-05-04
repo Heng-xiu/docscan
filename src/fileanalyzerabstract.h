@@ -42,7 +42,7 @@ public:
 
     static const QString licenseCategoryProprietary, licenseCategoryFreeware, licenseCategoryOpen;
 
-    explicit FileAnalyzerAbstract(QObject *parent = 0);
+    explicit FileAnalyzerAbstract(QObject *parent = nullptr);
 
     void setTextExtraction(TextExtraction textExtraction);
 

@@ -76,8 +76,8 @@ public:
     virtual void endPage() {
         if (currentPage >= 0 && currentPage <= 16) {
             poppler::page *page = m_document->create_page(currentPage - 1);
-            if (page != NULL) {
-                const QString cookedText = page != NULL ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
+            if (page != nullptr) {
+                const QString cookedText = page != nullptr ? DocScan::xmlify(QString::fromUtf8(page->text().to_utf8().data()).simplified()) : QString();
                 if (!cookedText.isEmpty())
                     logText.append(QString(QStringLiteral("<text length=\"%1\">")).arg(page->text().length())).append(cookedText).append(QStringLiteral("</text>\n"));
                 else
@@ -117,7 +117,7 @@ public:
 
             node.attributes.insert(QStringLiteral("width"), QString::number(width));
             node.attributes.insert(QStringLiteral("height"), QString::number(height));
-            if (colorMap != NULL)
+            if (colorMap != nullptr)
                 node.attributes.insert(QStringLiteral("bits"), QString::number(colorMap->getBits()));
 
             logText.append(DocScan::xmlNodeToText(node));
@@ -136,7 +136,7 @@ public:
     void drawImageMask(GfxState *state, Object *ref, Stream *str,
                        int width, int height, GBool /*invert*/,
                        GBool interpolate, GBool inlineImg) {
-        listImage(state, ref, str, width, height, NULL, interpolate, inlineImg);
+        listImage(state, ref, str, width, height, nullptr, interpolate, inlineImg);
     }
 
     void drawImage(GfxState *state, Object *ref, Stream *str,
@@ -151,7 +151,7 @@ public:
         int width, int height, GfxImageColorMap *colorMap, GBool interpolate,
         Stream */*maskStr*/, int maskWidth, int maskHeight, GBool /*maskInvert*/, GBool maskInterpolate) {
         listImage(state, ref, str, width, height, colorMap, interpolate, gFalse);
-        listImage(state, ref, str, maskWidth, maskHeight, NULL, maskInterpolate, gFalse);
+        listImage(state, ref, str, maskWidth, maskHeight, nullptr, maskInterpolate, gFalse);
     }
 
     void drawSoftMaskedImage(
@@ -186,8 +186,8 @@ public:
 PopplerWrapper *PopplerWrapper::createPopplerWrapper(const QString &filename)
 {
     poppler::document *document = poppler::document::load_from_file(filename.toStdString());
-    if (document == NULL)
-        return NULL;
+    if (document == nullptr)
+        return nullptr;
 
     return new PopplerWrapper(document, filename);
 }
@@ -195,7 +195,7 @@ PopplerWrapper *PopplerWrapper::createPopplerWrapper(const QString &filename)
 PopplerWrapper::PopplerWrapper(poppler::document *document, const QString &filename)
     : m_document(document), m_filename(filename)
 {
-    Q_ASSERT(document != NULL);
+    Q_ASSERT(document != nullptr);
 }
 
 PopplerWrapper::~PopplerWrapper()
