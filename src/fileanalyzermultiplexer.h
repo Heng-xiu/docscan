@@ -44,7 +44,7 @@ public:
 
     virtual bool isAlive();
 
-    void setupJhove(const QString &shellscript, const QString &configFile, bool verbose);
+    void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);

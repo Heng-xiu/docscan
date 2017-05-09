@@ -47,8 +47,7 @@ Downloader *downloader;
 LogCollector *logCollector;
 FileAnalyzerAbstract *fileAnalyzer;
 int numHits, webcrawlermaxvisitedpages;
-QString jhoveShellscript, jhoveConfigFile;
-bool jhoveVerbose;
+QString jhoveShellscript;
 QString veraPDFcliTool;
 QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
@@ -90,18 +89,11 @@ bool evaluateConfigfile(const QString &filename)
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
                 } else if (key == QStringLiteral("jhove")) {
-                    const QStringList param = value.split(QChar('|'));
-                    if (param.count() >= 2) {
-                        jhoveShellscript = param[0];
-                        jhoveConfigFile = param[1];
-                        jhoveVerbose = param.count() >= 3 && (param[2].compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || param[2].compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0);
-                        qDebug() << "jhoveShellscript =" << jhoveShellscript;
-                        qDebug() << "jhoveConfigFile =" << jhoveConfigFile;
-                        qDebug() << "jhoveVerbose =" << jhoveVerbose;
-                        const QFileInfo script(jhoveShellscript);
-                        if (jhoveShellscript.isEmpty() || !script.exists() || !script.isExecutable())
-                            qCritical() << "Value for jhoveShellscript does not refer to an existing, executable script or program";
-                    }
+                    jhoveShellscript = value;
+                    qDebug() << "jhoveShellscript =" << jhoveShellscript;
+                    const QFileInfo script(jhoveShellscript);
+                    if (jhoveShellscript.isEmpty() || !script.exists() || !script.isExecutable())
+                        qCritical() << "Value for jhoveShellscript does not refer to an existing, executable script or program";
                 } else if (key == QStringLiteral("verapdf")) {
                     veraPDFcliTool = value;
                     qDebug() << "veraPDFcliTool = " << veraPDFcliTool;
@@ -285,14 +277,14 @@ int main(int argc, char *argv[])
         if (finder != nullptr) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
-        if (!jhoveShellscript.isEmpty() && !jhoveConfigFile.isEmpty()) {
+        if (!jhoveShellscript.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr) {
-                fileAnalyzerPDF->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
+                fileAnalyzerPDF->setupJhove(jhoveShellscript);
             } else {
                 FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
                 if (fileAnalyzerMultiplexer != nullptr) {
-                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript, jhoveConfigFile, jhoveVerbose);
+                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript);
                 }
             }
         }

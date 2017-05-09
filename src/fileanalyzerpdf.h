@@ -44,7 +44,7 @@ public:
 
     virtual bool isAlive();
 
-    void setupJhove(const QString &shellscript, const QString &configFile, bool verbose);
+    void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
@@ -54,8 +54,7 @@ public slots:
 
 private:
     bool m_isAlive;
-    QString m_jhoveShellscript, m_jhoveConfigFile;
-    bool m_jhoveVerbose;
+    QString m_jhoveShellscript;
     QString m_veraPDFcliTool;
     QString m_pdfboxValidatorJavaClass;
     QString m_callasPdfAPilotCLI;

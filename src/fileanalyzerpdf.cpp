@@ -40,7 +40,7 @@ static const int fourMinutesInMillisec = oneMinuteInMillisec * 4;
 static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), m_isAlive(false), m_jhoveShellscript(QString::null), m_jhoveConfigFile(QString::null), m_jhoveVerbose(false)
+    : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
     // nothing
 }
@@ -50,11 +50,9 @@ bool FileAnalyzerPDF::isAlive()
     return m_isAlive;
 }
 
-void FileAnalyzerPDF::setupJhove(const QString &shellscript, const QString &configFile, bool verbose)
+void FileAnalyzerPDF::setupJhove(const QString &shellscript)
 {
     m_jhoveShellscript = shellscript;
-    m_jhoveConfigFile = configFile;
-    m_jhoveVerbose = verbose;
 }
 
 void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
@@ -125,8 +123,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString jhoveErrorOutput = QString::null;
     int jhoveExitCode = INT_MIN;
     QProcess jhove(this);
-    if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty()) {
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-c") << m_jhoveConfigFile << QStringLiteral("-m") << QStringLiteral("PDF-hul") << filename;
+    if (!m_jhoveShellscript.isEmpty()) {
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-m") << QStringLiteral("PDF-hul") << QStringLiteral("-t") << QStringLiteral("/tmp") << QStringLiteral("-b") << QStringLiteral("131072") << filename;
         jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         jhoveStarted = jhove.waitForStarted(oneMinuteInMillisec);
         if (!jhoveStarted)
@@ -327,13 +325,15 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
                     metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
                 }
-                if (m_jhoveVerbose && !jhoveStandardOutput.isEmpty())
+                /*
+                if (!jhoveStandardOutput.isEmpty())
                     metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+                */
                 if (!jhoveErrorOutput.isEmpty())
                     metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
                 metaText.append(QStringLiteral("</jhove>\n"));
             }
-        } else if (!m_jhoveShellscript.isEmpty() && !m_jhoveConfigFile.isEmpty())
+        } else if (!m_jhoveShellscript.isEmpty())
             metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
         else
             metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));

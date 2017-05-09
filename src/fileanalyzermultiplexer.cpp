@@ -47,9 +47,9 @@ bool FileAnalyzerMultiplexer::isAlive()
     return m_fileAnalyzerODF.isAlive() || m_fileAnalyzerPDF.isAlive() || m_fileAnalyzerOpenXML.isAlive();
 }
 
-void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript, const QString &configFile, bool verbose)
+void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
 {
-    m_fileAnalyzerPDF.setupJhove(shellscript, configFile, verbose);
+    m_fileAnalyzerPDF.setupJhove(shellscript);
 }
 
 void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
