@@ -18,7 +18,7 @@ fakedownloader=true
 #fileanalyzer=NULL
 fileanalyzer=multiplexer
 
-jhove=/home/fish/HiS/Research/OSS/jhove/jhove|/home/fish/HiS/Research/OSS/jhove/conf/jhove.conf
+jhove=/home/fish/HiS/Research/OSS/jhove/jhove
 verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
-pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox-validate/PdfBoxValidator.class
+pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
 #callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
