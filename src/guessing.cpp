@@ -83,7 +83,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     } else if (fontName.contains(QStringLiteral("Marvosym"))) {
         license[QStringLiteral("type")] = QStringLiteral("open");
         license[QStringLiteral("name")] = QStringLiteral("GUST Font License (GFL);LaTeX Project Public License (LPPL)");
-    } else if (fontName.startsWith(QStringLiteral("LMSans")) || fontName.startsWith(QStringLiteral("LMRoman")) || fontName.startsWith(QStringLiteral("LMMath")) || fontName.startsWith(QStringLiteral("LMMono"))) {
+    } else if (fontName.startsWith(QStringLiteral("LMSans")) || fontName.startsWith(QStringLiteral("LMRoman")) || fontName.startsWith(QStringLiteral("LMSlanted")) || fontName.startsWith(QStringLiteral("LMTypewriter")) || fontName.startsWith(QStringLiteral("LMMath")) || fontName.startsWith(QStringLiteral("LMMono"))) {
         license[QStringLiteral("type")] = QStringLiteral("open");
         license[QStringLiteral("name")] = QStringLiteral("SIL Open Font License");
     } else if (fontName.contains(QStringLiteral("OpenSymbol"))) {
@@ -175,7 +175,7 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         license[QStringLiteral("type")] = QStringLiteral("proprietary"); /// Bitstream
     } else if (fontName.contains(QStringLiteral("Helvetica")) && fontName.contains(QStringLiteral("Neue"))) {
         license[QStringLiteral("type")] = QStringLiteral("proprietary"); /// Neue Helvetica by Linotype
-    } else if (fontName.startsWith(QStringLiteral("Times")) || fontName.startsWith(QStringLiteral("Tahoma")) || fontName.contains(QStringLiteral("Helvetica")) || fontName.contains(QStringLiteral("Wingdings"))) {
+    } else if (fontName.startsWith(QStringLiteral("Tahoma")) || fontName.contains(QStringLiteral("Helvetica")) || fontName.contains(QStringLiteral("Wingdings"))) {
         license[QStringLiteral("type")] = QStringLiteral("proprietary");
     } else if (fontName.startsWith(QStringLiteral("Bookman-")) /* not "BookmanOldStyle"? */ || fontName.startsWith(QStringLiteral("SymbolMT")) || fontName.startsWith(QStringLiteral("GillAltOneMT"))) {
         license[QStringLiteral("type")] = QStringLiteral("proprietary"); /// MonoType's font as shipped with Windows
@@ -214,16 +214,21 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         bName = bName.trimmed();
         static const QStringList suffixes = QStringList()
                                             << QStringLiteral("BOLD") << QStringLiteral("ITALIC")
-                                            << QStringLiteral("MT") << QStringLiteral("OsF") << QStringLiteral("PS") << QStringLiteral("BE") << QStringLiteral("MS") << QStringLiteral("SC") << QStringLiteral("LT") << QStringLiteral("LF") << QStringLiteral("-BT") << QStringLiteral("BT") << QStringLiteral("Bk") << QStringLiteral("T")
-                                            << QStringLiteral("-Normal") << QStringLiteral("-Book") << QStringLiteral("-Md") << QStringLiteral("-Plain") << QStringLiteral("-Medium") << QStringLiteral("-Medi") << QStringLiteral("-MediumItalic") << QStringLiteral("-Semibold") << QStringLiteral("-SmbdIt") << QStringLiteral("-Caps") << QStringLiteral("-Roman") << QStringLiteral("-Roma") << QStringLiteral("-Regular") << QStringLiteral("-Regu") << QStringLiteral("-DisplayRegular")
-                                            << QStringLiteral("-Demi") << QStringLiteral("-Blk") << QStringLiteral("-Black") << QStringLiteral("-Blac") << QStringLiteral("Bla") << QStringLiteral("-Ultra") << QStringLiteral("-Extra") << QStringLiteral("-ExtraBold") << QStringLiteral("Obl") << QStringLiteral("-Hv") << QStringLiteral("-HvIt") << QStringLiteral("-Heavy") << QStringLiteral("-Heav") << QStringLiteral("-BoldIt") << QStringLiteral("-BoldCn") << QStringLiteral("-BoldItal") << QStringLiteral("-BoldItalicB") << QStringLiteral("-BdIt") << QStringLiteral("-Bd") << QStringLiteral("-It")
-                                            << QStringLiteral("-Condensed") << QStringLiteral("-Light") << QStringLiteral("-Ligh") << QStringLiteral("-Lt") << QStringLiteral("-Slant") << QStringLiteral("-LightCond") << QStringLiteral("Lig") << QStringLiteral("-Narrow")
+                                            << QStringLiteral("-KursivHalbfett") << QStringLiteral("-Kursiv")
+                                            << QStringLiteral("OsF") << QStringLiteral("PS") << QStringLiteral("BE") << QStringLiteral("PSMT") << QStringLiteral("MS") << QStringLiteral("SC") << QStringLiteral("LT") << QStringLiteral("LF") << QStringLiteral("-BT") << QStringLiteral("BT") << QStringLiteral("Bk")
+                                            << QStringLiteral("-Normal") << QStringLiteral("-Book") << QStringLiteral("-Md") << QStringLiteral("-Plain") << QStringLiteral("-Medium") << QStringLiteral("-MediumCond") << QStringLiteral("-Medi") << QStringLiteral("-MediumItalic") << QStringLiteral("-Semibold") << QStringLiteral("-SmbdIt") << QStringLiteral("-SemiCn") << QStringLiteral("-SemiCnIt") << QStringLiteral("-SemiboldSemiCn") << QStringLiteral("-Caps") << QStringLiteral("-Roman") << QStringLiteral("-Roma") << QStringLiteral("-Regular") << QStringLiteral("-Regu") << QStringLiteral("-DisplayRegular")
+                                            << QStringLiteral("-Demi") << QStringLiteral("-Blk") << QStringLiteral("-Black") << QStringLiteral("-BlackIt") << QStringLiteral("-Blac") << QStringLiteral("Bla") << QStringLiteral("-BlackSemiCn") << QStringLiteral("-BlackSemiCnIt") << QStringLiteral("-Ultra") << QStringLiteral("-Extra") << QStringLiteral("-ExtraBold") << QStringLiteral("Obl") << QStringLiteral("-Hv") << QStringLiteral("-HvIt") << QStringLiteral("-Heavy") << QStringLiteral("-HeavyCond") << QStringLiteral("-Heav") << QStringLiteral("-BoldIt") << QStringLiteral("-BoldCn") << QStringLiteral("-BoldItal") << QStringLiteral("-BoldItalicB") << QStringLiteral("-BdIt") << QStringLiteral("-Bd") << QStringLiteral("-It")
+                                            << QStringLiteral("-Condensed") << QStringLiteral("-Light") << QStringLiteral("-LightSemiCn") << QStringLiteral("-LightSemiCnIt") << QStringLiteral("-Ligh") << QStringLiteral("-Lt") << QStringLiteral("-Slant") << QStringLiteral("-LightCond") << QStringLiteral("Lig") << QStringLiteral("-Narrow") << QStringLiteral("-DmCn") << QStringLiteral("-BoldSemiCnIt") << QStringLiteral("-BoldSemiCn")
+                                            << QStringLiteral("-BlackAlternate") << QStringLiteral("-BoldAlternate")
                                             << QStringLiteral("Ext") << QStringLiteral("Narrow") << QStringLiteral("SWA") << QStringLiteral("Std") << QStringLiteral("-Identity-H") << QStringLiteral("-DTC") << QStringLiteral("CE");
         for (const QString &suffix : suffixes) {
             if (bName.endsWith(suffix))
                 bName = bName.left(bName.length() - suffix.length());
         }
         static const QVector<QRegExp> suffixesRegExp = QVector<QRegExp>()
+                << QRegExp(QStringLiteral("^[1-9][0-9]+E[a-f0-9]{2,5}"))
+                << QRegExp(QStringLiteral("(-[0-9])+$"))
+                << QRegExp(QStringLiteral("[~][0-9a-f]+$"))
                 << QRegExp(QStringLiteral("-Extend\\.[0-9]+$"))
                 << QRegExp(QStringLiteral("(Fet|Kursiv)[0-9]+$"))
                 << QRegExp(QStringLiteral("[,-]?(Ital(ic)?|Oblique|Black|Bol(dB?)?)$"))
@@ -233,20 +238,27 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
         for (const QRegExp &suffix : suffixesRegExp) {
             bName.remove(suffix);
         }
-        static const QRegExp teXFonts = QRegExp(QStringLiteral("^((CM|SF|MS)[A-Z]+|(cm)[a-z]+|wasy|stmary|LM(Sans|Roman|Math|Mono)[a-zA-Z]*)([0-9]+)$"));
+        static const QRegExp specialCaseSuffix = QRegExp(QStringLiteral("([a-z])(MT|T)$"));
+        bName.replace(specialCaseSuffix, QStringLiteral("\\1"));
+        static const QRegExp teXFonts = QRegExp(QStringLiteral("^((CM|SF|MS)[A-Z]+|(cm)[a-z]+|wasy|stmary|LM(Sans|Roman|Typewriter|Slanted|Math|Mono)[a-zA-Z]*)([0-9]+)$"));
         bName.replace(teXFonts, QStringLiteral("\\1"));
         static const QRegExp adobePrefix = QRegExp(QStringLiteral("^A(Caslon|Garamond)"));
         bName.replace(adobePrefix, QStringLiteral("\\1"));
+        bName.replace(QStringLiteral("CambriaMath"), QStringLiteral("Cambria"));
+        bName.replace(QStringLiteral("MetaTabell"), QStringLiteral("Meta"));
+        bName.replace(QStringLiteral("MetaText"), QStringLiteral("Meta"));
         static const QVector<QPair<QString, QString> > microsoftNamesWithSpaces = QVector<QPair<QString, QString> >() << QPair<QString, QString>(QStringLiteral("Times New Roman"), QStringLiteral("TimesNewRoman")) << QPair<QString, QString>(QStringLiteral("Courier New"), QStringLiteral("CourierNew")) << QPair<QString, QString>(QStringLiteral("Comic Sans"), QStringLiteral("ComicSans"));
         for (QVector<QPair<QString, QString> >::ConstIterator it = microsoftNamesWithSpaces.constBegin(); it != microsoftNamesWithSpaces.constEnd(); ++it)
             bName.replace(it->first, it->second);
-        static const QRegExp sixLettersPlusPrefix = QRegExp(QStringLiteral("^[A-Z]{6}\\+([a-zA-Z0-9]{3,})"));
+        static const QRegExp sixLettersPlusPrefix = QRegExp(QStringLiteral("^([A-Z]{6}\\+[_]?)([a-zA-Z0-9]{3,})"));
         if (sixLettersPlusPrefix.indexIn(bName) == 0)
-            bName = bName.mid(7);
+            bName = bName.mid(sixLettersPlusPrefix.cap(1).length());
         if (bName.length() > 3 && bName[0] == QChar('*'))
             bName = bName.mid(1);
         bNameChanged = bName != bNameOriginal;
     }
+    bName.remove(QStringLiteral("+"));
+    if (bName.isEmpty()) bName = fontName; ///< Upps, removed too many characters?
     beautifiedName[QStringLiteral("")] = DocScan::xmlify(bName);
 
     QString text = typeName.toLower();
