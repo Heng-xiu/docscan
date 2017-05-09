@@ -52,6 +52,9 @@ unknown		</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/fonts/font/beautified=$cmpto])" />
 </xsl:for-each>
 
+<xsl:text>
+</xsl:text>
+
 </xsl:template><!-- match="log" -->
 
 </xsl:stylesheet>
