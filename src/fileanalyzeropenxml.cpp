@@ -89,7 +89,7 @@ private:
 
 public:
     OpenXMLSettingsHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), result(resultContainer), m_language(QString::null) {
+        : QXmlDefaultHandler(), result(resultContainer) {
         // nothing
     }
 
@@ -116,7 +116,7 @@ private:
 
 public:
     OpenXMLSlideHandler(FileAnalyzerOpenXML *, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), result(resultContainer), m_language(QString::null) {
+        : QXmlDefaultHandler(), result(resultContainer) {
         // nothing
     }
 

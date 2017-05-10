@@ -65,7 +65,7 @@ GeoIP::GeoInformation GeoIP::getGeoInformation(const QString &hostName) const
         qApp->processEvents();
 
     m_mutexConcurrentAccess->lock();
-    GeoInformation result = m_ipAddressToGeoInformation.value(m_hostnameToIPaddress.value(hostName, QString::null), GeoInformation());
+    GeoInformation result = m_ipAddressToGeoInformation.value(m_hostnameToIPaddress.value(hostName, QString()), GeoInformation());
     m_mutexConcurrentAccess->unlock();
     return result;
 }

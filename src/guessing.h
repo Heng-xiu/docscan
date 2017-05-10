@@ -27,7 +27,7 @@
 class Guessing
 {
 public:
-    static QString fontToXML(const QString &fontName, const QString &typeName = QString::null);
+    static QString fontToXML(const QString &fontName, const QString &typeName = QString());
     static QString programToXML(const QString &program);
 protected:
     Guessing();

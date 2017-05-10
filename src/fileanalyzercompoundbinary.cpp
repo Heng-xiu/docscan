@@ -138,7 +138,7 @@ bool FileAnalyzerCompoundBinary::getVersion(unsigned short nFib, int &versionNum
         break;
     default:
         versionNumber = 0;
-        versionText = nFib == 0 ? QString::null : QStringLiteral("nFib=") + QString::number(nFib, 16);
+        versionText = nFib == 0 ? QString() : QStringLiteral("nFib=") + QString::number(nFib, 16);
         result = false;
     }
 
@@ -168,7 +168,7 @@ bool FileAnalyzerCompoundBinary::getEditor(unsigned short wMagic, QString &edito
         editorText = QStringLiteral("Microsoft Word 8.0");
         break;
     default:
-        editorText = wMagic == 0 ? QString::null : QStringLiteral("wMagic=") + QString::number(wMagic, 16);
+        editorText = wMagic == 0 ? QString() : QStringLiteral("wMagic=") + QString::number(wMagic, 16);
         result = false;
     }
 

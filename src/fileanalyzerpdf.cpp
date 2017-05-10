@@ -99,8 +99,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     }
 
     bool callasPdfAPilotStartedRun1 = false, callasPdfAPilotStartedRun2 = false;
-    QString callasPdfAPilotStandardOutput = QString::null;
-    QString callasPdfAPilotErrorOutput = QString::null;
+    QString callasPdfAPilotStandardOutput;
+    QString callasPdfAPilotErrorOutput;
     int callasPdfAPilotExitCode = INT_MIN;
     int callasPdfAPilotCountErrors = -1;
     int callasPdfAPilotCountWarnings = -1;
@@ -117,10 +117,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     bool jhoveStarted = false;
     bool jhoveIsPDF = false;
     bool jhovePDFWellformed = false, jhovePDFValid = false;
-    QString jhovePDFversion = QString::null;
-    QString jhovePDFprofile = QString::null;
-    QString jhoveStandardOutput = QString::null;
-    QString jhoveErrorOutput = QString::null;
+    QString jhovePDFversion;
+    QString jhovePDFprofile;
+    QString jhoveStandardOutput;
+    QString jhoveErrorOutput;
     int jhoveExitCode = INT_MIN;
     QProcess jhove(this);
     if (!m_jhoveShellscript.isEmpty()) {
@@ -133,8 +133,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     bool pdfboxValidatorStarted = false;
     bool pdfboxValidatorValidPdf = false;
-    QString pdfboxValidatorStandardOutput = QString::null;
-    QString pdfboxValidatorErrorOutput = QString::null;
+    QString pdfboxValidatorStandardOutput;
+    QString pdfboxValidatorErrorOutput;
     int pdfboxValidatorExitCode = INT_MIN;
     QProcess pdfboxValidator(this);
     if (!m_pdfboxValidatorJavaClass.isEmpty()) {
@@ -227,9 +227,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 jhovePDFValid = pdfStatusRegExp.cap(1).endsWith(QStringLiteral("and valid"));
             }
             static const QRegExp pdfVersionRegExp(QStringLiteral("\\bVersion: ([^#]+)#"));
-            jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString::null;
+            jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString();
             static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
-            jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString::null;
+            jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString();
         } else
             qWarning() << "Execution of jHove failed for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory() << ": " << jhoveErrorOutput;
     }
@@ -301,10 +301,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     if (wrapper != nullptr) {
         QString guess;
 
-        QString logText;
-        QString metaText = QString::null;
-        QString headerText = QString::null;
-        QString bodyText = QString::null;
+        QString logText, metaText, headerText, bodyText;
 
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;

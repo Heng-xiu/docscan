@@ -68,7 +68,7 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
 QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
 {
     int count = std::numeric_limits<int>::max();
-    QString best = QString::null;
+    QString best;
 
     const QStringList langs = getAspellLanguages();
     for (const QString &lang : langs) {

@@ -84,7 +84,7 @@ private:
 
 public:
     ODFStylesFileHandler(FileAnalyzerODF *, ResultContainer &resultContainer)
-        : QXmlDefaultHandler(), result(resultContainer), stylepagelayoutname(QString::null) {
+        : QXmlDefaultHandler(), result(resultContainer) {
         // nothing
     }
 
@@ -272,7 +272,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         const QString majorVersion = result.documentVersionNumbers.count() >= 1 ? result.documentVersionNumbers[0] : QString();
         const QString minorVersion = result.documentVersionNumbers.count() >= 2 ? result.documentVersionNumbers[1] : QStringLiteral("0");
         metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>%1</mimetype>\n")).arg(mimetype));
-        if (result.documentVersionNumbers.count() > 0 && !majorVersion.isNull())
+        if (result.documentVersionNumbers.count() > 0 && !majorVersion.isEmpty())
             metaText.append(QString(QStringLiteral("<version major=\"%1\" minor=\"%2\">%1.%2</version>\n")).arg(majorVersion, minorVersion));
         metaText.append(QStringLiteral("</fileformat>"));
 

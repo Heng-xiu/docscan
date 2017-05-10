@@ -35,8 +35,8 @@
 
 const QString SearchEngineSpringerLink::AllCategories = QStringLiteral("content");
 const int SearchEngineSpringerLink::AllYears = -1;
-const QString SearchEngineSpringerLink::AllSubjects = QString::null;
-const QString SearchEngineSpringerLink::AllContentTypes = QString::null;
+const QString SearchEngineSpringerLink::AllSubjects;
+const QString SearchEngineSpringerLink::AllContentTypes;
 
 SearchEngineSpringerLink::SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category, const QString &contentType, const QString &subject, int year, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_category(category), m_contentType(contentType), m_subject(subject), m_year(year), m_isRunning(false)
@@ -111,7 +111,7 @@ void SearchEngineSpringerLink::finished()
                 static const QRegExp regExpNumHits(QStringLiteral("Viewing items \\d+ - \\d+ of ([0-9,.]+)"));
                 int p1 = regExpNumHits.indexIn(htmlText);
                 if (p1 >= 0) {
-                    QString numHits = regExpNumHits.cap(1).replace(QStringLiteral(","), QString::null);
+                    QString numHits = regExpNumHits.cap(1).remove(QStringLiteral(","));
                     DocScan::XMLNode numHitsNode;
                     numHitsNode.name = QStringLiteral("searchengine");
                     numHitsNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));

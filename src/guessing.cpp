@@ -741,7 +741,7 @@ QString Guessing::programToXML(const QString &program) {
         xml[QStringLiteral("manufacturer")] = QStringLiteral("ricoh");
         const int i = text.indexOf(QStringLiteral("aficio"));
         if (i >= 0)
-            xml[QStringLiteral("product")] = text.mid(i).replace(QLatin1Char(' '), QString::null);
+            xml[QStringLiteral("product")] = text.mid(i).remove(QLatin1Char(' '));
     } else if (text.contains(QStringLiteral("toshiba")) || text.contains(QStringLiteral("mfpimglib"))) {
         static const QRegExp toshibaVersion("\\b[v]?\\d+(\\.\\d+)+\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("toshiba");

@@ -358,7 +358,7 @@ QUrl WebCrawler::normalizeUrl(const QString &partialUrl, const QUrl &baseUrl) co
         return QUrl();
 
     /// remove JavaScript links or links pointed in page-internal anchors
-    urlObj.setFragment(QString::null);
+    urlObj.setFragment(QString());
 
     return urlObj;
 }

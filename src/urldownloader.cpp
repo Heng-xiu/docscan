@@ -155,7 +155,7 @@ void UrlDownloader::finished()
         QString filename = m_filePattern;
 
         const QString host = reply->url().host().replace(QRegExp(QStringLiteral("[^.0-9a-z-]"), Qt::CaseInsensitive), QStringLiteral("X"));
-        QString domain = QString::null;
+        QString domain;
         if (domainRegExp.indexIn(host) >= 0) {
             domain = domainRegExp.cap(0);
             filename = filename.replace(QStringLiteral("%{d}"), domain);
@@ -213,7 +213,7 @@ void UrlDownloader::finished()
             urlString = urlString.append(QStringLiteral(".pdf"));
 
         static const QRegExp fileExtensionRegExp(QStringLiteral("[.](.{2,4}([.](lzma|xz|gz|bz2))?)([?].+)?$"));
-        QString fileExtension = QString::null;
+        QString fileExtension;
         if (fileExtensionRegExp.indexIn(filename) == 0 || (fileExtension = fileExtensionRegExp.cap(1)).isEmpty()) {
             const QString url = reply->url().toString().toLower();
 

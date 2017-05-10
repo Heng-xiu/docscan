@@ -59,7 +59,7 @@ bool evaluateConfigfile(const QString &filename)
     if (configFile.open(QFile::ReadOnly)) {
         QTextStream ts(&configFile);
         ts.setCodec("utf-8");
-        QString line(QString::null);
+        QString line;
         QUrl startUrl;
         QRegExp requiredContent;
         QString springerLinkCategory = SearchEngineSpringerLink::AllCategories;
