@@ -1,7 +1,10 @@
+# Run  qmake CONFIG+=quazip5  to enable support for both ODF and OpenXML formats
+# Run  qmake CONFIG+=wv2  to enable support for historic Word file formats
+# Run  qmake "CONFIG+=wv2 quazip5"  to enable all features
+
 QT += network xml gui
 QT -= webkit
 
-# run  qmake CONFIG+=wv2  to enable support for historic Word file formats
 wv2 {
     SUBDIRS = wv2
     DEFINES += HAVE_WV2
@@ -20,15 +23,13 @@ DEFINES += HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
 ##QMAKE_CXXFLAGS_DEBUG += -pg
 ##LIBS += -pg
 
-SOURCES += src/main.cpp \
+SOURCES += src/main.cpp src/watchdog.cpp \
     src/searchengineabstract.cpp \
     src/searchenginebing.cpp src/downloader.cpp \
     src/fileanalyzerabstract.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
-    src/fileanalyzerodf.cpp src/watchdog.cpp \
     src/logcollector.cpp src/popplerwrapper.cpp \
     src/general.cpp src/urldownloader.cpp \
-    src/fileanalyzeropenxml.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
     src/filesystemscan.cpp src/filefinderlist.cpp \
     src/webcrawler.cpp src/fakedownloader.cpp \
@@ -40,11 +41,10 @@ SOURCES += src/main.cpp \
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
-    src/fileanalyzerpdf.h src/watchdog.h \
-    src/fileanalyzerodf.h src/watchable.h \
+    src/fileanalyzerpdf.h \
+    src/watchdog.h src/watchable.h \
     src/logcollector.h src/fromlogfile.h \
     src/general.h src/urldownloader.h \
-    src/fileanalyzeropenxml.h \
     src/filefinder.h src/popplerwrapper.h \
     src/filesystemscan.h src/filefinderlist.h \
     src/webcrawler.h src/fakedownloader.h \
@@ -82,29 +82,36 @@ wv2 {
       src/fileanalyzercompoundbinary.h
 
     INCLUDEPATH += src/wv2/generator src/wv2/
+}
+
+
+quazip5 {
+    # load and parse zip'ed files (e.g. OpenDocument files)
+    exists( /usr/lib/libquazip5.so ) {
+        QUAZIP5LIBPATH = /usr/lib/
+    }
+    exists( /usr/lib/x86_64-linux-gnu/libquazip5.so ) {
+        QUAZIP5LIBPATH = /usr/lib/x86_64-linux-gnu
+    }
+    isEmpty( QUAZIP5LIBPATH ) {
+        error( "Could not find Quazip5's library" )
+    }
+    message( "Found Quazip5's library in '"$$QUAZIP5LIBPATH"'" )
+    LIBS += -lquazip5 -L$$QUAZIP5LIBPATH
+
+    exists( /usr/include/quazip/quazip.h ) {
+        message( "Found Quazip5's headers in '/usr/include/quazip'" )
+        INCLUDEPATH += /usr/include/quazip
+    }
+    exists( /usr/include/quazip5/quazip.h ) {
+        message( "Found Quazip5's headers in '/usr/include/quazip5'" )
+        INCLUDEPATH += /usr/include/quazip5
     }
 
-# TODO test of quazip for Qt5
-# load and parse zip'ed files (e.g. OpenDocument files)
-exists( /usr/lib/libquazip5.so ) {
-	QUAZIP5LIBPATH = /usr/lib/
-}
-exists( /usr/lib/x86_64-linux-gnu/libquazip5.so ) {
-	QUAZIP5LIBPATH = /usr/lib/x86_64-linux-gnu
-}
-isEmpty( QUAZIP5LIBPATH ) {
-	error( "Could not find Quazip5's library" )
-}
-message( "Found Quazip5's library in '"$$QUAZIP5LIBPATH"'" )
-LIBS += -lquazip5 -L$$QUAZIP5LIBPATH
+    DEFINES += HAVE_QUAZIP5
 
-exists( /usr/include/quazip/quazip.h ) {
-	message( "Found Quazip5's headers in '/usr/include/quazip'" )
-	INCLUDEPATH += /usr/include/quazip
-}
-exists( /usr/include/quazip5/quazip.h ) {
-	message( "Found Quazip5's headers in '/usr/include/quazip5'" )
-	INCLUDEPATH += /usr/include/quazip5
+    SOURCES += src/fileanalyzeropenxml.cpp src/fileanalyzerodf.cpp
+    HEADERS += src/fileanalyzeropenxml.h src/fileanalyzerodf.h
 }
 
 unix {

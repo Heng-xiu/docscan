@@ -23,8 +23,10 @@
 #define FILEANALYZERMULTIPLEXER_H
 
 #include "fileanalyzerabstract.h"
+#ifdef HAVE_QUAZIP5
 #include "fileanalyzerodf.h"
 #include "fileanalyzeropenxml.h"
+#endif // HAVE_QUAZIP5
 #include "fileanalyzerpdf.h"
 #ifdef HAVE_WV2
 #include "fileanalyzercompoundbinary.h"
@@ -53,9 +55,11 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+#ifdef HAVE_QUAZIP5
     FileAnalyzerODF m_fileAnalyzerODF;
-    FileAnalyzerPDF m_fileAnalyzerPDF;
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
+#endif // HAVE_QUAZIP5
+    FileAnalyzerPDF m_fileAnalyzerPDF;
 #ifdef HAVE_WV2
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
 #endif // HAVE_WV2

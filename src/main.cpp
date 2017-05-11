@@ -188,12 +188,14 @@ bool evaluateConfigfile(const QString &filename)
                             qWarning() << "Attempting to create a FileAnalyzerMultiplexer with empty filter";
                         fileAnalyzer = new FileAnalyzerMultiplexer(filter);
                         qDebug() << "fileanalyzer = FileAnalyzerMultiplexer";
+#ifdef HAVE_QUAZIP5
                     } else if (value.contains(QStringLiteral("odf"))) {
                         fileAnalyzer = new FileAnalyzerODF();
                         qDebug() << "fileanalyzer = FileAnalyzerODF";
                     } else if (value.contains(QStringLiteral("openxml"))) {
                         fileAnalyzer = new FileAnalyzerOpenXML();
                         qDebug() << "fileanalyzer = FileAnalyzerOpenXML";
+#endif // HAVE_QUAZIP5
                     } else if (value.contains(QStringLiteral("pdf"))) {
                         fileAnalyzer = new FileAnalyzerPDF();
                         qDebug() << "fileanalyzer = FileAnalyzerPDF";

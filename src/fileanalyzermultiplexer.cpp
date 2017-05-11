@@ -34,9 +34,11 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     : FileAnalyzerAbstract(parent), m_filters(filters)
 {
     qsrand(QTime::currentTime().msec());
-    connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
-    connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+#ifdef HAVE_QUAZIP5
     connect(&m_fileAnalyzerOpenXML, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+#endif // HAVE_QUAZIP5
+    connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
 #ifdef HAVE_WV2
     connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
 #endif // HAVE_WV2
@@ -44,7 +46,14 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
 
 bool FileAnalyzerMultiplexer::isAlive()
 {
-    return m_fileAnalyzerODF.isAlive() || m_fileAnalyzerPDF.isAlive() || m_fileAnalyzerOpenXML.isAlive();
+    bool result = m_fileAnalyzerPDF.isAlive();
+#ifdef HAVE_QUAZIP5
+    result |= m_fileAnalyzerOpenXML.isAlive() || m_fileAnalyzerODF.isAlive();
+#endif // HAVE_QUAZIP5
+#ifdef HAVE_WV2
+    result |= m_fileAnalyzerCompoundBinary.isAlive();
+#endif // HAVE_WV2
+    return result;
 }
 
 void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
@@ -153,8 +162,10 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
 
 void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
+#ifdef HAVE_QUAZIP5
     static const QRegExp odfExtension(QStringLiteral("[.]od[pst]$"));
     static const QRegExp openXMLExtension(QStringLiteral("[.](doc|ppt|xls)x$"));
+#endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
     static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
 #endif // HAVE_WV2
@@ -174,6 +185,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerPDF.analyzeFile(filename);
         else
             qDebug() << "Skipping unmatched extension \".pdf\"";
+#ifdef HAVE_QUAZIP5
     } else if (odfExtension.indexIn(filename) >= 0) {
         if (m_filters.contains(QChar('*') + odfExtension.cap(0)))
             m_fileAnalyzerODF.analyzeFile(filename);
@@ -184,6 +196,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerOpenXML.analyzeFile(filename);
         else
             qDebug() << "Skipping unmatched extension" << openXMLExtension.cap(0);
+#endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
     } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
         if (m_filters.contains(QChar('*') + compoundBinaryExtension.cap(0))) {
