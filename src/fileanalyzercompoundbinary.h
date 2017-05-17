@@ -15,7 +15,8 @@
     along with DocScan.  If not, see <https://www.gnu.org/licenses/>.
 
 
-    Source code written by Thomas Fischer <thomas.fischer@his.se>
+    Copyright (2017) Thomas Fischer <thomas.fischer@his.se>, senior
+    lecturer at University of Skövde, as part of the LIM-IT project.
 
  */
 
