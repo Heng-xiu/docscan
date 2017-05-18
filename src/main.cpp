@@ -167,8 +167,8 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
                     downloader = new UrlDownloader(netAccMan, value, numHits);
                 } else if (key == QStringLiteral("fakedownloader") && downloader == nullptr) {
-                    qDebug() << "fakedownloader";
-                    downloader = new FakeDownloader(netAccMan);
+                    /// Deprecated setting key. If no other downloader is configured,
+                    /// a FakeDownloader instance will be automatically created and used.
                 } else if (key == QStringLiteral("logcollector") && logCollector == nullptr) {
                     qDebug() << "logcollector =" << value;
                     QFile *logOutput = new QFile(value);
@@ -264,6 +264,13 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Failed to instanciate log collector\n");
         return 1;
     } else {
+        if (downloader == nullptr) {
+            /// No downloader defined in configuration file?
+            /// Fall back to use 'FakeDownloader' that can only process
+            /// (i.e. hand through) local files
+            downloader = new FakeDownloader(netAccMan);
+        }
+
         WatchDog watchDog;
         if (fileAnalyzer != nullptr) {
             watchDog.addWatchable(fileAnalyzer);
