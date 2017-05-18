@@ -47,6 +47,7 @@ FileFinder *finder;
 Downloader *downloader;
 LogCollector *logCollector;
 FileAnalyzerAbstract *fileAnalyzer;
+static const int defaultNumHits = 25000;
 int numHits, webcrawlermaxvisitedpages;
 QString jhoveShellscript;
 QString veraPDFcliTool;
@@ -163,13 +164,8 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "fromlogfiledownloader =" << value;
                     downloader = new FromLogFileDownloader(value, filter);
                 } else if (key == QStringLiteral("urldownloader") && downloader == nullptr) {
-                    if (numHits > 0) {
-                        qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
-                        downloader = new UrlDownloader(netAccMan, value, numHits);
-                    } else {
-                        qDebug() << "urldownloader =" << value;
-                        downloader = new UrlDownloader(netAccMan, value);
-                    }
+                    qDebug() << "urldownloader =" << value << "   numHits=" << numHits;
+                    downloader = new UrlDownloader(netAccMan, value, numHits);
                 } else if (key == QStringLiteral("fakedownloader") && downloader == nullptr) {
                     qDebug() << "fakedownloader";
                     downloader = new FakeDownloader(netAccMan);
@@ -181,7 +177,7 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == QStringLiteral("finder:numhits")) {
                     bool ok = false;
                     numHits = value.toInt(&ok);
-                    if (!ok) numHits = 10;
+                    if (!ok || numHits <= 0) numHits = defaultNumHits;
                     qDebug() << "finder:numhits =" << numHits;
                 } else if (key == QStringLiteral("fileanalyzer")) {
                     if (value.contains(QStringLiteral("multiplexer"))) {
@@ -254,7 +250,7 @@ int main(int argc, char *argv[])
     logCollector = nullptr;
     downloader = nullptr;
     finder = nullptr;
-    numHits = 0;
+    numHits = defaultNumHits;
     webcrawlermaxvisitedpages = 0;
     textExtraction = FileAnalyzerAbstract::teNone;
 
@@ -266,9 +262,6 @@ int main(int argc, char *argv[])
         return 1;
     } else if (logCollector == nullptr) {
         fprintf(stderr, "Failed to instanciate log collector\n");
-        return 1;
-    } else if (numHits <= 0) {
-        fprintf(stderr, "Number of expected hits is not positive\n");
         return 1;
     } else {
         WatchDog watchDog;

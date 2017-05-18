@@ -1,7 +1,6 @@
 logcollector=/tmp/pdf-fonts.xml
 
 textExtraction=none
-finder:numhits=25000
 
 filter=*.pdf.xz|*.pdf
 #filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/
