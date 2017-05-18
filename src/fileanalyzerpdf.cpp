@@ -299,7 +299,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
 
     PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
-    if (wrapper != nullptr) {
+    const bool popplerWrapperOk = wrapper != nullptr;
+    if (popplerWrapperOk) {
         QString guess, headerText;
 
         /// file format including mime type and file format version
@@ -496,17 +497,22 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QStringLiteral("<callaspdfapilot><info>callas PDF/A Pilot not configured to run</info></callaspdfapilot>\n"));
 
     /// file information including size
-    QFileInfo fi = QFileInfo(filename);
+    const QFileInfo fi = QFileInfo(filename);
     metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
 
     if (!metaText.isEmpty())
         logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
     const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+
     logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
     logText += QStringLiteral("</fileanalysis>\n");
 
-    emit analysisReport(logText);
-    // emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)));
+    if (popplerWrapperOk || jhoveIsPDF || pdfboxValidatorValidPdf)
+        /// At least one tool thought the file was ok
+        emit analysisReport(logText);
+    else
+        /// No tool could handle this file, so give error message
+        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\"><meta><file size=\"%3\" /></meta></fileanalysis>\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)).arg(fi.size()));
 
     m_isAlive = false;
 }
