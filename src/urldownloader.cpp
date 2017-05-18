@@ -65,10 +65,10 @@ bool UrlDownloader::isAlive()
 
 void UrlDownloader::download(const QUrl &url)
 {
-    if (url.scheme() == QStringLiteral("ftp")) {
-        /// Qt 4.7.3 seems to have a bug with FTP downloads
-        /// see https://bugreports.qt.nokia.com/browse/QTBUG-22820
-        qDebug() << "FTP protocol not supported for URL " << url.toString();
+    if (url.scheme() != QStringLiteral("http") && url.scheme() != QStringLiteral("https")) {
+        qWarning() << "Untested/unknown protocol/scheme " << url.scheme() << " for URL " << url.toString();
+        const QString logText = QString(QStringLiteral("<download message=\"Untested/unknown protocol/scheme\" status=\"error\" url=\"%1\" scheme=\"%2\"/>\n")).arg(url.toString(), url.scheme());
+        emit report(logText);
         return;
     }
 
