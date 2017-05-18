@@ -1,23 +1,68 @@
+# Full path and filename to XML file were log data
+# will be written to
 logcollector=/tmp/pdf-fonts.xml
 
-textExtraction=none
+# Full path and filename of jHove's executable script
+# (command line version, not GUI)
+jhove=/home/fish/HiS/Research/OSS/jhove/jhove
 
+# Full path and filename of veraPDF's executable script
+verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
+
+# Full path and filename to a the Java class
+#  PdfBoxValidator.class
+pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
+
+# Full path and filename of Callas pdfaPilots's executable script
+# Requires either an expensive commercial license or a
+# 30-day evaluation copy
+#callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
+
+# Control if text has to be extracted and how the text
+# is to be processed. Possible values include:
+#  none       No text extraction
+#  length     Extract text, but only record length
+#  fulltext   Extract text and store it in logs
+#  aspell     Extract text, store it, and guess language
+#             via 'aspell'
+textExtraction=aspell
+
+# Filter for files matching a certain pattern.
+# Multiple patterns are separated by pipe symbols
+# ('|'). File patterns are not regular expressions,
+# instead they rather work like file patterns in
+# a POSIX shell.
 filter=*.pdf.xz|*.pdf
-#filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/
-#filesystemscan=/tmp/problem
+
+# Directory where to start searching for files for
+# analysis. The search in the file system will be
+# recursive.
+# This confguration option is mutual exclusive with
+#  webcrawler, searchenginegoogle, searchenginebing,
+#  searchenginespringerlink, filefinderlist,
+#  fromlogfilefilefinder, fromlogfiledownloader,
+#  urldownloader
 filesystemscan=/tmp/pdf
-#filesystemscan=/run/media/fish/TFISCHER/swepub/pdf/cth/2010/
-#filefinderlist=/tmp/list.txt
 
-
-#urldownloader=/tmp/test/%{d}/%{h:4}/%{h}_%{s}
-#urldownloader=/tmp/pdf-result/%{h:4}/%{h}_%{s}
-fakedownloader=true
-
-#fileanalyzer=NULL
+# Which unit used to analyze found files. Possible
+# values include:
+#  multiplexer   Chooses more specific analyzer based
+#                on filename extension; handles compressed
+#                files transparently (xz, gz, bz2, lzma)
+# The multiplexer uncompresses found files transparently
+# and delegates the actual analysis to one of the following
+# specific analyzers which can be chosen directly here as well:
+#  odf           Apply OpenDocument Format analysis on
+#                every file found matching the filter
+#  openxml       Apply OfficeOpenXML analysis on every
+#                file found matching the filter
+#  pdf           Apply PDF analysis on every file found
+#                matching the filter
+#  compoundbinary  Apply analysis for legacy Microsoft
+#                Office formats on every file found
+#                matiching the filter
+# Note 1: Only 'multiplexer' can handle compressed files
+# Note 2: It is a safe choice to pick 'multiplexer' here
+#         and specify a filter above.
 fileanalyzer=multiplexer
 
-jhove=/home/fish/HiS/Research/OSS/jhove/jhove
-verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
-pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
-#callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
