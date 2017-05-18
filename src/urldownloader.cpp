@@ -175,7 +175,7 @@ void UrlDownloader::finished()
             if (dateTimeStr.contains(QStringLiteral("%1")))
                 dateTimeStr = dateTimeStr.arg(dateTime.date().weekNumber(), 2, 10, QChar('0'));
             /// support "w" for plain week numbers (one or two digits)
-            dateTimeStr = dateTimeStr.replace(QStringLiteral("ww"), QString::number(dateTime.date().weekNumber()));
+            dateTimeStr = dateTimeStr.replace(QStringLiteral("w"), QString::number(dateTime.date().weekNumber()));
             /// support "DDD" for zero-padded, three-digit day-of-the-year numbers
             dateTimeStr = dateTimeStr.replace(QStringLiteral("DDD"), QStringLiteral("%1"));
             if (dateTimeStr.contains(QStringLiteral("%1")))
@@ -186,7 +186,7 @@ void UrlDownloader::finished()
             filename = filename.replace(dateTimeRegExp.cap(0), dateTimeStr);
         }
 
-        QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
+        const QString md5sum = QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex();
         static const QRegExp md5sumRegExp(QStringLiteral("%\\{h(:(\\d+))?\\}"));
         p = -1;
         while ((p = md5sumRegExp.indexIn(filename, p + 1)) >= 0) {
