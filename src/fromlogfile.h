@@ -54,6 +54,7 @@ public:
 private:
     QSet<QUrl> m_urlSet;
     bool m_isAlive;
+    const QRegExp filenameRegExp;
 };
 
 /**
@@ -90,7 +91,7 @@ private slots:
 private:
     QString m_logfilename;
     bool m_isAlive;
-    const QStringList &m_filters;
+    const QRegExp filenameRegExp;
 };
 
 #endif // FROMLOGFILEFILEFINDER_H
