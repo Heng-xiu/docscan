@@ -78,6 +78,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         return;
     }
 
+    QString logText, metaText;
     m_isAlive = true;
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
@@ -299,87 +300,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     PopplerWrapper *wrapper = PopplerWrapper::createPopplerWrapper(filename);
     if (wrapper != nullptr) {
-        QString guess;
-
-        QString logText, metaText, headerText, bodyText;
+        QString guess, headerText;
 
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
         wrapper->getPdfVersion(majorVersion, minorVersion);
         metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n")).arg(QString::number(majorVersion), QString::number(minorVersion), wrapper->isLocked() ? QStringLiteral("yes") : QStringLiteral("no"), wrapper->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
-
-        if (jhoveExitCode > INT_MIN) {
-            /// insert data from jHove
-            metaText.append(QString(QStringLiteral("<jhove exitcode=\"%1\" wellformed=\"%2\" valid=\"%3\" pdf=\"%4\"")).arg(QString::number(jhoveExitCode), jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
-            if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
-                metaText.append(QStringLiteral(" />\n"));
-            else {
-                metaText.append(QStringLiteral(">\n"));
-                if (!jhovePDFversion.isEmpty())
-                    metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
-                if (!jhovePDFprofile.isEmpty()) {
-                    const bool isPDFA1a = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A"));
-                    const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
-                    metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
-                }
-                /*
-                if (!jhoveStandardOutput.isEmpty())
-                    metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
-                */
-                if (!jhoveErrorOutput.isEmpty())
-                    metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
-                metaText.append(QStringLiteral("</jhove>\n"));
-            }
-        } else if (!m_jhoveShellscript.isEmpty())
-            metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
-        else
-            metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));
-
-        if (veraPDFExitCode > INT_MIN) {
-            /// insert XML data from veraPDF
-            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
-            if (!veraPDFStandardOutput.isEmpty()) {
-                /// Check for and omit XML header if it exists
-                const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
-                metaText.append(p > 1 ? veraPDFStandardOutput.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : veraPDFStandardOutput);
-            } else if (!veraPDFErrorOutput.isEmpty())
-                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
-            metaText.append(QStringLiteral("</verapdf>\n"));
-        } else if (!m_veraPDFcliTool.isEmpty())
-            metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
-        else
-            metaText.append(QStringLiteral("<verapdf><info>veraPDF not configured to run</info></verapdf>\n"));
-
-        if (pdfboxValidatorExitCode > INT_MIN) {
-            /// insert result from Apache's PDFBox
-            metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
-            if (!pdfboxValidatorStandardOutput.isEmpty())
-                metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardOutput)));
-            else if (!pdfboxValidatorErrorOutput.isEmpty())
-                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorErrorOutput)));
-            metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
-        } else if (!m_pdfboxValidatorJavaClass.isEmpty())
-            metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
-        else
-            metaText.append(QStringLiteral("<pdfboxvalidator><info>pdfbox Validator not configured to run</info></pdfboxvalidator>\n"));
-
-        if (callasPdfAPilotExitCode > INT_MIN) {
-            const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
-            const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
-            metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
-            if (!callasPdfAPilotStandardOutput.isEmpty())
-                metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
-            else if (!callasPdfAPilotErrorOutput.isEmpty())
-                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(callasPdfAPilotErrorOutput)));
-            metaText.append(QStringLiteral("</callaspdfapilot>"));
-        } else if (!m_callasPdfAPilotCLI.isEmpty())
-            metaText.append(QStringLiteral("<callaspdfapilot><error>callas PDF/A Pilot failed to start or was never started</error></callaspdfapilot>\n"));
-        else
-            metaText.append(QStringLiteral("<callaspdfapilot><info>callas PDF/A Pilot not configured to run</info></callaspdfapilot>\n"));
-
-        /// file information including size
-        QFileInfo fi = QFileInfo(filename);
-        metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
 
         /// guess and evaluate editor (a.k.a. creator)
         QString toolXMLtext;
@@ -461,6 +387,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!wrapper->isLocked()) {
             /// some functions are sensitive if PDF is locked
 
+            QString bodyText;
             if (textExtraction > teNone) {
                 int length = 0;
                 const QString text = wrapper->plainText(&length);
@@ -476,6 +403,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 else
                     bodyText.append(QStringLiteral("/>\n"));
             }
+            if (!bodyText.isEmpty())
+                logText.append(bodyText);
 
             /// look into first page for info
             int numPages = wrapper->numPages();
@@ -489,27 +418,95 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     headerText += evaluatePaperSize(mmw, mmh);
                 }
             }
-
         }
 
-        /// close all tags, merge text
-        if (!metaText.isEmpty())
-            logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
         if (!headerText.isEmpty())
             logText.append(QStringLiteral("<header>\n")).append(headerText).append(QStringLiteral("</header>\n"));
-        if (!bodyText.isEmpty())
-            logText.append(bodyText);
-        logText += QStringLiteral("</fileanalysis>\n");
-
-        const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-        logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
-
-        emit analysisReport(logText);
 
         delete wrapper;
-    } else
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)));
+    }
 
+    if (jhoveExitCode > INT_MIN) {
+        /// insert data from jHove
+        metaText.append(QString(QStringLiteral("<jhove exitcode=\"%1\" wellformed=\"%2\" valid=\"%3\" pdf=\"%4\"")).arg(QString::number(jhoveExitCode), jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
+        if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveErrorOutput.isEmpty())
+            metaText.append(QStringLiteral(" />\n"));
+        else {
+            metaText.append(QStringLiteral(">\n"));
+            if (!jhovePDFversion.isEmpty())
+                metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
+            if (!jhovePDFprofile.isEmpty()) {
+                const bool isPDFA1a = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A"));
+                const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
+                metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
+            }
+            /*
+            if (!jhoveStandardOutput.isEmpty())
+                metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+            */
+            if (!jhoveErrorOutput.isEmpty())
+                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+            metaText.append(QStringLiteral("</jhove>\n"));
+        }
+    } else if (!m_jhoveShellscript.isEmpty())
+        metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
+    else
+        metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));
+
+    if (veraPDFExitCode > INT_MIN) {
+        /// insert XML data from veraPDF
+        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
+        if (!veraPDFStandardOutput.isEmpty()) {
+            /// Check for and omit XML header if it exists
+            const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
+            metaText.append(p > 1 ? veraPDFStandardOutput.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : veraPDFStandardOutput);
+        } else if (!veraPDFErrorOutput.isEmpty())
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFErrorOutput)));
+        metaText.append(QStringLiteral("</verapdf>\n"));
+    } else if (!m_veraPDFcliTool.isEmpty())
+        metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
+    else
+        metaText.append(QStringLiteral("<verapdf><info>veraPDF not configured to run</info></verapdf>\n"));
+
+    if (pdfboxValidatorExitCode > INT_MIN) {
+        /// insert result from Apache's PDFBox
+        metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
+        if (!pdfboxValidatorStandardOutput.isEmpty())
+            metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardOutput)));
+        else if (!pdfboxValidatorErrorOutput.isEmpty())
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorErrorOutput)));
+        metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
+    } else if (!m_pdfboxValidatorJavaClass.isEmpty())
+        metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
+    else
+        metaText.append(QStringLiteral("<pdfboxvalidator><info>pdfbox Validator not configured to run</info></pdfboxvalidator>\n"));
+
+    if (callasPdfAPilotExitCode > INT_MIN) {
+        const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
+        const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
+        metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
+        if (!callasPdfAPilotStandardOutput.isEmpty())
+            metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
+        else if (!callasPdfAPilotErrorOutput.isEmpty())
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(callasPdfAPilotErrorOutput)));
+        metaText.append(QStringLiteral("</callaspdfapilot>"));
+    } else if (!m_callasPdfAPilotCLI.isEmpty())
+        metaText.append(QStringLiteral("<callaspdfapilot><error>callas PDF/A Pilot failed to start or was never started</error></callaspdfapilot>\n"));
+    else
+        metaText.append(QStringLiteral("<callaspdfapilot><info>callas PDF/A Pilot not configured to run</info></callaspdfapilot>\n"));
+
+    /// file information including size
+    QFileInfo fi = QFileInfo(filename);
+    metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
+
+    if (!metaText.isEmpty())
+        logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
+    const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+    logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
+    logText += QStringLiteral("</fileanalysis>\n");
+
+    emit analysisReport(logText);
+    // emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\" />\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)));
 
     m_isAlive = false;
 }
