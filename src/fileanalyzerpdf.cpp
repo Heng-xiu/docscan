@@ -72,7 +72,7 @@ void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI)
 void FileAnalyzerPDF::analyzeFile(const QString &filename)
 {
     if (filename.endsWith(QStringLiteral(".xz")) || filename.endsWith(QStringLiteral(".gz")) || filename.endsWith(QStringLiteral(".bz2")) || filename.endsWith(QStringLiteral(".lzma"))) {
-        /// File is xz-compressed
+        /// File is compressed
         qWarning() << "Compressed files like " << filename << " should not directly send through this analyzer, but rather be uncompressed by FileAnalyzerMultiplexer first";
         m_isAlive = false;
         return;
@@ -81,6 +81,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     m_isAlive = true;
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
+    /// External programs should be both CPU and I/O 'nice'
     static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
 
     bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
