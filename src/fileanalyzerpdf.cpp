@@ -85,7 +85,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
 
     bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
-    bool veraPDFIsPDF = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
     QString veraPDFStandardOutput;
     QString veraPDFErrorOutput;
@@ -166,7 +165,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const int p2 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), p1);
             const int p3a = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p2 - 64);
             const int p3b = startOfOutput.indexOf(QStringLiteral(" recordPasses=\"true\""), p2 - 64);
-            veraPDFIsPDF = p1 > 0;
             veraPDFIsPDFA1B = p1 == p2 && ((p3a > 0 && p3a < p2 + 64) || (p3b > 0 && p3b < p2 + 64));
             const int p4 = startOfOutput.indexOf(QStringLiteral("item size=\""));
             if (p4 > 1) {
@@ -222,7 +220,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
-            jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF"));
+            jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF")) && !jhoveStandardOutput.contains(QStringLiteral("ErrorMessage:"));
             static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([^#]+)"));
             if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
                 jhovePDFWellformed = pdfStatusRegExp.cap(1).startsWith(QStringLiteral("Well-Formed"), Qt::CaseInsensitive);
@@ -339,7 +337,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
         if (veraPDFExitCode > INT_MIN) {
             /// insert XML data from veraPDF
-            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdf=\"%3\" pdfa1b=\"%4\" pdfa1a=\"%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDF ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
+            metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
             if (!veraPDFStandardOutput.isEmpty()) {
                 /// Check for and omit XML header if it exists
                 const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
