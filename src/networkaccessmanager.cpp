@@ -36,7 +36,6 @@ NetworkAccessManager::NetworkAccessManager(QObject *parent)
     setCookieJar(new CookieJar(this));
     qsrand(time(NULL));
     m_userAgent = m_userAgentList[qrand() % m_userAgentList.length()];
-    qDebug() << "Using user agent" << m_userAgent;
 }
 
 void NetworkAccessManager::setRequestHeaders(QNetworkRequest &request)
