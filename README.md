@@ -23,8 +23,9 @@ To analyze PDF documents, the following external tools can be used:
 
 * [veraPDF](http://verapdf.org/), "a purpose-built, open source, file-format validator covering all PDF/A parts and conformance levels".
 * [jHove](http://jhove.openpreservation.org/), "a file format identification, validation and characterisation tool"
+* Apache's [PDFBox](https://pdfbox.apache.org), "open source Java tool for working with PDF documents"
 
-Both veraPDF and jHove need to have a Java runtime environment installed. Please check on the respective project pages for details.
+All above tools, veraPDF, jHove, and PDFBox, need to have a Java runtime environment installed. Please check on the respective project pages for details.
 
 To analyze OfficeOpenXML (Microsoft Office) or OpenDocument (LibreOffice) documents, the library *QuaZIP* for Qt5 (sometimes called 'QuaZIP5') needs to be installed. Most Linux distribution offer packages.
 
@@ -35,6 +36,15 @@ To analyze OfficeOpenXML (Microsoft Office) or OpenDocument (LibreOffice) docume
 1. If qmake succeeded, now run `make` to compile the source code. Compilation may be parallelized by passing the argument `-jN`, where *N* is the number of CPU cores to use.
 1. Try to run the resulting `DocScan` binary. On the console, the error message `Require single configuration file as parameter`
 should be shown.
+
+### PDFBox Validator
+
+A single Java class is provided which allows to validate PDF files for PDF/A-1b compliance using Apache's PDFBox.
+The helper script `pdfboxvalidator/build.sh` helps to download all necessary `.jar` files from Apache and other sources as well as to compile the Java source file to a binary `.class` file (for the compilation, `javac` from a Java SDK is required).
+
+The validator's Java source code is a slightly modified version of the code provided in the [Apache PDFBox cookbook for version 1.8](https://pdfbox.apache.org/1.8/cookbook/pdfavalidation.html).
+
+The script `pdfboxvalidator/run.sh` demonstrates the usage of the PDFBox Validator, but it is not directly used by DocScan.
 
 ## Configuration
 
