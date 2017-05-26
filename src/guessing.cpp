@@ -87,6 +87,9 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     } else if (fontName.startsWith(QStringLiteral("LMSans")) || fontName.startsWith(QStringLiteral("LMRoman")) || fontName.startsWith(QStringLiteral("LMSlanted")) || fontName.startsWith(QStringLiteral("LMTypewriter")) || fontName.startsWith(QStringLiteral("LMMath")) || fontName.startsWith(QStringLiteral("LMMono"))) {
         license[QStringLiteral("type")] = QStringLiteral("open");
         license[QStringLiteral("name")] = QStringLiteral("SIL Open Font License");
+    } else if (fontName.startsWith(QStringLiteral("STIX"))) {
+        license[QStringLiteral("type")] = QStringLiteral("open");
+        license[QStringLiteral("name")] = QStringLiteral("SIL Open Font License");
     } else if (fontName.contains(QStringLiteral("OpenSymbol"))) {
         license[QStringLiteral("type")] = QStringLiteral("open");
         license[QStringLiteral("name")] = QStringLiteral("LGPLv3?");
