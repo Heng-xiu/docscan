@@ -80,6 +80,14 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         wrapper->getPdfVersion(majorVersion, minorVersion);
         metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n")).arg(QString::number(majorVersion), QString::number(minorVersion), wrapper->isLocked() ? QStringLiteral("yes") : QStringLiteral("no"), wrapper->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
 
+        const QVector<PopplerWrapper::EmbeddedFile> embeddedFiles = wrapper->embeddedFiles();
+        if (!embeddedFiles.isEmpty()) {
+            metaText.append(QStringLiteral("<embeddedfiles>\n"));
+            for (const PopplerWrapper::EmbeddedFile &ef : embeddedFiles)
+                metaText.append(QString(QStringLiteral("<embeddedfile size=\"%2\" mimetype=\"%3\">%1</embeddedfile>\n")).arg(ef.filename).arg(ef.size).arg(ef.mimetype));
+            metaText.append(QStringLiteral("</embeddedfiles>\n"));
+        }
+
         /// guess and evaluate editor (a.k.a. creator)
         QString toolXMLtext;
         QString creator = wrapper->info(QStringLiteral("Creator"));

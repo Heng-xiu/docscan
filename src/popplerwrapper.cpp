@@ -30,6 +30,7 @@
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-font.h>
 #include <poppler/cpp/poppler-page.h>
+#include <poppler/cpp/poppler-embedded-file.h>
 #include <poppler/GfxState.h>
 
 #include "PDFDoc.h"
@@ -319,6 +320,16 @@ bool PopplerWrapper::isLocked() const
 bool PopplerWrapper::isEncrypted() const
 {
     return m_document->is_encrypted();
+}
+
+const QVector<PopplerWrapper::EmbeddedFile> PopplerWrapper::embeddedFiles() {
+    if (m_document->has_embedded_files() && m_embeddedFiles.isEmpty()) {
+        for (std::vector<poppler::embedded_file *>::const_iterator it = m_document->embedded_files().cbegin(); it != m_document->embedded_files().cend(); ++it) {
+            PopplerWrapper::EmbeddedFile ef(QString::fromStdString((*it)->name()), QString::fromStdString((*it)->mime_type()), (*it)->size());
+            m_embeddedFiles.append(ef);
+        }
+    }
+    return m_embeddedFiles;
 }
 
 QString PopplerWrapper::popplerLog()

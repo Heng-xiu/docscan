@@ -29,6 +29,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QSize>
+#include <QVector>
 
 namespace poppler
 {
@@ -41,6 +42,18 @@ class document;
 class PopplerWrapper
 {
 public:
+    struct EmbeddedFile {
+        QString filename, mimetype;
+        int size;
+
+        EmbeddedFile()
+            : size(-1) { }
+        EmbeddedFile(const QString _filename, const QString _mimetype, const int _size)
+            : filename(_filename), mimetype(_mimetype), size(_size) { }
+        EmbeddedFile(const EmbeddedFile &other)
+            : filename(other.filename), mimetype(other.mimetype), size(other.size) { }
+    };
+
     static PopplerWrapper *createPopplerWrapper(const QString &filename);
     ~PopplerWrapper();
 
@@ -59,12 +72,15 @@ public:
     bool isLocked() const;
     bool isEncrypted() const;
 
+    const QVector<PopplerWrapper::EmbeddedFile> embeddedFiles();
+
 protected:
     PopplerWrapper(poppler::document *document, const QString &filename);
 
 private:
     poppler::document *m_document;
     QString m_filename;
+    QVector<PopplerWrapper::EmbeddedFile> m_embeddedFiles;
 };
 
 #endif // POPPLERWRAPPER_H
