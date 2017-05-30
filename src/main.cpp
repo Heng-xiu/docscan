@@ -280,6 +280,15 @@ int main(int argc, char *argv[])
         if (finder != nullptr) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
+        if (downloader != nullptr && finder != nullptr) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
+        if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
+        QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
+        if (downloader != nullptr) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (finder != nullptr) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
+        if (downloader != nullptr) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
+        QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
+
         if (!jhoveShellscript.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr) {
@@ -327,15 +336,6 @@ int main(int argc, char *argv[])
                 }
             }
         }
-
-        if (downloader != nullptr && finder != nullptr) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
-        if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
-        QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
-        if (downloader != nullptr) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (finder != nullptr) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (downloader != nullptr) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
-        QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
 
         if (finder != nullptr) finder->startSearch(numHits);
 

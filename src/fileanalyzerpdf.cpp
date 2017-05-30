@@ -54,19 +54,95 @@ bool FileAnalyzerPDF::isAlive()
 void FileAnalyzerPDF::setupJhove(const QString &shellscript)
 {
     m_jhoveShellscript = shellscript;
+
+    if (!m_jhoveShellscript.isEmpty()) {
+        QProcess jhove(this);
+        const QStringList arguments = QStringList() << QStringLiteral("--version");
+        jhove.start(m_jhoveShellscript, arguments, QIODevice::ReadOnly);
+        const bool jhoveStarted = jhove.waitForStarted(oneMinuteInMillisec);
+        if (!jhoveStarted)
+            qWarning() << "Failed to start jHove to retrieve version";
+        else {
+            const bool jhoveExited = jhove.waitForFinished(oneMinuteInMillisec);
+            if (!jhoveExited)
+                qWarning() << "Failed to finish jHove to retrieve version";
+            else {
+                const int jhoveExitCode = jhove.exitCode();
+                const QString jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData());
+                const QString jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData());
+                static const QRegularExpression regExpVersionNumber(QStringLiteral("Jhove \\(Rel\\. (([0-9]+[.])+[0-9]+)"));
+                const QRegularExpressionMatch regExpVersionNumberMatch = regExpVersionNumber.match(jhoveStandardOutput);
+                const bool status = jhoveExitCode == 0 && regExpVersionNumberMatch.hasMatch();
+                const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
+
+                QString report = QString(QStringLiteral("<toolcheck name=\"jhove\" exitcode=\"%1\" status=\"%2\"%3>\n")).arg(jhoveExitCode).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
+                if (!jhoveStandardOutput.isEmpty())
+                    report.append(QStringLiteral("<output>")).append(DocScan::xmlify(jhoveStandardOutput)).append(QStringLiteral("</output>\n"));
+                if (!jhoveErrorOutput.isEmpty())
+                    report.append(QStringLiteral("<error>")).append(DocScan::xmlify(jhoveErrorOutput)).append(QStringLiteral("</error>\n"));
+                report.append(QStringLiteral("</toolcheck>\n"));
+                emit analysisReport(report);
+            }
+        }
+    }
 }
 
 void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 {
     m_veraPDFcliTool = cliTool;
+
+    if (!m_veraPDFcliTool.isEmpty()) {
+        QProcess veraPDF(this);
+        const QStringList arguments = QStringList() << QStringLiteral("--version");
+        veraPDF.start(m_veraPDFcliTool, arguments, QIODevice::ReadOnly);
+        const bool veraPDFStarted = veraPDF.waitForStarted(oneMinuteInMillisec);
+        if (!veraPDFStarted)
+            qWarning() << "Failed to start veraPDF to retrieve version";
+        else {
+            const bool veraPDFExited = veraPDF.waitForFinished(oneMinuteInMillisec);
+            if (!veraPDFExited)
+                qWarning() << "Failed to finish veraPDF to retrieve version";
+            else {
+                const int veraPDFExitCode = veraPDF.exitCode();
+                const QString veraPDFStandardOutput = QString::fromUtf8(veraPDF.readAllStandardOutput().constData());
+                const QString veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData());
+                static const QRegularExpression regExpVersionNumber(QStringLiteral("veraPDF (([0-9]+[.])+[0-9]+)"));
+                const QRegularExpressionMatch regExpVersionNumberMatch = regExpVersionNumber.match(veraPDFStandardOutput);
+                const bool status = veraPDFExitCode == 0 && regExpVersionNumberMatch.hasMatch();
+                const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
+
+                QString report = QString(QStringLiteral("<toolcheck name=\"verapdf\" exitcode=\"%1\" status=\"%2\"%3>\n")).arg(veraPDFExitCode).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
+                if (!veraPDFStandardOutput.isEmpty())
+                    report.append(QStringLiteral("<output>")).append(DocScan::xmlify(veraPDFStandardOutput)).append(QStringLiteral("</output>\n"));
+                if (!veraPDFErrorOutput.isEmpty())
+                    report.append(QStringLiteral("<error>")).append(DocScan::xmlify(veraPDFErrorOutput)).append(QStringLiteral("</error>\n"));
+                report.append(QStringLiteral("</toolcheck>\n"));
+                emit analysisReport(report);
+            }
+        }
+    }
 }
 
 void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass) {
     m_pdfboxValidatorJavaClass = pdfboxValidatorJavaClass;
+
+    const QFileInfo fi(m_pdfboxValidatorJavaClass);
+    if (fi.isFile()) {
+        const QDir dir = fi.dir();
+        const QStringList jarList = dir.entryList(QStringList() << QStringLiteral("pdfbox-*.jar"), QDir::Files);
+        static const QRegularExpression regExpVersionNumber(QStringLiteral("pdfbox-(([0-9]+[.])+[0-9]+)\\.jar"));
+        const QRegularExpressionMatch regExpVersionNumberMatch = jarList.count() > 0 ? regExpVersionNumber.match(jarList.first()) : QRegularExpressionMatch();
+        const bool status = jarList.count() == 1 && regExpVersionNumberMatch.hasMatch();
+        const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
+        const QString report = QString(QStringLiteral("<toolcheck name=\"pdfboxvalidator\" status=\"%1\"%2 />\n")).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
+        emit analysisReport(report);
+    }
 }
 
 void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
     m_callasPdfAPilotCLI = callasPdfAPilotCLI;
+
+    // TODO version number logging
 }
 
 bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText, QString &metaText) {
