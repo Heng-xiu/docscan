@@ -59,6 +59,8 @@ private:
     QString m_veraPDFcliTool;
     QString m_pdfboxValidatorJavaClass;
     QString m_callasPdfAPilotCLI;
+
+    bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
 };
 
 #endif // FILEANALYZERPDF_H
