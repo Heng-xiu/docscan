@@ -325,6 +325,8 @@ bool PopplerWrapper::isEncrypted() const
 const QVector<PopplerWrapper::EmbeddedFile> PopplerWrapper::embeddedFiles() {
     if (m_document->has_embedded_files() && m_embeddedFiles.isEmpty()) {
         for (std::vector<poppler::embedded_file *>::const_iterator it = m_document->embedded_files().cbegin(); it != m_document->embedded_files().cend(); ++it) {
+            if ((*it) == nullptr) continue;
+            if (!(*it)->is_valid()) continue;
             PopplerWrapper::EmbeddedFile ef(QString::fromStdString((*it)->name()), QString::fromStdString((*it)->mime_type()), (*it)->size());
             m_embeddedFiles.append(ef);
         }
