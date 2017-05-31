@@ -22,5 +22,5 @@ done
 
 jarfiles=$(ls -1 *.jar | xargs printf "%s:" ; echo ".")
 
-test -s PdfBoxValidator.class || javac -cp "${jarfiles}" PdfBoxValidator.java
+if [[ ! -s PdfBoxValidator.class || PdfBoxValidator.java -nt PdfBoxValidator.class ]] ; then javac -cp "${jarfiles}" PdfBoxValidator.java ; fi
 exit $?

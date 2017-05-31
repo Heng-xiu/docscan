@@ -360,7 +360,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QDir dir = fi.dir();
         const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
         pdfboxValidator.setWorkingDirectory(dir.path());
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << QStringLiteral("--xml") << filename;
         pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         pdfboxValidatorStarted = pdfboxValidator.waitForStarted(oneMinuteInMillisec);
         if (!pdfboxValidatorStarted)
@@ -460,6 +460,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
         pdfboxValidatorExitCode = pdfboxValidator.exitCode();
         pdfboxValidatorStandardOutput = QString::fromUtf8(pdfboxValidator.readAllStandardOutput().constData());
+        if (!pdfboxValidatorStandardOutput.startsWith(QChar('<')) || !pdfboxValidatorStandardOutput.endsWith(QChar('>'))) {
+            /// Output does not look like XML output or is capped.
+            /// Treat like plain text.
+            pdfboxValidatorStandardOutput = DocScan::xmlify(pdfboxValidatorStandardOutput);
+        }
         pdfboxValidatorErrorOutput = QString::fromUtf8(pdfboxValidator.readAllStandardError().constData());
         if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
@@ -564,7 +569,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// insert result from Apache's PDFBox
         metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!pdfboxValidatorStandardOutput.isEmpty())
-            metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardOutput)));
+            metaText.append(pdfboxValidatorStandardOutput);
         else if (!pdfboxValidatorErrorOutput.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorErrorOutput)));
         metaText.append(QStringLiteral("</pdfboxvalidator>\n"));

@@ -7,9 +7,16 @@ cd "$(dirname "${0}")"
 
 jarfiles=$(ls -1 *.jar | xargs printf "%s:" ; echo ".")
 
+xmloption=
+
 for pdffile in "${@}" ; do
+	if [ "${pdffile}" = "--xml" ] ; then
+		xmloption="--xml"
+		continue
+	fi
+
 	test "${pdffile}" = "${pdffile/.pdf}" && continue
-	java -cp "${jarfiles}" PdfBoxValidator "$(ls -1 ~/*.pdf | head -n 1)"
+	java -cp "${jarfiles}" PdfBoxValidator "${xmloption}" "${pdffile}"
 	exitcode=$?
 	test ${exitcode} -eq 0 || exit ${exitcode}
 done
