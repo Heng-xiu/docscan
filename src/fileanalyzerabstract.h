@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QSet>
 
 #include "watchable.h"
 
@@ -77,9 +78,9 @@ protected:
     QString evaluatePaperSize(int mmw, int mmh) const;
 
 private:
-    static QStringList aspellLanguages;
+    static QSet<QString> aspellLanguages;
 
-    QStringList getAspellLanguages() const;
+    QSet<QString> getAspellLanguages() const;
 };
 
 #endif // FILEANALYZERABSTRACT_H

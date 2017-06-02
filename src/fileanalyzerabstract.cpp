@@ -35,6 +35,15 @@
 FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
     : QObject(parent), textExtraction(teNone)
 {
+    const QSet<QString> stringSet = getAspellLanguages();
+    QString allLanguages;
+    for (const QString &lang : stringSet) {
+        if (!allLanguages.isEmpty())
+            allLanguages.append(QStringLiteral(","));
+        allLanguages.append(lang);
+    }
+    // FIXME reporting does not work yet, as signals are not yet set up
+    emit analysisReport(QString(QStringLiteral("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(allLanguages)));
 }
 
 void FileAnalyzerAbstract::setTextExtraction(TextExtraction textExtraction) {
@@ -45,10 +54,10 @@ QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &
 {
     QStringList wordList;
     QProcess aspell(QCoreApplication::instance());
-    QStringList args = QStringList() << QStringLiteral("-d") << dictionary << QStringLiteral("list");
+    const QStringList args = QStringList() << QStringLiteral("-d") << dictionary << QStringLiteral("list");
     aspell.start(QStringLiteral("/usr/bin/aspell"), args);
     if (aspell.waitForStarted(10000)) {
-        qint64 bytesWritten = aspell.write(text.toUtf8());
+        const qint64 bytesWritten = aspell.write(text.toUtf8());
         if (bytesWritten < 0) return QStringList(); /// something went wrong
         aspell.closeWriteChannel();
 
@@ -71,7 +80,7 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
     int count = std::numeric_limits<int>::max();
     QString best;
 
-    const QStringList langs = getAspellLanguages();
+    static const QSet<QString> langs = getAspellLanguages();
     for (const QString &lang : langs) {
         int c = runAspell(text, lang).count();
         if (c > 0 && c < count) { /// if c==0, no misspelled words where found, likely due to an error
@@ -83,12 +92,12 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
     return best;
 }
 
-QStringList FileAnalyzerAbstract::getAspellLanguages() const
+QSet<QString> FileAnalyzerAbstract::getAspellLanguages() const
 {
     if (aspellLanguages.isEmpty()) {
         QRegExp language(QStringLiteral("^[a-z]{2}(_[A-Z]{2})?$"));
         QProcess aspell(qApp);
-        QStringList args = QStringList() << QStringLiteral("dicts");
+        const QStringList args = QStringList() << QStringLiteral("dicts");
         aspell.start(QStringLiteral("/usr/bin/aspell"), args);
         if (aspell.waitForStarted(10000)) {
             aspell.closeWriteChannel();
@@ -96,15 +105,13 @@ QStringList FileAnalyzerAbstract::getAspellLanguages() const
                 while (aspell.canReadLine()) {
                     const QString line = aspell.readLine().simplified();
                     if (language.indexIn(line) >= 0) {
-                        aspellLanguages << language.cap(0);
+                        aspellLanguages.insert(language.cap(0));
                     }
                 }
             }
             if (!aspell.waitForFinished(10000))
                 aspell.kill();
         }
-
-        //emit analysisReport(QString(QStringLiteral("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(aspellLanguages.join(","))));
     }
 
     return aspellLanguages;
@@ -155,7 +162,7 @@ QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
            : QString(QStringLiteral("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n")).arg(QString::number(mmh), QString::number(mmw), formatName, mmw > mmh ? QStringLiteral("landscape") : QStringLiteral("portrait"));
 }
 
-QStringList FileAnalyzerAbstract::aspellLanguages;
+QSet<QString> FileAnalyzerAbstract::aspellLanguages;
 
 const QRegExp FileAnalyzerAbstract::microsoftToolRegExp(QStringLiteral("^(Microsoft\\s(.+\\S) [ -][ ]?(\\S.*)$"));
 const QString FileAnalyzerAbstract::creationDate = QStringLiteral("creation");
