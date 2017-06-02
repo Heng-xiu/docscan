@@ -46,6 +46,7 @@ public:
     explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = nullptr);
 
     virtual bool isAlive();
+    virtual void setTextExtraction(TextExtraction textExtraction);
 
     void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);

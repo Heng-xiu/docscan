@@ -57,6 +57,18 @@ bool FileAnalyzerMultiplexer::isAlive()
     return result;
 }
 
+void FileAnalyzerMultiplexer::setTextExtraction(TextExtraction textExtraction) {
+    FileAnalyzerAbstract::setTextExtraction(textExtraction);
+#ifdef HAVE_QUAZIP5
+    m_fileAnalyzerOpenXML.setTextExtraction(textExtraction);
+    m_fileAnalyzerODF.setTextExtraction(textExtraction);
+#endif // HAVE_QUAZIP5
+    m_fileAnalyzerPDF.setTextExtraction(textExtraction);
+#ifdef HAVE_WV2
+    m_fileAnalyzerCompoundBinary.setTextExtraction(textExtraction);
+#endif // HAVE_WV2
+}
+
 void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
 {
     m_fileAnalyzerPDF.setupJhove(shellscript);

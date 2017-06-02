@@ -46,7 +46,7 @@ public:
 
     explicit FileAnalyzerAbstract(QObject *parent = nullptr);
 
-    void setTextExtraction(TextExtraction textExtraction);
+    virtual void setTextExtraction(TextExtraction textExtraction);
 
 signals:
     /**
