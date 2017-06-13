@@ -276,9 +276,11 @@ QString Guessing::fontToXML(const QString &fontName, const QString &typeName)
     if (bName.isEmpty()) bName = fontName; ///< Upps, removed too many characters?
     beautifiedName[QStringLiteral("")] = DocScan::xmlify(bName);
 
-    QString text = typeName.toLower();
+    QString text = typeName.toLower().remove(QStringLiteral(" "));
     if (text.indexOf(QStringLiteral("truetype")) >= 0)
         technology[QStringLiteral("type")] = QStringLiteral("truetype");
+    else if (text.indexOf(QStringLiteral("type0")) >= 0)
+        technology[QStringLiteral("type")] = QStringLiteral("type0");
     else if (text.indexOf(QStringLiteral("type1")) >= 0)
         technology[QStringLiteral("type")] = QStringLiteral("type1");
     else if (text.indexOf(QStringLiteral("type3")) >= 0)

@@ -28,7 +28,7 @@ SOURCES += src/main.cpp src/watchdog.cpp \
     src/searchenginebing.cpp src/downloader.cpp \
     src/fileanalyzerabstract.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
-    src/logcollector.cpp src/popplerwrapper.cpp \
+    src/logcollector.cpp \
     src/general.cpp src/urldownloader.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
     src/filesystemscan.cpp src/filefinderlist.cpp \
@@ -45,7 +45,7 @@ HEADERS += src/searchengineabstract.h \
     src/watchdog.h src/watchable.h \
     src/logcollector.h src/fromlogfile.h \
     src/general.h src/urldownloader.h \
-    src/filefinder.h src/popplerwrapper.h \
+    src/filefinder.h \
     src/filesystemscan.h src/filefinderlist.h \
     src/webcrawler.h src/fakedownloader.h \
     src/fileanalyzermultiplexer.h \
@@ -116,5 +116,5 @@ quazip5 {
 
 unix {
     CONFIG += link_pkgconfig
-    PKGCONFIG += glib-2.0 poppler-cpp poppler
+    PKGCONFIG += poppler-qt5
 }

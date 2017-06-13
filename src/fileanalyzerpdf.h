@@ -25,12 +25,9 @@
 
 #include <QObject>
 
-#include "fileanalyzerabstract.h"
+#include <poppler-qt5.h>
 
-namespace Poppler
-{
-class Document;
-}
+#include "fileanalyzerabstract.h"
 
 /**
  * Analyzing code for Portable Document File documents.
@@ -54,6 +51,33 @@ public slots:
     virtual void analyzeFile(const QString &filename);
 
 private:
+    struct ExtendedFontInfo {
+        QString name, typeName, fileName;
+        bool isEmbedded, isSubset;
+        int firstPageNumber, lastPageNumber;
+
+        explicit ExtendedFontInfo()
+            : firstPageNumber(INT_MAX), lastPageNumber(INT_MIN) {
+
+        }
+
+        explicit ExtendedFontInfo(const Poppler::FontInfo &fi, const int pageNumber)
+            : name(fi.name()), typeName(fi.typeName()), fileName(fi.file()), isEmbedded(fi.isEmbedded()), isSubset(fi.isSubset()),
+              firstPageNumber(pageNumber), lastPageNumber(pageNumber)
+        {
+            /// nothing
+        }
+
+        void recordOccurrence(int pageNumber) {
+            if (pageNumber < firstPageNumber) firstPageNumber = pageNumber;
+            if (pageNumber > lastPageNumber) lastPageNumber = pageNumber;
+        }
+
+        bool isValid() const {
+            return lastPageNumber > INT_MIN && firstPageNumber < INT_MAX && firstPageNumber <= lastPageNumber;
+        }
+    };
+
     bool m_isAlive;
     QString m_jhoveShellscript;
     QString m_veraPDFcliTool;

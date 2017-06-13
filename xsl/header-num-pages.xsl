@@ -35,7 +35,7 @@
 <xsl:text>filename	number of pages</xsl:text>
 
 <xsl:for-each select="/log/logitem/fileanalysis[@status='ok']">
-<xsl:sort select="header/num-pages"/>
+<xsl:sort select="body/@numpages"/>
 <xsl:text>
 </xsl:text>
 
@@ -51,7 +51,7 @@
 </xsl:choose>
 
 <xsl:text>	</xsl:text>
-<xsl:value-of select="header/num-pages" />
+<xsl:value-of select="body/@numpages" />
 </xsl:for-each>
 
 </xsl:template><!-- match="log" -->
