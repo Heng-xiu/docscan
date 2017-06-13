@@ -65,6 +65,14 @@ public slots:
      */
     virtual void analyzeFile(const QString &filename) = 0;
 
+    /**
+     * Schedule a file for later analysis. Being a temporary file,
+     * erase this file after the analysis.
+     *
+     * @param filename filename for later analysis, to be deleted afterwards
+     */
+    void analyzeTemporaryFile(const QString &filename);
+
 protected:
     static const QString creationDate, modificationDate;
     static const QRegExp microsoftToolRegExp;
@@ -76,6 +84,7 @@ protected:
     QString guessTool(const QString &toolString, const QString &altToolString = QString()) const;
     QString formatDate(const QDate date, const QString &base = QString()) const;
     QString evaluatePaperSize(int mmw, int mmh) const;
+    QString dataToTemporaryFile(const QByteArray &data, const QString &mimetype);
 
 private:
     static QSet<QString> aspellLanguages;

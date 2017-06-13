@@ -159,11 +159,20 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         const QList<Poppler::EmbeddedFile *> embeddedFiles = popplerDocument->embeddedFiles();
         if (!embeddedFiles.isEmpty()) {
             metaText.append(QStringLiteral("<embeddedfiles>\n"));
-            for (const Poppler::EmbeddedFile *ef : embeddedFiles) {
+            for (Poppler::EmbeddedFile *ef : embeddedFiles) {
                 const QString size = ef->size() >= 0 ? QString(QStringLiteral(" size=\"%1\"")).arg(ef->size()) : QString();
-                const QString mimetype = QString(QStringLiteral(" mimetype=\"%1\"")).arg(ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType());
-                const QString embeddedFile = QStringLiteral("<embeddedfile") + size + mimetype + QStringLiteral("><filename>") + DocScan::xmlify(ef->name()) + QStringLiteral("</filename>") + (ef->description().isEmpty() ? QString() : QStringLiteral("\n<description>") + DocScan::xmlify(ef->description()) + QStringLiteral("</description>")) + QStringLiteral("</embeddedfile>\n");
+                const QString mimetype = ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType();
+                const QString mimetypeAsAttribute = QString(QStringLiteral(" mimetype=\"%1\"")).arg(mimetype);
+                const QString embeddedFile = QStringLiteral("<embeddedfile") + size + mimetypeAsAttribute + QStringLiteral("><filename>") + DocScan::xmlify(ef->name()) + QStringLiteral("</filename>") + (ef->description().isEmpty() ? QString() : QStringLiteral("\n<description>") + DocScan::xmlify(ef->description()) + QStringLiteral("</description>")) + QStringLiteral("</embeddedfile>\n");
                 metaText.append(embeddedFile);
+
+                const QByteArray fileData = ef->data();
+                const QString temporaryFilename = dataToTemporaryFile(fileData, mimetype);
+                if (!temporaryFilename.isEmpty()){
+                qDebug() << "Queuing file " << temporaryFilename;
+                emit analysisReport(QString(QStringLiteral("<embeddedfile size=\"%5\" mimetype=\"%1\">\n<parentfilename>%2</parentfile>\n<filename>%3</filename>\n<temporaryfilename>%4</temporaryfilename>\n</embeddedfile>")).arg(mimetype, filename, ef->name(), temporaryFilename).arg(fileData.size()));
+                analyzeTemporaryFile(temporaryFilename);
+                }
             }
             metaText.append(QStringLiteral("</embeddedfiles>\n"));
         }

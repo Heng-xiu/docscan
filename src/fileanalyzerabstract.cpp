@@ -28,6 +28,9 @@
 #include <QCoreApplication>
 #include <QDate>
 #include <QTextStream>
+#include <QFile>
+#include <QTimer>
+#include <QCryptographicHash>
 
 #include "guessing.h"
 #include "general.h"
@@ -48,6 +51,17 @@ FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
 
 void FileAnalyzerAbstract::setTextExtraction(TextExtraction textExtraction) {
     this->textExtraction = textExtraction;
+}
+
+void FileAnalyzerAbstract::analyzeTemporaryFile(const QString &filename) {
+    QTimer *timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, [this, filename, timer]() {
+        analyzeFile(filename);
+        QFile(filename).remove();
+        timer->deleteLater();
+    });
+    timer->start(50);
 }
 
 QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &dictionary) const
@@ -160,6 +174,20 @@ QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
     return formatName.isEmpty()
            ? QString(QStringLiteral("<papersize height=\"%1\" width=\"%2\" orientation=\"%3\" />\n")).arg(QString::number(mmh), QString::number(mmw), mmw > mmh ? QStringLiteral("landscape") : QStringLiteral("portrait"))
            : QString(QStringLiteral("<papersize height=\"%1\" width=\"%2\" orientation=\"%4\">%3</papersize>\n")).arg(QString::number(mmh), QString::number(mmw), formatName, mmw > mmh ? QStringLiteral("landscape") : QStringLiteral("portrait"));
+}
+
+QString FileAnalyzerAbstract::dataToTemporaryFile(const QByteArray &data, const QString &mimetype) {
+    static QCryptographicHash hash(QCryptographicHash::Md5);
+    hash.reset(); ///< Reset neccessary as hash object is static
+    hash.addData(data);
+    const QString temporaryFilename = QStringLiteral("/tmp/.docscan-embeddedfile-") + hash.result().toHex() + DocScan::extensionForMimetype(mimetype);
+    QFile temporaryFile(temporaryFilename);
+    if (temporaryFile.open(QFile::WriteOnly)) {
+        temporaryFile.write(data);
+        temporaryFile.close();
+        return temporaryFilename;
+    } else
+        return QString();
 }
 
 QSet<QString> FileAnalyzerAbstract::aspellLanguages;
