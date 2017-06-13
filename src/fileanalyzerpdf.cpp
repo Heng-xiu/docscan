@@ -358,9 +358,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int pdfboxValidatorExitCode = INT_MIN;
     QProcess pdfboxValidator(this);
     if (!m_pdfboxValidatorJavaClass.isEmpty()) {
-        const QFileInfo fi(m_pdfboxValidatorJavaClass);
-        const QDir dir = fi.dir();
-        const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
+        static const QFileInfo fi(m_pdfboxValidatorJavaClass);
+        static const QDir dir = fi.dir();
+        static const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
         pdfboxValidator.setWorkingDirectory(dir.path());
         const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("java") << QStringLiteral("-cp") << QStringLiteral(".:") + jarFiles.join(':') << fi.fileName().remove(QStringLiteral(".class")) << QStringLiteral("--xml") << filename;
         pdfboxValidator.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
