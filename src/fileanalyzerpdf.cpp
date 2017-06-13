@@ -161,7 +161,7 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
             metaText.append(QStringLiteral("<embeddedfiles>\n"));
             for (const Poppler::EmbeddedFile *ef : embeddedFiles) {
                 const QString size = ef->size() >= 0 ? QString(QStringLiteral(" size=\"%1\"")).arg(ef->size()) : QString();
-                const QString mimetype = ef->mimeType().isEmpty() ? QString() : QString(QStringLiteral(" mimetype=\"%1\"")).arg(ef->mimeType());
+                const QString mimetype = QString(QStringLiteral(" mimetype=\"%1\"")).arg(ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType());
                 const QString embeddedFile = QStringLiteral("<embeddedfile") + size + mimetype + QStringLiteral("><filename>") + DocScan::xmlify(ef->name()) + QStringLiteral("</filename>") + (ef->description().isEmpty() ? QString() : QStringLiteral("\n<description>") + DocScan::xmlify(ef->description()) + QStringLiteral("</description>")) + QStringLiteral("</embeddedfile>\n");
                 metaText.append(embeddedFile);
             }

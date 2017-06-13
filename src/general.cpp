@@ -23,6 +23,8 @@
 #include "general.h"
 
 #include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QStringList>
 
 namespace DocScan
@@ -98,6 +100,49 @@ QString formatMap(const QString &key, const QHash<QString, QString> &attrs)
         result.append(">").append(body).append(QString(QStringLiteral("</%1>\n")).arg(key));
 
     return result;
+}
+
+QString guessMimetype(const QString &filename) {
+    if (filename.isEmpty())
+        return QString();
+
+    const QString lowerFilename = filename.toLower();
+    static const QRegularExpression fileExtensionRegExp(QStringLiteral("\\.[a-z0-9]{1,4}$"));
+    const QString fileExtension = fileExtensionRegExp.match(lowerFilename).captured(0);
+
+    if (fileExtension.isEmpty())
+        return QString();
+    else if (fileExtension == QStringLiteral(".htm") || fileExtension == QStringLiteral(".html"))
+        return QStringLiteral("text/html");
+    else if (fileExtension == QStringLiteral(".pdf"))
+        return QStringLiteral("application/pdf");
+    else if (fileExtension == QStringLiteral(".xml"))
+        return QStringLiteral("application/xml");
+    else if (fileExtension == QStringLiteral(".jpg") || fileExtension == QStringLiteral(".jpeg") || fileExtension == QStringLiteral(".jpe") || fileExtension == QStringLiteral(".jfif"))
+        return QStringLiteral("image/jpeg");
+    else if (fileExtension == QStringLiteral(".png"))
+        return QStringLiteral("image/png");
+    else if (fileExtension == QStringLiteral(".tif") || fileExtension == QStringLiteral(".tiff"))
+        return QStringLiteral("image/tiff");
+    else
+        return QString();
+}
+
+QString extensionForMimetype(const QString &mimetype) {
+    if (mimetype == QStringLiteral("text/html"))
+        return QStringLiteral(".html");
+    else if (mimetype == QStringLiteral("application/pdf"))
+        return QStringLiteral(".pdf");
+    else if (mimetype == QStringLiteral("application/xml"))
+        return QStringLiteral(".xml");
+    else if (mimetype == QStringLiteral("image/jpeg"))
+        return QStringLiteral(".jpeg");
+    else if (mimetype == QStringLiteral("image/png"))
+        return QStringLiteral(".png");
+    else if (mimetype == QStringLiteral("image/tiff"))
+        return QStringLiteral(".tiff");
+    else
+        return QStringLiteral(".data");
 }
 
 } // end of namespace

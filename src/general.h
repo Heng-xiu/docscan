@@ -70,6 +70,19 @@ QString dexmlify(const QString &xml);
 QString formatDate(const QDate date, const QString &base);
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs);
+
+/**
+ * Guess mimetype based on filename (most often its extension).
+ * For example, filenames 'test.html' or 'test.htm' shall return
+ * 'text/html'.
+ * If guessing fails, an empty string will be returned.
+ *
+ * @param filename filemae to based the guessing on
+ * @return guessed mimetype or empty string
+ */
+QString guessMimetype(const QString &filename);
+
+QString extensionForMimetype(const QString &mimetype);
 }
 
 #endif // GENERAL_H
