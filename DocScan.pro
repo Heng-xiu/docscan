@@ -26,9 +26,9 @@ DEFINES += HAVE_ICONV_H ICONV_CONST= HAVE_STRING_H HAVE_MATH_H
 SOURCES += src/main.cpp src/watchdog.cpp \
     src/searchengineabstract.cpp \
     src/searchenginebing.cpp src/downloader.cpp \
-    src/fileanalyzerabstract.cpp \
+    src/fileanalyzerabstract.cpp src/fileanalyzerjpeg.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
-    src/logcollector.cpp \
+    src/logcollector.cpp src/jhovewrapper.cpp \
     src/general.cpp src/urldownloader.cpp \
     src/filefinder.cpp src/fromlogfile.cpp \
     src/filesystemscan.cpp src/filefinderlist.cpp \
@@ -41,11 +41,11 @@ SOURCES += src/main.cpp src/watchdog.cpp \
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
-    src/fileanalyzerpdf.h \
+    src/fileanalyzerpdf.h src/fileanalyzerjpeg.h \
     src/watchdog.h src/watchable.h \
     src/logcollector.h src/fromlogfile.h \
     src/general.h src/urldownloader.h \
-    src/filefinder.h \
+    src/filefinder.h src/jhovewrapper.h \
     src/filesystemscan.h src/filefinderlist.h \
     src/webcrawler.h src/fakedownloader.h \
     src/fileanalyzermultiplexer.h \

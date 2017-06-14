@@ -32,6 +32,7 @@
 #ifdef HAVE_WV2
 #include "fileanalyzercompoundbinary.h"
 #endif // HAVE_WV2
+#include "fileanalyzerjpeg.h"
 
 /**
  * Automatically redirects a file to be analyzed
@@ -43,6 +44,8 @@ class FileAnalyzerMultiplexer : public FileAnalyzerAbstract
 {
     Q_OBJECT
 public:
+    static const QStringList defaultFilters;
+
     explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = nullptr);
 
     virtual bool isAlive();
@@ -65,6 +68,7 @@ private:
 #ifdef HAVE_WV2
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
 #endif // HAVE_WV2
+    FileAnalyzerJPEG m_fileAnalyzerJPEG;
     const QStringList &m_filters;
 
     void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);

@@ -272,6 +272,14 @@ int main(int argc, char *argv[])
             downloader = new FakeDownloader(netAccMan);
         }
 
+        FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
+        if (fileAnalyzerMultiplexer == nullptr) {
+            /// There is always need for a multiplexer. So, if the user did configure
+            /// to use a specialized type of file analyzer, still create a multiplexer.
+            fileAnalyzerMultiplexer = new FileAnalyzerMultiplexer(FileAnalyzerMultiplexer::defaultFilters, &a);
+            QObject::connect(fileAnalyzerMultiplexer, &FileAnalyzerAbstract::analysisReport, logCollector, &LogCollector::receiveLog);
+        }
+
         WatchDog watchDog;
         if (fileAnalyzer != nullptr) {
             watchDog.addWatchable(fileAnalyzer);
@@ -292,50 +300,39 @@ int main(int argc, char *argv[])
 
         if (!jhoveShellscript.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != nullptr) {
+            if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupJhove(jhoveShellscript);
-            } else {
-                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != nullptr) {
-                    fileAnalyzerMultiplexer->setupJhove(jhoveShellscript);
-                }
+            else {
+                FileAnalyzerJPEG *fileAnalyzerJPEG = qobject_cast<FileAnalyzerJPEG *>(fileAnalyzer);
+                if (fileAnalyzerJPEG != nullptr)
+                    fileAnalyzerJPEG->setupJhove(jhoveShellscript);
             }
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupJhove(jhoveShellscript);
         }
 
         if (!veraPDFcliTool.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != nullptr) {
+            if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
-            } else {
-                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != nullptr) {
-                    fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
-                }
-            }
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupVeraPDF(veraPDFcliTool);
         }
 
         if (!pdfboxValidatorJavaClass.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != nullptr) {
+            if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
-            } else {
-                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != nullptr) {
-                    fileAnalyzerMultiplexer->setupPdfBoXValidator(pdfboxValidatorJavaClass);
-                }
-            }
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupPdfBoXValidator(pdfboxValidatorJavaClass);
         }
 
         if (!callasPdfAPilotCLI.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
-            if (fileAnalyzerPDF != nullptr) {
+            if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
-            } else {
-                FileAnalyzerMultiplexer *fileAnalyzerMultiplexer = qobject_cast<FileAnalyzerMultiplexer *>(fileAnalyzer);
-                if (fileAnalyzerMultiplexer != nullptr) {
-                    fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
-                }
-            }
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
         }
 
         if (finder != nullptr) finder->startSearch(numHits);

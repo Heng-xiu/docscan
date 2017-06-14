@@ -31,6 +31,11 @@
 
 #include "general.h"
 
+const QStringList FileAnalyzerMultiplexer::defaultFilters = QStringList()
+        << QStringLiteral("*.pdf") << QStringLiteral("*.pdf.lzma") << QStringLiteral("*.pdf.xz") << QStringLiteral("*.pdf.gz") ///< PDF
+        << QStringLiteral("*.jpg") << QStringLiteral("*.jpeg") << QStringLiteral("*.jpe") << QStringLiteral("*.jfif") ///< JPEG
+        ;
+
 FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent)
     : FileAnalyzerAbstract(parent), m_filters(filters)
 {
@@ -44,6 +49,8 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
 #ifdef HAVE_WV2
     connect(&m_fileAnalyzerCompoundBinary, &FileAnalyzerCompoundBinary::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
 #endif // HAVE_WV2
+    connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 }
 
 bool FileAnalyzerMultiplexer::isAlive()
@@ -55,6 +62,7 @@ bool FileAnalyzerMultiplexer::isAlive()
 #ifdef HAVE_WV2
     result |= m_fileAnalyzerCompoundBinary.isAlive();
 #endif // HAVE_WV2
+    result |= m_fileAnalyzerJPEG.isAlive();
     return result;
 }
 
@@ -73,6 +81,7 @@ void FileAnalyzerMultiplexer::setTextExtraction(TextExtraction textExtraction) {
 void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
 {
     m_fileAnalyzerPDF.setupJhove(shellscript);
+    m_fileAnalyzerJPEG.setupJhove(shellscript);
 }
 
 void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
@@ -183,6 +192,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 #ifdef HAVE_WV2
     static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
 #endif // HAVE_WV2
+    static const QRegExp jpegExtension(QStringLiteral("[.](jpeg|jpg|jpe|jfif)$"));
 
     qDebug() << "Analyzing file" << filename;
 
@@ -218,6 +228,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
         } else
             qDebug() << "Skipping unmatched extension" << compoundBinaryExtension.cap(0);
 #endif // HAVE_WV2
+    } else if (jpegExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + jpegExtension.cap(0))) {
+            m_fileAnalyzerJPEG.analyzeFile(filename);
+        } else
+            qDebug() << "Skipping unmatched extension" << jpegExtension.cap(0);
     } else
         qWarning() << "Unknown filename extension for file " << filename;
 }
