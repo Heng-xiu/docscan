@@ -41,6 +41,8 @@
 UrlDownloader::UrlDownloader(NetworkAccessManager *networkAccessManager, const QString &filePattern, int maxDownloads, QObject *parent)
     : Downloader(parent), m_networkAccessManager(networkAccessManager), m_filePattern(filePattern), m_maxDownloads(maxDownloads)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     m_runningDownloads = m_countSuccessfulDownloads = m_countFailedDownloads = 0;
     m_runningdownloadsPerHostname.clear();
     m_signalMapperTimeout = new QSignalMapper(this);
@@ -68,7 +70,7 @@ void UrlDownloader::download(const QUrl &url)
     if (url.scheme() != QStringLiteral("http") && url.scheme() != QStringLiteral("https")) {
         qWarning() << "Untested/unknown protocol/scheme " << url.scheme() << " for URL " << url.toString();
         const QString logText = QString(QStringLiteral("<download message=\"Untested/unknown protocol/scheme\" status=\"error\" url=\"%1\" scheme=\"%2\"/>\n")).arg(url.toString(), url.scheme());
-        emit report(logText);
+        emit report(objectName(), logText);
         return;
     }
 
@@ -126,7 +128,7 @@ void UrlDownloader::finalReport()
     for (QMap<QString, int>::ConstIterator it = m_domainCount.constBegin(); it != m_domainCount.constEnd(); ++it)
         logText += QString(QStringLiteral("<domain-count count=\"%2\" domain=\"%1\" />\n")).arg(it.key()).arg(it.value());
     logText += QStringLiteral("</download>\n");
-    emit report(logText);
+    emit report(objectName(), logText);
 }
 
 void ensureExtension(QString &filename, const QString &extension)
@@ -303,7 +305,7 @@ void UrlDownloader::finished()
                     logNode.attributes.insert(QStringLiteral("domain"), domain);
                 if (!geoLocationNode.name.isEmpty())
                     logNode.text += DocScan::xmlNodeToText(geoLocationNode);
-                emit report(DocScan::xmlNodeToText(logNode));
+                emit report(objectName(), DocScan::xmlNodeToText(logNode));
 
                 succeeded = true;
 
@@ -317,7 +319,7 @@ void UrlDownloader::finished()
 
     if (!succeeded) {
         QString logText = QString(QStringLiteral("<download detailed=\"%1\" message=\"download-failed\" status=\"error\" url=\"%2\" />\n")).arg(DocScan::xmlify(reply->errorString()), DocScan::xmlify(reply->url().toString()));
-        emit report(logText);
+        emit report(objectName(), logText);
         ++m_countFailedDownloads;
     } else
         ++m_countSuccessfulDownloads;
@@ -337,7 +339,7 @@ void UrlDownloader::timeout(QObject *object)
         m_internalMutex->unlock();
         reply->close();
         QString logText = QString(QStringLiteral("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
-        emit report(logText);
+        emit report(objectName(), logText);
     } else
         m_internalMutex->unlock();
 }

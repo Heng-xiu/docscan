@@ -42,6 +42,8 @@ public:
 
 signals:
     void downloaded(QString);
+    void downloaded(QUrl, QString);
+    void report(QString, QString);
 
 public slots:
     /**

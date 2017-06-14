@@ -74,7 +74,7 @@ public:
 FileAnalyzerCompoundBinary::FileAnalyzerCompoundBinary(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
-    // nothing
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 bool FileAnalyzerCompoundBinary::isAlive()
@@ -244,7 +244,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     result.paperSizeHeight = 0;
 
     if (isRTFfile(filename)) {
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"RTF file disguising as DOC\" status=\"error\" />\n")).arg(filename));
+        emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"RTF file disguising as DOC\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
@@ -254,14 +254,14 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
     /// perform various file checks before starting the analysis
     wvWare::OLEStorage storage(cppFilename);
     if (!storage.open(wvWare::OLEStorage::ReadOnly)) {
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"OLEStorage cannot be opened\" status=\"error\" />\n")).arg(filename));
+        emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"OLEStorage cannot be opened\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
     wvWare::OLEStreamReader *document = storage.createStreamReader("WordDocument");
     if (document == nullptr || !document->isValid()) {
         if (document != nullptr)  delete document;
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n")).arg(filename));
+        emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"Not a valid Word document\" status=\"error\" />\n")).arg(filename));
         m_isAlive = false;
         return;
     }
@@ -340,7 +340,7 @@ void FileAnalyzerCompoundBinary::analyzeFile(const QString &filename)
 
     delete document;
 
-    emit analysisReport(logText);
+    emit analysisReport(objectName(), logText);
 
     m_isAlive = false;
 }

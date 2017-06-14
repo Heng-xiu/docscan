@@ -35,13 +35,14 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     : FileAnalyzerAbstract(parent), m_filters(filters)
 {
     qsrand(QTime::currentTime().msec());
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 #ifdef HAVE_QUAZIP5
-    connect(&m_fileAnalyzerOpenXML, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
-    connect(&m_fileAnalyzerODF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerOpenXML, &FileAnalyzerOpenXML::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerODF, &FileAnalyzerODF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
 #endif // HAVE_QUAZIP5
-    connect(&m_fileAnalyzerPDF, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerPDF, &FileAnalyzerPDF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
 #ifdef HAVE_WV2
-    connect(&m_fileAnalyzerCompoundBinary, SIGNAL(analysisReport(QString)), this, SIGNAL(analysisReport(QString)));
+    connect(&m_fileAnalyzerCompoundBinary, &FileAnalyzerCompoundBinary::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
 #endif // HAVE_WV2
 }
 
@@ -168,7 +169,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
     }
 
     const QString logText = QString(QStringLiteral("<uncompress status=\"%1\" tool=\"%2\" time=\"%3\">\n<origin md5sum=\"%5\">%4</origin>\n<destination md5sum=\"%7\">%6</destination>\n</uncompress>")).arg(success ? QStringLiteral("success") : QStringLiteral("error"), DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime), DocScan::xmlify(filename), QString::fromUtf8(compressedMd5.result().toHex()), DocScan::xmlify(uncompressedFilename), QString::fromUtf8(uncompressedMd5.result().toHex()));
-    emit analysisReport(logText);
+    emit analysisReport(objectName(), logText);
     analyzeFile(uncompressedFilename);
     QFile::remove(uncompressedFilename); ///< Remove uncompressed file after analysis
 }

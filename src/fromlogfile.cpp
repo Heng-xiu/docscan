@@ -34,6 +34,8 @@
 FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const QStringList &filters, QObject *parent)
     : FileFinder(parent), m_isAlive(true), filenameRegExp(filters.isEmpty() ? QRegExp() : QRegExp(QString(QStringLiteral("(^|/)(%1)$")).arg(filters.join(QChar('|'))).replace(QChar('.'), QStringLiteral("[.]")).replace(QChar('*'), QStringLiteral(".*"))))
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     QFile input(logfilename);
     if (input.open(QFile::ReadOnly)) {
         QTextStream textStream(&input);
@@ -58,7 +60,7 @@ FromLogFileFileFinder::FromLogFileFileFinder(const QString &logfilename, const Q
 
 void FromLogFileFileFinder::startSearch(int numExpectedHits)
 {
-    emit report(QString(QStringLiteral("<filefinder count=\"%1\" type=\"fromlogfilefilefinder\" regexp=\"%2\"/>\n")).arg(m_urlSet.count()).arg(DocScan::xmlify(filenameRegExp.pattern())));
+    emit report(objectName(), QString(QStringLiteral("<filefinder count=\"%1\" type=\"fromlogfilefilefinder\" regexp=\"%2\"/>\n")).arg(m_urlSet.count()).arg(DocScan::xmlify(filenameRegExp.pattern())));
     int count = numExpectedHits;
     for (const QUrl &url : const_cast<const QSet<QUrl> &>(m_urlSet)) {
         if (count <= 0) break;
@@ -99,7 +101,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
                     ++count;
                 }
             } else if (searchEngineNumResultsRegExp.indexIn(line) >= 0)
-                emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
+                emit report(objectName(), QString(QStringLiteral("<searchengine numresults=\"%1\" />")).arg(searchEngineNumResultsRegExp.cap(1)));
 
             line = textStream.readLine();
         }
@@ -109,7 +111,7 @@ void FromLogFileDownloader::startParsingAndEmitting()
             qWarning() << "No filenames found in" << m_logfilename;
 
         const QString s = QString(QStringLiteral("<downloader count=\"%1\" type=\"fromlogfiledownloader\" regexp=\"%2\"/>\n")).arg(count).arg(DocScan::xmlify(filenameRegExp.pattern()));
-        emit report(s);
+        emit report(objectName(), s);
     } else
         qWarning() << "Could not find or open old log file" << m_logfilename;
 

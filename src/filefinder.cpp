@@ -28,4 +28,5 @@ const int FileFinder::ResultUnspecifiedError = 1;
 FileFinder::FileFinder(QObject *parent)
     : QObject(parent)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }

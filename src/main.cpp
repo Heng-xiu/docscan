@@ -31,6 +31,7 @@
 #include "searchenginegoogle.h"
 #include "searchenginebing.h"
 #include "searchenginespringerlink.h"
+#include "downloader.h"
 #include "fakedownloader.h"
 #include "urldownloader.h"
 #include "filesystemscan.h"
@@ -107,7 +108,7 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "pdfboxvalidator = " << pdfboxValidatorJavaClass;
                     const QFileInfo javaClass(pdfboxValidatorJavaClass);
                     if (pdfboxValidatorJavaClass.isEmpty() || !javaClass.exists() || javaClass.isExecutable())
-                        qCritical() << "Value for pdfboxValidatorJavaClass does not refer to an non-existing xor executable file";
+                        qCritical() << "Value for pdfboxValidatorJavaClass does not refer to an non-existing xor executable file: " << pdfboxValidatorJavaClass;
                 } else if (key == QStringLiteral("callaspdfapilot")) {
                     callasPdfAPilotCLI = value;
                     qDebug() << "callaspdfapilot = " << callasPdfAPilotCLI;
@@ -280,14 +281,14 @@ int main(int argc, char *argv[])
         if (finder != nullptr) watchDog.addWatchable(finder);
         watchDog.addWatchable(logCollector);
 
-        if (downloader != nullptr && finder != nullptr) QObject::connect(finder, SIGNAL(foundUrl(QUrl)), downloader, SLOT(download(QUrl)));
-        if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, SIGNAL(downloaded(QString)), fileAnalyzer, SLOT(analyzeFile(QString)));
-        QObject::connect(&watchDog, SIGNAL(quit()), &a, SLOT(quit()));
-        if (downloader != nullptr) QObject::connect(downloader, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, SIGNAL(analysisReport(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (finder != nullptr) QObject::connect(finder, SIGNAL(report(QString)), logCollector, SLOT(receiveLog(const QString &)));
-        if (downloader != nullptr) QObject::connect(&watchDog, SIGNAL(firstWarning()), downloader, SLOT(finalReport()));
-        QObject::connect(&watchDog, SIGNAL(lastWarning()), logCollector, SLOT(close()));
+        if (downloader != nullptr && finder != nullptr) QObject::connect(finder, &FileFinder::foundUrl, downloader, &Downloader::download);
+        if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, static_cast<void(Downloader::*)(QString)>(&Downloader::downloaded), fileAnalyzer, &FileAnalyzerAbstract::analyzeFile);
+        QObject::connect(&watchDog, &WatchDog::quit, &a, &QCoreApplication::quit);
+        if (downloader != nullptr) QObject::connect(downloader, &Downloader::report, logCollector, &LogCollector::receiveLog);
+        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, &FileAnalyzerAbstract::analysisReport, logCollector, &LogCollector::receiveLog);
+        if (finder != nullptr) QObject::connect(finder, &FileFinder::report, logCollector, &LogCollector::receiveLog);
+        if (downloader != nullptr) QObject::connect(&watchDog, &WatchDog::firstWarning, downloader, &Downloader::finalReport);
+        QObject::connect(&watchDog, &WatchDog::lastWarning, logCollector, &LogCollector::close);
 
         if (!jhoveShellscript.isEmpty()) {
             FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);

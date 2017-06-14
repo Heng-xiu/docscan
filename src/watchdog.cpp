@@ -32,6 +32,8 @@ static const int countDownInit = 6;
 WatchDog::WatchDog(QObject *parent)
     : QObject(parent), m_countDown(countDownInit)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(watch()));
     m_timer.setInterval(1000);
     m_timer.start();

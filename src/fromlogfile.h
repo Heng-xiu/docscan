@@ -76,11 +76,6 @@ public:
 
     virtual bool isAlive();
 
-signals:
-    void downloaded(QUrl, QString);
-    void downloaded(QString);
-    void report(QString);
-
 public slots:
     void download(const QUrl &);
     void finalReport();

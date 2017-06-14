@@ -208,6 +208,7 @@ public:
 FileAnalyzerODF::FileAnalyzerODF(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 bool FileAnalyzerODF::isAlive()
@@ -232,7 +233,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             QuaZipFile metaXML(&zipFile, parent());
             analyzeMetaXML(metaXML, result);
         } else {
-            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-meta\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
+            emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-meta\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
@@ -241,7 +242,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             QuaZipFile stylesXML(&zipFile, parent());
             analyzeStylesXML(stylesXML, result);
         } else {
-            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-styles\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
+            emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-styles\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
@@ -250,7 +251,7 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
             QuaZipFile contentXML(&zipFile, parent());
             text(contentXML, result);
         } else {
-            emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-content\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
+            emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-content\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
             return;
         }
 
@@ -335,10 +336,10 @@ void FileAnalyzerODF::analyzeFile(const QString &filename)
         logText.append(bodyText);
         logText += QStringLiteral("</fileanalysis>\n");
 
-        emit analysisReport(logText);
+        emit analysisReport(objectName(), logText);
         zipFile.close();
     } else
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
+        emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
 
     m_isAlive = false;
 }

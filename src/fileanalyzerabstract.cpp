@@ -38,6 +38,8 @@
 FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
     : QObject(parent), textExtraction(teNone)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     const QSet<QString> stringSet = getAspellLanguages();
     QString allLanguages;
     for (const QString &lang : stringSet) {
@@ -46,7 +48,7 @@ FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
         allLanguages.append(lang);
     }
     // FIXME reporting does not work yet, as signals are not yet set up
-    emit analysisReport(QString(QStringLiteral("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(allLanguages)));
+    emit analysisReport(objectName(), QString(QStringLiteral("<initialization source=\"aspell\" type=\"languages\">%1</initialization>\n").arg(allLanguages)));
 }
 
 void FileAnalyzerAbstract::setTextExtraction(TextExtraction textExtraction) {

@@ -30,6 +30,7 @@
 FileSystemScan::FileSystemScan(const QStringList &filters, const QString &baseDir, QObject *parent)
     : FileFinder(parent), m_filters(filters), m_baseDir(baseDir), m_alive(false)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 void FileSystemScan::startSearch(int numExpectedHits)
@@ -45,7 +46,7 @@ void FileSystemScan::startSearch(int numExpectedHits)
         const QStringList files = dir.entryList(m_filters, QDir::Files, QDir::Name | QDir::IgnoreCase);
         for (const QString &filename : files) {
             QUrl url = QUrl::fromLocalFile(dir.absolutePath() + QDir::separator() + filename);
-            emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
+            emit report(objectName(), QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
             emit foundUrl(url);
             ++hits;
             if (hits >= numExpectedHits) break;
@@ -59,7 +60,7 @@ void FileSystemScan::startSearch(int numExpectedHits)
         }
     }
 
-    emit report(QString(QStringLiteral("<filesystemscan filter=\"%3\" directory=\"%2\" numresults=\"%1\" />\n")).arg(QString::number(hits), DocScan::xmlify(QDir(m_baseDir).absolutePath()), DocScan::xmlify(m_filters.join(QChar('|')))));
+    emit report(objectName(), QString(QStringLiteral("<filesystemscan filter=\"%3\" directory=\"%2\" numresults=\"%1\" />\n")).arg(QString::number(hits), DocScan::xmlify(QDir(m_baseDir).absolutePath()), DocScan::xmlify(m_filters.join(QChar('|')))));
     m_alive = false;
 }
 

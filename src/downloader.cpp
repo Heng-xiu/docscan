@@ -25,5 +25,5 @@
 Downloader::Downloader(QObject *parent)
     : QObject(parent)
 {
-    // nothing
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }

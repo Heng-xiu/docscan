@@ -59,7 +59,7 @@ public slots:
      *
      * @param message message to log
      */
-    void receiveLog(const QString &message);
+    void receiveLog(const QString &origin, const QString &message);
 
     /**
      * Flush and close output device once logging is finished at process exit.

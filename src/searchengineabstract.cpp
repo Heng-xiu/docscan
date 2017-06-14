@@ -25,4 +25,5 @@
 SearchEngineAbstract::SearchEngineAbstract(QObject *parent)
     : FileFinder(parent)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }

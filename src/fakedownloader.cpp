@@ -25,9 +25,9 @@
 #include <QDebug>
 
 FakeDownloader::FakeDownloader(QObject *parent)
-    : Downloader(parent)
+    : Downloader(parent), m_counterLocalFiles(0), m_counterErrors(0)
 {
-    m_counterLocalFiles = m_counterErrors = 0;
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 void FakeDownloader::download(const QUrl &url)
@@ -35,18 +35,18 @@ void FakeDownloader::download(const QUrl &url)
     if (!url.isValid()) {
         qWarning() << "Invalid URL passed to FakeDownloader: " << url.toString();
         const QString logText = QString(QStringLiteral("<download message=\"invalid URL\" status=\"error\" url=\"%1\" />\n")).arg(url.toString());
-        emit report(logText);
+        emit report(objectName(), logText);
         ++m_counterErrors;
     } else if (!url.isLocalFile()) {
         qWarning() << "Non-local URL passed to FakeDownloader: " << url.toString();
         const QString logText = QString(QStringLiteral("<download message=\"non-local URL\" status=\"error\" url=\"%1\" />\n")).arg(url.toString());
-        emit report(logText);
+        emit report(objectName(), logText);
         ++m_counterErrors;
     } else {
         const QString localName = url.path();
         qDebug() << "FakeDownloader passing through: " << localName;
         const QString logText = QString(QStringLiteral("<download file=\"%1\" status=\"success\" />\n")).arg(localName);
-        emit report(logText);
+        emit report(objectName(), logText);
 
         emit downloaded(localName);
         emit downloaded(url, localName);
@@ -57,7 +57,7 @@ void FakeDownloader::download(const QUrl &url)
 void FakeDownloader::finalReport()
 {
     const QString logText = QString(QStringLiteral("<download count-fail=\"%1\" count-success=\"%2\" />\n")).arg(m_counterErrors).arg(m_counterLocalFiles);
-    emit report(logText);
+    emit report(objectName(), logText);
 }
 
 bool FakeDownloader::isAlive()

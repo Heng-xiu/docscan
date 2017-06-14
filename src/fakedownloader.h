@@ -43,11 +43,6 @@ public slots:
     void download(const QUrl &url);
     void finalReport();
 
-signals:
-    void downloaded(QUrl, QString);
-    void downloaded(QString);
-    void report(QString);
-
 private:
     int m_counterLocalFiles, m_counterErrors;
 };

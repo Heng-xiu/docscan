@@ -42,7 +42,7 @@ const QString SearchEngineSpringerLink::AllContentTypes;
 SearchEngineSpringerLink::SearchEngineSpringerLink(NetworkAccessManager *networkAccessManager, const QString &searchTerm, const QString &category, const QString &contentType, const QString &subject, int year, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_category(category), m_contentType(contentType), m_subject(subject), m_year(year), m_isRunning(false)
 {
-    // TODO
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 void SearchEngineSpringerLink::startSearch(int numExpectedHits)
@@ -81,7 +81,7 @@ void SearchEngineSpringerLink::nextSearchStep()
     reportNode.name = QStringLiteral("searchengine");
     reportNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
     reportNode.attributes.insert(QStringLiteral("search"), url.toString());
-    emit report(DocScan::xmlNodeToText(reportNode));
+    emit report(objectName(), DocScan::xmlNodeToText(reportNode));
 
     qDebug() << "m_networkAccessManager->get " << url.toString();
     QNetworkRequest request(url);
@@ -117,7 +117,7 @@ void SearchEngineSpringerLink::finished()
                     numHitsNode.name = QStringLiteral("searchengine");
                     numHitsNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
                     numHitsNode.attributes.insert(QStringLiteral("numresults"), numHits);
-                    emit report(DocScan::xmlNodeToText(numHitsNode));
+                    emit report(objectName(), DocScan::xmlNodeToText(numHitsNode));
                 }
             }
 
@@ -138,7 +138,7 @@ void SearchEngineSpringerLink::finished()
                     fileFinderNode.name = QStringLiteral("filefinder");
                     fileFinderNode.attributes.insert(QStringLiteral("event"), QStringLiteral("hit"));
                     fileFinderNode.attributes.insert(QStringLiteral("href"), url.toString());
-                    emit report(DocScan::xmlNodeToText(fileFinderNode));
+                    emit report(objectName(), DocScan::xmlNodeToText(fileFinderNode));
 
                     emit foundUrl(url);
                 }
@@ -156,7 +156,7 @@ void SearchEngineSpringerLink::finished()
         reportNode.attributes.insert(QStringLiteral("type"), QStringLiteral("springerlink"));
         reportNode.attributes.insert(QStringLiteral("search"), reply->url().toString());
         reportNode.attributes.insert(QStringLiteral("status"), QStringLiteral("error"));
-        emit report(DocScan::xmlNodeToText(reportNode));
+        emit report(objectName(), DocScan::xmlNodeToText(reportNode));
         m_isRunning = false;
     }
 

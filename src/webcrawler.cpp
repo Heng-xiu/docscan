@@ -40,6 +40,8 @@ const QStringList WebCrawler::blacklistHosts = QStringList() << QStringLiteral("
 WebCrawler::WebCrawler(NetworkAccessManager *networkAccessManager, const QStringList &filters, const QUrl &baseUrl, const QUrl &startUrl, const QRegExp &requiredContent, int maxVisitedPages, QObject *parent)
     : FileFinder(parent), m_networkAccessManager(networkAccessManager), m_baseUrl(baseUrl.toString()), m_baseHost(QUrl(baseUrl).host()), m_startUrl(startUrl.toString()), m_requiredContent(requiredContent), m_terminating(false), m_shootingNextDownload(false), m_runningDownloads(0)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     m_signalMapperTimeout = new QSignalMapper(this);
     connect(m_signalMapperTimeout, SIGNAL(mapped(QObject *)), this, SLOT(timeout(QObject *)));
     m_setRunningJobs = new QSet<QNetworkReply *>();
@@ -86,7 +88,7 @@ void WebCrawler::startSearch(int numExpectedHits)
     m_knownUrls.clear();
     m_knownUrls << m_startUrl;
 
-    emit report(QString(QStringLiteral("<webcrawler numexpectedhits=\"%2\"><filepattern>%1</filepattern></webcrawler>\n")).arg(DocScan::xmlify(regExpList.join(QChar('|')))).arg(m_numExpectedHits));
+    emit report(objectName(), QString(QStringLiteral("<webcrawler numexpectedhits=\"%2\"><filepattern>%1</filepattern></webcrawler>\n")).arg(DocScan::xmlify(regExpList.join(QChar('|')))).arg(m_numExpectedHits));
 
     visitNextPage();
 }
@@ -105,7 +107,7 @@ bool WebCrawler::visitNextPage()
         numExpectedHitsReached &= it->foundHits >= m_numExpectedHits;
     }
     if (numExpectedHitsReached) {
-        emit report(QString(QStringLiteral("<webcrawler numexpectedhitsreached=\"%1\" />\n")).arg(m_numExpectedHits));
+        emit report(objectName(), QString(QStringLiteral("<webcrawler numexpectedhitsreached=\"%1\" />\n")).arg(m_numExpectedHits));
         return false;
     }
 
@@ -195,7 +197,7 @@ void WebCrawler::finishedDownload()
 
         /// check if HTML page ...
         if (text.leftRef(256).contains(QStringLiteral("<html"), Qt::CaseInsensitive)) {
-            emit report(QString(QStringLiteral("<webcrawler status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+            emit report(objectName(), QString(QStringLiteral("<webcrawler status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
             if (m_requiredContent.isEmpty() || text.contains(m_requiredContent)) {
 
                 /// collect hits
@@ -239,7 +241,7 @@ void WebCrawler::finishedDownload()
                     }
 
                     if (regExpMatches) {
-                        emit report(QString(QStringLiteral("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(urlStr)));
+                        emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"Found regexp match\" status=\"success\" url=\"%1\" href=\"%2\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(urlStr)));
                         hitCollection.insert(urlStr);
                     } else if (!isSubAddress(QUrl(url), QUrl(m_baseUrl))) {
                         // qDebug() << "Is not a sub-address:" << urlStr << "of" << m_baseUrl;
@@ -253,11 +255,11 @@ void WebCrawler::finishedDownload()
 
                 /// delay sending signals to ensure BFS on links
                 for (const QString &url : const_cast<const QSet<QString> &>(hitCollection)) {
-                    emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url)));
+                    emit report(objectName(), QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url)));
                     emit foundUrl(QUrl(url));
                 }
             } else
-                emit report(QString(QStringLiteral("<webcrawler detailed=\"Required content not found\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+                emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"Required content not found\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
         } else if (text.startsWith(QStringLiteral("%PDF-1."))) {
             const QString urlStr = reply->url().toString();
             bool regExpLookingForPDF = false;
@@ -271,15 +273,15 @@ void WebCrawler::finishedDownload()
                 /// to an PDF file which the regular expression is looking for.
                 /// So, keep this URL...
                 it->foundHits += 1; ///< count as hit
-                emit report(QString(QStringLiteral("<webcrawler detailed=\"Found URL pointing to PDF\" status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
-                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
+                emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"Found URL pointing to PDF\" status=\"success\" url=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
+                emit report(objectName(), QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(urlStr)));
                 emit foundUrl(reply->url());
             } else
-                emit report(QString(QStringLiteral("<webcrawler detailed=\"Found a PDF, but not looking for such files\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
+                emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"Found a PDF, but not looking for such files\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString())));
         } else
-            emit report(QString(QStringLiteral("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\">%2</webcrawler>\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(text.left(32))));
+            emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"Not an HTML page\" status=\"error\" url=\"%1\">%2</webcrawler>\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(text.left(32))));
     } else
-        emit report(QString(QStringLiteral("<webcrawler detailed=\"%2\" status=\"error\" code=\"%3\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(reply->errorString())).arg(reply->error()));
+        emit report(objectName(), QString(QStringLiteral("<webcrawler detailed=\"%2\" status=\"error\" code=\"%3\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()), DocScan::xmlify(reply->errorString())).arg(reply->error()));
 
     qApp->processEvents();
     --m_runningDownloads;
@@ -297,7 +299,7 @@ void WebCrawler::gotSslErrors(const QList<QSslError> &list)
     /// Log all SSL/TLS errors
     for (const QSslError &error : list) {
         const QString logText = QString(QStringLiteral("<webcrawler detailed=\"SSL/TLS: %1\" status=\"warning\" url=\"%2\" />\n")).arg(DocScan::xmlify(error.errorString()), DocScan::xmlify(reply->url().toString()));
-        emit report(logText);
+        emit report(objectName(), logText);
         qWarning() << "Ignoring SSL error: " << error.errorString();
     }
     /// Ignore all SSL/TLS errors
@@ -317,7 +319,7 @@ void WebCrawler::singleShotNextDownload()
                 reportStr += QString(QStringLiteral("<filter numfoundhits=\"%1\" pattern=\"%2\" />\n")).arg(it->foundHits).arg(DocScan::xmlify(it->label));
             }
             reportStr += QStringLiteral("</webcrawler>\n");
-            emit report(reportStr);
+            emit report(objectName(), reportStr);
             m_terminating = true;
         } else {
             /// This should never happen
@@ -335,7 +337,7 @@ void WebCrawler::timeout(QObject *object)
         m_mutexRunningJobs->unlock();
         reply->close();
         QString logText = QString(QStringLiteral("<download message=\"timeout\" status=\"error\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
-        emit report(logText);
+        emit report(objectName(), logText);
     } else
         m_mutexRunningJobs->unlock();
 }

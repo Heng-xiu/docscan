@@ -43,7 +43,7 @@ static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
-    // nothing
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 bool FileAnalyzerPDF::isAlive()
@@ -81,7 +81,7 @@ void FileAnalyzerPDF::setupJhove(const QString &shellscript)
                 if (!jhoveErrorOutput.isEmpty())
                     report.append(QStringLiteral("<error>")).append(DocScan::xmlify(jhoveErrorOutput)).append(QStringLiteral("</error>\n"));
                 report.append(QStringLiteral("</toolcheck>\n"));
-                emit analysisReport(report);
+                emit analysisReport(objectName(), report);
             }
         }
     }
@@ -117,7 +117,7 @@ void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
                 if (!veraPDFErrorOutput.isEmpty())
                     report.append(QStringLiteral("<error>")).append(DocScan::xmlify(veraPDFErrorOutput)).append(QStringLiteral("</error>\n"));
                 report.append(QStringLiteral("</toolcheck>\n"));
-                emit analysisReport(report);
+                emit analysisReport(objectName(), report);
             }
         }
     }
@@ -135,7 +135,7 @@ void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaCla
         const bool status = jarList.count() == 1 && regExpVersionNumberMatch.hasMatch();
         const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
         const QString report = QString(QStringLiteral("<toolcheck name=\"pdfboxvalidator\" status=\"%1\"%2 />\n")).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
-        emit analysisReport(report);
+        emit analysisReport(objectName(), report);
     }
 }
 
@@ -168,10 +168,10 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
 
                 const QByteArray fileData = ef->data();
                 const QString temporaryFilename = dataToTemporaryFile(fileData, mimetype);
-                if (!temporaryFilename.isEmpty()){
-                qDebug() << "Queuing file " << temporaryFilename;
-                emit analysisReport(QString(QStringLiteral("<embeddedfile size=\"%5\" mimetype=\"%1\">\n<parentfilename>%2</parentfile>\n<filename>%3</filename>\n<temporaryfilename>%4</temporaryfilename>\n</embeddedfile>")).arg(mimetype, filename, ef->name(), temporaryFilename).arg(fileData.size()));
-                analyzeTemporaryFile(temporaryFilename);
+                if (!temporaryFilename.isEmpty()) {
+                    qDebug() << "Queuing file " << temporaryFilename;
+                    emit analysisReport(objectName(), QString(QStringLiteral("<embeddedfile size=\"%5\" mimetype=\"%1\">\n<parentfilename>%2</parentfile>\n<filename>%3</filename>\n<temporaryfilename>%4</temporaryfilename>\n</embeddedfile>")).arg(mimetype, filename, ef->name(), temporaryFilename).arg(fileData.size()));
+                    analyzeTemporaryFile(temporaryFilename);
                 }
             }
             metaText.append(QStringLiteral("</embeddedfiles>\n"));
@@ -616,10 +616,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     if (popplerWrapperOk || jhoveIsPDF || pdfboxValidatorValidPdf)
         /// At least one tool thought the file was ok
-        emit analysisReport(logText);
+        emit analysisReport(objectName(), logText);
     else
         /// No tool could handle this file, so give error message
-        emit analysisReport(QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\"><meta><file size=\"%3\" /></meta></fileanalysis>\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)).arg(fi.size()));
+        emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"invalid-fileformat\" status=\"error\" external_time=\"%2\"><meta><file size=\"%3\" /></meta></fileanalysis>\n")).arg(filename, QString::number(externalProgramsEndTime - startTime)).arg(fi.size()));
 
     m_isAlive = false;
 }

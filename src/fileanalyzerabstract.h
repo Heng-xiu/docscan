@@ -52,7 +52,7 @@ signals:
     /**
      * Reporting findings of analysis
      */
-    void analysisReport(QString);
+    void analysisReport(QString, QString);
 
 public slots:
     /**

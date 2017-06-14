@@ -36,7 +36,7 @@
 SearchEngineGoogle::SearchEngineGoogle(NetworkAccessManager *networkAccessManager, const QString &searchTerm, QObject *parent)
     : SearchEngineAbstract(parent), m_networkAccessManager(networkAccessManager), m_searchTerm(searchTerm), m_numExpectedHits(0), m_runningSearches(0)
 {
-    // nothing
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 void SearchEngineGoogle::startSearch(int num)
@@ -52,7 +52,7 @@ void SearchEngineGoogle::startSearch(int num)
     m_currentPage = 0;
     m_numFoundHits = 0;
 
-    emit report(QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
+    emit report(objectName(), QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
 
     QNetworkRequest request(url);
     m_networkAccessManager->setRequestHeaders(request);
@@ -76,13 +76,13 @@ void SearchEngineGoogle::finished()
             /// Google has different layouts for web result pages, so different regular expressions are necessary
             const QRegExp countHitsRegExp1(QStringLiteral("of (about )?<b>([0-9][0-9,. ]*)</b> for"));
             if (countHitsRegExp1.indexIn(htmlText) >= 0)
-                emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp1.cap(2).remove(QRegExp(QStringLiteral("[, .]+")))));
+                emit report(objectName(), QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp1.cap(2).remove(QRegExp(QStringLiteral("[, .]+")))));
             else {
                 const QRegExp countHitsRegExp2("\\b([0-9][0-9,. ]*) results");
                 if (countHitsRegExp2.indexIn(htmlText) >= 0)
-                    emit report(QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp2.cap(1).remove(QRegExp(QStringLiteral("[, .]+")))));
+                    emit report(objectName(), QString(QStringLiteral("<searchengine numresults=\"%1\" type=\"google\" />\n")).arg(countHitsRegExp2.cap(1).remove(QRegExp(QStringLiteral("[, .]+")))));
                 else
-                    emit report(QStringLiteral("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
+                    emit report(objectName(), QStringLiteral("<searchengine type=\"google\">\nCannot determine number of results\n</searchengine>\n"));
             }
         }
 
@@ -105,7 +105,7 @@ void SearchEngineGoogle::finished()
             if (url.isValid()) {
                 ++m_numFoundHits;
                 qDebug() << "Google found URL (" << m_numFoundHits << "of" << m_numExpectedHits << "):" << url.toString();
-                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
+                emit report(objectName(), QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(url.toString())));
                 emit foundUrl(url);
                 if (m_numFoundHits >= m_numExpectedHits) break;
             }
@@ -118,7 +118,7 @@ void SearchEngineGoogle::finished()
             query.addQueryItem(QStringLiteral("q"), m_searchTerm);
             query.addQueryItem(QStringLiteral("start"), QString::number(m_currentPage * m_hitsPerPage));
             url.setQuery(query);
-            emit report(QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
+            emit report(objectName(), QString(QStringLiteral("<searchengine search=\"%1\" type=\"google\" />\n")).arg(DocScan::xmlify(url.toString())));
             ++m_runningSearches;
             QNetworkRequest request(url);
             m_networkAccessManager->setRequestHeaders(request);
@@ -127,7 +127,7 @@ void SearchEngineGoogle::finished()
         }
     } else {
         QString logText = QString(QStringLiteral("<searchengine status=\"error\" type=\"google\" url=\"%1\" />\n")).arg(DocScan::xmlify(reply->url().toString()));
-        emit report(logText);
+        emit report(objectName(), logText);
     }
 
     QCoreApplication::instance()->processEvents();

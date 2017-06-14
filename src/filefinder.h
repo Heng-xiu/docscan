@@ -65,7 +65,7 @@ signals:
     /**
      * Log message about an event that should be reported.
      */
-    void report(QString);
+    void report(QString, QString);
 };
 
 #endif // FILEFINDER_H

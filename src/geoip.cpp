@@ -32,6 +32,8 @@
 GeoIP::GeoIP(NetworkAccessManager *networkAccessManager, QObject *parent)
     : QObject(parent), m_networkAccessManager(networkAccessManager)
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+
     m_mutexConcurrentAccess = new QMutex();
     m_numRunningTasks = 0;
 }

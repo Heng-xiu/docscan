@@ -31,7 +31,9 @@
 #include "general.h"
 
 FileFinderList::FileFinderList(const QString &listFile, QObject *parent)
-    : FileFinder(parent) {
+    : FileFinder(parent)
+{
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
     m_listFile = listFile;
     m_alive = false;
     qDebug() << "listFile= " << m_listFile;
@@ -48,7 +50,7 @@ void FileFinderList::startSearch(int numExpectedHits) {
             const QString filename = ts.readLine();
             QFileInfo fi(filename);
             if (fi.exists() && fi.isFile()) {
-                emit report(QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(filename)));
+                emit report(objectName(), QString(QStringLiteral("<filefinder event=\"hit\" href=\"%1\" />\n")).arg(DocScan::xmlify(filename)));
                 emit foundUrl(QUrl::fromLocalFile(filename));
                 ++hits;
             } else
@@ -58,7 +60,7 @@ void FileFinderList::startSearch(int numExpectedHits) {
     } else
         qWarning() << "Could not open file: " << m_listFile;
 
-    emit report(QString(QStringLiteral("<filefinderlist listfile=\"%2\" numresults=\"%1\" />\n")).arg(QString::number(hits), DocScan::xmlify(m_listFile)));
+    emit report(objectName(), QString(QStringLiteral("<filefinderlist listfile=\"%2\" numresults=\"%1\" />\n")).arg(QString::number(hits), DocScan::xmlify(m_listFile)));
     m_alive = false;
 }
 
