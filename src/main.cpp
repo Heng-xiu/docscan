@@ -293,7 +293,10 @@ int main(int argc, char *argv[])
         if (downloader != nullptr && fileAnalyzer != nullptr) QObject::connect(downloader, static_cast<void(Downloader::*)(QString)>(&Downloader::downloaded), fileAnalyzer, &FileAnalyzerAbstract::analyzeFile);
         QObject::connect(&watchDog, &WatchDog::quit, &a, &QCoreApplication::quit);
         if (downloader != nullptr) QObject::connect(downloader, &Downloader::report, logCollector, &LogCollector::receiveLog);
-        if (fileAnalyzer != nullptr) QObject::connect(fileAnalyzer, &FileAnalyzerAbstract::analysisReport, logCollector, &LogCollector::receiveLog);
+        if (fileAnalyzer != nullptr) {
+            QObject::connect(fileAnalyzer, &FileAnalyzerAbstract::analysisReport, logCollector, &LogCollector::receiveLog);
+            QObject::connect(fileAnalyzer, &FileAnalyzerAbstract::foundEmbeddedFile, fileAnalyzerMultiplexer, &FileAnalyzerMultiplexer::analyzeTemporaryFile);
+        }
         if (finder != nullptr) QObject::connect(finder, &FileFinder::report, logCollector, &LogCollector::receiveLog);
         if (downloader != nullptr) QObject::connect(&watchDog, &WatchDog::firstWarning, downloader, &Downloader::finalReport);
         QObject::connect(&watchDog, &WatchDog::lastWarning, logCollector, &LogCollector::close);

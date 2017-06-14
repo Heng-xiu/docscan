@@ -59,6 +59,14 @@ public:
 public slots:
     virtual void analyzeFile(const QString &filename);
 
+    /**
+     * Schedule a temporary file for analysis. Being a temporary file,
+     * erase this file after the analysis.
+     *
+     * @param filename filename for later analysis, to be deleted afterwards
+     */
+    void analyzeTemporaryFile(const QString &filename);
+
 private:
 #ifdef HAVE_QUAZIP5
     FileAnalyzerODF m_fileAnalyzerODF;

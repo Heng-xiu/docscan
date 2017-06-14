@@ -54,6 +54,8 @@ signals:
      */
     void analysisReport(QString, QString);
 
+    void foundEmbeddedFile(QString);
+
 public slots:
     /**
      * Requests analyzer object to analyze file.
@@ -64,14 +66,6 @@ public slots:
      * @param filename file to analyze
      */
     virtual void analyzeFile(const QString &filename) = 0;
-
-    /**
-     * Schedule a file for later analysis. Being a temporary file,
-     * erase this file after the analysis.
-     *
-     * @param filename filename for later analysis, to be deleted afterwards
-     */
-    void analyzeTemporaryFile(const QString &filename);
 
 protected:
     static const QString creationDate, modificationDate;

@@ -29,7 +29,6 @@
 #include <QDate>
 #include <QTextStream>
 #include <QFile>
-#include <QTimer>
 #include <QCryptographicHash>
 
 #include "guessing.h"
@@ -53,17 +52,6 @@ FileAnalyzerAbstract::FileAnalyzerAbstract(QObject *parent)
 
 void FileAnalyzerAbstract::setTextExtraction(TextExtraction textExtraction) {
     this->textExtraction = textExtraction;
-}
-
-void FileAnalyzerAbstract::analyzeTemporaryFile(const QString &filename) {
-    QTimer *timer = new QTimer(this);
-    timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, [this, filename, timer]() {
-        analyzeFile(filename);
-        QFile(filename).remove();
-        timer->deleteLater();
-    });
-    timer->start(50);
 }
 
 QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &dictionary) const

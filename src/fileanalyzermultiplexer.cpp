@@ -43,11 +43,15 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 #ifdef HAVE_QUAZIP5
     connect(&m_fileAnalyzerOpenXML, &FileAnalyzerOpenXML::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerOpenXML, &FileAnalyzerOpenXML::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
     connect(&m_fileAnalyzerODF, &FileAnalyzerODF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerODF, &FileAnalyzerODF::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 #endif // HAVE_QUAZIP5
     connect(&m_fileAnalyzerPDF, &FileAnalyzerPDF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerPDF, &FileAnalyzerPDF::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 #ifdef HAVE_WV2
     connect(&m_fileAnalyzerCompoundBinary, &FileAnalyzerCompoundBinary::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerCompoundBinary, &foundEmbeddedFile::analysisReport, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 #endif // HAVE_WV2
     connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
     connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
@@ -235,4 +239,9 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             qDebug() << "Skipping unmatched extension" << jpegExtension.cap(0);
     } else
         qWarning() << "Unknown filename extension for file " << filename;
+}
+
+void FileAnalyzerMultiplexer::analyzeTemporaryFile(const QString &filename) {
+    analyzeFile(filename);
+    QFile(filename).remove();
 }

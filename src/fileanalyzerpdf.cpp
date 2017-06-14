@@ -171,7 +171,7 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
                 if (!temporaryFilename.isEmpty()) {
                     qDebug() << "Queuing file " << temporaryFilename;
                     emit analysisReport(objectName(), QString(QStringLiteral("<embeddedfile size=\"%5\" mimetype=\"%1\">\n<parentfilename>%2</parentfile>\n<filename>%3</filename>\n<temporaryfilename>%4</temporaryfilename>\n</embeddedfile>")).arg(mimetype, filename, ef->name(), temporaryFilename).arg(fileData.size()));
-                    analyzeTemporaryFile(temporaryFilename);
+                    emit foundEmbeddedFile(temporaryFilename);
                 }
             }
             metaText.append(QStringLiteral("</embeddedfiles>\n"));
