@@ -32,7 +32,7 @@ class CookieJar : public QNetworkCookieJar
     Q_OBJECT
 
 public:
-    CookieJar(QObject *parent = nullptr);
+    explicit CookieJar(QObject *parent = nullptr);
 };
 
 class NetworkAccessManager : public QNetworkAccessManager
@@ -40,7 +40,7 @@ class NetworkAccessManager : public QNetworkAccessManager
     Q_OBJECT
 
 public:
-    NetworkAccessManager(QObject *parent = nullptr);
+    explicit NetworkAccessManager(QObject *parent = nullptr);
 
     void setRequestHeaders(QNetworkRequest &request);
 
