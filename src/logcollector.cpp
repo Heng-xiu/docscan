@@ -29,6 +29,7 @@
 LogCollector::LogCollector(QIODevice *output, QObject *parent)
     : QObject(parent), m_ts(output), m_output(output), m_tagStart(QStringLiteral("<(\\w+)\\b"))
 {
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
     m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log isodate=\"" << QDateTime::currentDateTimeUtc().toString(Qt::ISODate) << "\">" << endl;
 }
 
