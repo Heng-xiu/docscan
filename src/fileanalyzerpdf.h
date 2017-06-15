@@ -28,13 +28,14 @@
 #include <poppler-qt5.h>
 
 #include "fileanalyzerabstract.h"
+#include "jhovewrapper.h"
 
 /**
  * Analyzing code for Portable Document File documents.
  *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
-class FileAnalyzerPDF : public FileAnalyzerAbstract
+class FileAnalyzerPDF : public FileAnalyzerAbstract, public JHoveWrapper
 {
     Q_OBJECT
 public:
@@ -79,7 +80,6 @@ private:
     };
 
     bool m_isAlive;
-    QString m_jhoveShellscript;
     QString m_veraPDFcliTool;
     QString m_pdfboxValidatorJavaClass;
     QString m_callasPdfAPilotCLI;

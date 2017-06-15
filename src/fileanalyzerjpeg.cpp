@@ -66,6 +66,7 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
     bool jhoveIsJPEG = false;
     bool jhoveIsWellformedAndValid = false;
     int jhoveImageWidth = INT_MIN, jhoveImageHeight = INT_MIN, jhoveFilesize = INT_MIN;
+    QString jhoveErrorMessage;
     QDate jhoveCreationDate, jhoveModificationDate;
     QString jhoveStandardOutput;
     QString jhoveErrorOutput;
@@ -110,6 +111,10 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
                         jhoveModificationDate = date;
                 }
             }
+            static const QRegularExpression errorMessageRegExp(QStringLiteral(" ErrorMessage: (.*?)###"));
+            const QRegularExpressionMatch errorMessageMatch = errorMessageRegExp.match(jhoveStandardOutput);
+            if (errorMessageMatch.hasMatch())
+                jhoveErrorMessage = errorMessageMatch.captured(1);
         } else
             qWarning() << "Execution of jHove failed for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory() << ": " << jhoveErrorOutput;
     }
@@ -131,6 +136,8 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
             report.append(QStringLiteral("</meta>\n"));
         }
 
+        if (!jhoveErrorMessage.isEmpty())
+            report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorMessage)));
         if (!jhoveErrorOutput.isEmpty())
             report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
 

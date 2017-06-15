@@ -41,9 +41,9 @@ static const int fourMinutesInMillisec = oneMinuteInMillisec * 4;
 static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), m_isAlive(false)
+    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false)
 {
-    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+    FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
 }
 
 bool FileAnalyzerPDF::isAlive()
@@ -51,39 +51,12 @@ bool FileAnalyzerPDF::isAlive()
     return m_isAlive;
 }
 
-void FileAnalyzerPDF::setupJhove(const QString &shellscript)
-{
-    m_jhoveShellscript = shellscript;
-
-    if (!m_jhoveShellscript.isEmpty()) {
-        QProcess jhove(this);
-        const QStringList arguments = QStringList() << QStringLiteral("--version");
-        jhove.start(m_jhoveShellscript, arguments, QIODevice::ReadOnly);
-        const bool jhoveStarted = jhove.waitForStarted(oneMinuteInMillisec);
-        if (!jhoveStarted)
-            qWarning() << "Failed to start jHove to retrieve version";
-        else {
-            const bool jhoveExited = jhove.waitForFinished(oneMinuteInMillisec);
-            if (!jhoveExited)
-                qWarning() << "Failed to finish jHove to retrieve version";
-            else {
-                const int jhoveExitCode = jhove.exitCode();
-                const QString jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).trimmed();
-                const QString jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).trimmed();
-                static const QRegularExpression regExpVersionNumber(QStringLiteral("Jhove \\(Rel\\. (([0-9]+[.])+[0-9]+)"));
-                const QRegularExpressionMatch regExpVersionNumberMatch = regExpVersionNumber.match(jhoveStandardOutput);
-                const bool status = jhoveExitCode == 0 && regExpVersionNumberMatch.hasMatch();
-                const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
-
-                QString report = QString(QStringLiteral("<toolcheck name=\"jhove\" exitcode=\"%1\" status=\"%2\"%3>\n")).arg(jhoveExitCode).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
-                if (!jhoveStandardOutput.isEmpty())
-                    report.append(QStringLiteral("<output>")).append(DocScan::xmlify(jhoveStandardOutput)).append(QStringLiteral("</output>\n"));
-                if (!jhoveErrorOutput.isEmpty())
-                    report.append(QStringLiteral("<error>")).append(DocScan::xmlify(jhoveErrorOutput)).append(QStringLiteral("</error>\n"));
-                report.append(QStringLiteral("</toolcheck>\n"));
-                emit analysisReport(objectName(), report);
-            }
-        }
+void FileAnalyzerPDF::setupJhove(const QString &shellscript) {
+    const QString report = JHoveWrapper::setupJhove(this, shellscript);
+    if (!report.isEmpty()) {
+        /// This was the first time 'setupJhove' inherited from JHoveWrapper was called
+        /// and it gave us a report back. Propagate this report to the logging system
+        emit analysisReport(QStringLiteral("jhovewrapper"), report);
     }
 }
 
@@ -343,22 +316,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
     }
 
-    bool jhoveStarted = false;
-    bool jhoveIsPDF = false;
-    bool jhovePDFWellformed = false, jhovePDFValid = false;
-    QString jhovePDFversion;
-    QString jhovePDFprofile;
-    QString jhoveStandardOutput;
-    QString jhoveErrorOutput;
-    int jhoveExitCode = INT_MIN;
-    QProcess jhove(this);
-    if (!m_jhoveShellscript.isEmpty()) {
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << m_jhoveShellscript << QStringLiteral("-m") << QStringLiteral("PDF-hul") << QStringLiteral("-t") << QStringLiteral("/tmp") << QStringLiteral("-b") << QStringLiteral("131072") << filename;
-        jhove.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
-        jhoveStarted = jhove.waitForStarted(oneMinuteInMillisec);
-        if (!jhoveStarted)
-            qWarning() << "Failed to start jhove for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory();
-    }
+    QProcess *jhoveProcess = launchJHove(this, JHovePDF, filename);
+    const bool jhoveStarted = jhoveProcess != nullptr && jhoveProcess->waitForStarted(oneMinuteInMillisec);
+    if (jhoveProcess != nullptr && !jhoveStarted)
+        qWarning() << "Failed to start jhove for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
 
     bool pdfboxValidatorStarted = false;
     bool pdfboxValidatorValidPdf = false;
@@ -445,12 +406,19 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotErrorOutput;
     }
 
+    bool jhoveIsPDF = false;
+    bool jhovePDFWellformed = false, jhovePDFValid = false;
+    QString jhovePDFversion;
+    QString jhovePDFprofile;
+    int jhoveExitCode = INT_MIN;
+    QString jhoveStandardOutput;
+    QString jhoveErrorOutput;
     if (jhoveStarted) {
-        if (!jhove.waitForFinished(fourMinutesInMillisec))
-            qWarning() << "Waiting for jHove failed or exceeded time limit for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory();
-        jhoveExitCode = jhove.exitCode();
-        jhoveStandardOutput = QString::fromUtf8(jhove.readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
-        jhoveErrorOutput = QString::fromUtf8(jhove.readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        if (!jhoveProcess->waitForFinished(fourMinutesInMillisec))
+            qWarning() << "Waiting for jHove failed or exceeded time limit for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
+        jhoveExitCode = jhoveProcess->exitCode();
+        jhoveStandardOutput = QString::fromUtf8(jhoveProcess->readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        jhoveErrorOutput = QString::fromUtf8(jhoveProcess->readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF")) && !jhoveStandardOutput.contains(QStringLiteral("ErrorMessage:"));
             static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([^#]+)"));
@@ -463,7 +431,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
             jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString();
         } else
-            qWarning() << "Execution of jHove failed for file " << filename << " and " << jhove.program() << jhove.arguments().join(' ') << " in directory " << jhove.workingDirectory() << ": " << jhoveErrorOutput;
+            qWarning() << "Execution of jHove failed for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory() << ": " << jhoveErrorOutput;
     }
 
     if (pdfboxValidatorStarted) {
@@ -556,7 +524,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
             metaText.append(QStringLiteral("</jhove>\n"));
         }
-    } else if (!m_jhoveShellscript.isEmpty())
+    } else if (!jhoveShellscript.isEmpty())
         metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
     else
         metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));
