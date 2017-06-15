@@ -170,7 +170,7 @@ QString FileAnalyzerAbstract::dataToTemporaryFile(const QByteArray &data, const 
     static QCryptographicHash hash(QCryptographicHash::Md5);
     hash.reset(); ///< Reset neccessary as hash object is static
     hash.addData(data);
-    const QString temporaryFilename = QStringLiteral("/tmp/.docscan-embeddedfile-") + hash.result().toHex() + DocScan::extensionForMimetype(mimetype);
+    const QString temporaryFilename = QStringLiteral("/tmp/docscan-embeddedfile-") + hash.result().toHex() + DocScan::extensionForMimetype(mimetype);
     QFile temporaryFile(temporaryFilename);
     if (temporaryFile.open(QFile::WriteOnly)) {
         temporaryFile.write(data);

@@ -30,6 +30,7 @@
 #include <QDir>
 #include <QHash>
 #include <QRegularExpression>
+#include <QStandardPaths>
 
 #include "watchdog.h"
 #include "guessing.h"
@@ -129,26 +130,11 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         popplerDocument->getPdfVersion(&majorVersion, &minorVersion);
         metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n")).arg(QString::number(majorVersion), QString::number(minorVersion), popplerDocument->isLocked() ? QStringLiteral("yes") : QStringLiteral("no"), popplerDocument->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
 
-        const QList<Poppler::EmbeddedFile *> embeddedFiles = popplerDocument->embeddedFiles();
-        if (!embeddedFiles.isEmpty()) {
-            metaText.append(QStringLiteral("<embeddedfiles>\n"));
-            for (Poppler::EmbeddedFile *ef : embeddedFiles) {
-                const QString size = ef->size() >= 0 ? QString(QStringLiteral(" size=\"%1\"")).arg(ef->size()) : QString();
-                const QString mimetype = ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType();
-                const QString mimetypeAsAttribute = QString(QStringLiteral(" mimetype=\"%1\"")).arg(mimetype);
-                const QString embeddedFile = QStringLiteral("<embeddedfile") + size + mimetypeAsAttribute + QStringLiteral("><filename>") + DocScan::xmlify(ef->name()) + QStringLiteral("</filename>") + (ef->description().isEmpty() ? QString() : QStringLiteral("\n<description>") + DocScan::xmlify(ef->description()) + QStringLiteral("</description>")) + QStringLiteral("</embeddedfile>\n");
-                metaText.append(embeddedFile);
-
-                const QByteArray fileData = ef->data();
-                const QString temporaryFilename = dataToTemporaryFile(fileData, mimetype);
-                if (!temporaryFilename.isEmpty()) {
-                    qDebug() << "Queuing file " << temporaryFilename;
-                    emit analysisReport(objectName(), QString(QStringLiteral("<embeddedfile size=\"%5\" mimetype=\"%1\">\n<parentfilename>%2</parentfile>\n<filename>%3</filename>\n<temporaryfilename>%4</temporaryfilename>\n</embeddedfile>")).arg(mimetype, filename, ef->name(), temporaryFilename).arg(fileData.size()));
-                    emit foundEmbeddedFile(temporaryFilename);
-                }
-            }
-            metaText.append(QStringLiteral("</embeddedfiles>\n"));
-        }
+        metaText.append(QStringLiteral("<embeddedfiles>\n"));
+        metaText.append(QStringLiteral("<parentfilename>") + DocScan::xmlify(filename) + QStringLiteral("</parentfilename>\n"));
+        extractImages(metaText, filename);
+        extractEmbeddedFiles(metaText, popplerDocument);
+        metaText.append(QStringLiteral("</embeddedfiles>\n"));
 
         /// guess and evaluate editor (a.k.a. creator)
         QString toolXMLtext;
@@ -268,6 +254,53 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         return true;
     } else
         return false;
+}
+
+void FileAnalyzerPDF::extractImages(QString &metaText, const QString &filename) {
+    static const QString pdfimagesBinary = QStandardPaths::findExecutable(QStringLiteral("pdfimages"));
+    if (pdfimagesBinary.isEmpty()) return; ///< no analysis without 'pdfimages' binary
+
+    QProcess pdfimages(this);
+    pdfimages.setWorkingDirectory(QStringLiteral("/tmp"));
+    const QString prefix = QStringLiteral("docscan-pdf-extractimages-") + QString::number(qHash<QString>(filename, 0));
+    const QStringList arguments = QStringList() << QStringLiteral("-j") << QStringLiteral("-jp2") << QStringLiteral("-ccitt") << QStringLiteral("-p") << QStringLiteral("-q") << filename << prefix;
+    pdfimages.start(pdfimagesBinary, arguments, QIODevice::ReadOnly);
+    if (!pdfimages.waitForStarted(twoMinutesInMillisec) || !pdfimages.waitForFinished(sixMinutesInMillisec))
+        qWarning() << "Failed to start pdfimages for file " << filename << " and " << pdfimages.program() << pdfimages.arguments().join(' ') << " in directory " << pdfimages.workingDirectory();
+
+    QDir dir(pdfimages.workingDirectory());
+    const QStringList f = QStringList() << prefix + QStringLiteral("-*");
+    const QStringList fileList = dir.entryList(f, QDir::Files, QDir::Name);
+    for (const QString &imageFilename : fileList) {
+        const QString absoluteImageFilename = pdfimages.workingDirectory() + QChar('/') + imageFilename;
+        if (imageFilename.endsWith(QStringLiteral(".pbm")) || imageFilename.endsWith(QStringLiteral(".ppm"))) {
+            /// Skip this type of files
+            QFile(absoluteImageFilename).remove();
+            continue;
+        }
+
+        const QString mimetypeAsAttribute = QString(QStringLiteral(" mimetype=\"%1\"")).arg(DocScan::guessMimetype(imageFilename));
+
+        emit foundEmbeddedFile(absoluteImageFilename);
+        metaText.append(QStringLiteral("<embeddedfile") + mimetypeAsAttribute + QStringLiteral("><temporaryfilename>") + DocScan::xmlify(absoluteImageFilename) + QStringLiteral("</temporaryfilename></embeddedfile>"));
+    }
+}
+
+void FileAnalyzerPDF::extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument) {
+    const QList<Poppler::EmbeddedFile *> embeddedFiles = popplerDocument->embeddedFiles();
+    if (!embeddedFiles.isEmpty()) {
+        for (Poppler::EmbeddedFile *ef : embeddedFiles) {
+            const QString size = ef->size() >= 0 ? QString(QStringLiteral(" size=\"%1\"")).arg(ef->size()) : QString();
+            const QString mimetype = ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType();
+            const QString mimetypeAsAttribute = QString(QStringLiteral(" mimetype=\"%1\"")).arg(mimetype);
+            const QByteArray fileData = ef->data();
+            const QString temporaryFilename = dataToTemporaryFile(fileData, mimetype);
+            const QString embeddedFile = QStringLiteral("<embeddedfile") + size + mimetypeAsAttribute + QStringLiteral("><filename>") + DocScan::xmlify(ef->name()) + QStringLiteral("</filename>") + (ef->description().isEmpty() ? QString() : QStringLiteral("\n<description>") + DocScan::xmlify(ef->description()) + QStringLiteral("</description>")) + (temporaryFilename.isEmpty() ? QString() : QStringLiteral("<temporaryfilename>") + temporaryFilename /** no need for DocScan::xmlify */ + QStringLiteral("</temporaryfilename>")) + QStringLiteral("</embeddedfile>\n");
+            metaText.append(embeddedFile);
+            if (!temporaryFilename.isEmpty())
+                emit foundEmbeddedFile(temporaryFilename);
+        }
+    }
 }
 
 void FileAnalyzerPDF::analyzeFile(const QString &filename)

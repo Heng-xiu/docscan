@@ -85,6 +85,8 @@ private:
     QString m_callasPdfAPilotCLI;
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
+    void extractImages(QString &metaText, const QString &filename);
+    void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);
 };
 
 #endif // FILEANALYZERPDF_H
