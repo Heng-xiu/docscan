@@ -132,7 +132,7 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
             if (jhoveModificationDate.isValid())
                 report.append(formatDate(jhoveModificationDate, modificationDate));
             report.append(QString(QStringLiteral("<rect width=\"%1\" height=\"%2\" />\n")).arg(jhoveImageWidth).arg(jhoveImageHeight));
-            report.append(QString(QStringLiteral("<filesize>%1</filesize>\n")).arg(jhoveFilesize));
+            report.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(jhoveFilesize));
             report.append(QStringLiteral("</meta>\n"));
         }
 

@@ -238,7 +238,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
         } else
             qDebug() << "Skipping unmatched extension" << jpegExtension.cap(0);
     } else
-        qWarning() << "Unknown filename extension for file " << filename;
+        qWarning() << "Unsupported filetype for file" << filename;
 }
 
 void FileAnalyzerMultiplexer::analyzeTemporaryFile(const QString &filename) {

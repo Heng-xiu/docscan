@@ -273,7 +273,8 @@ void FileAnalyzerPDF::extractImages(QString &metaText, const QString &filename) 
     const QStringList fileList = dir.entryList(f, QDir::Files, QDir::Name);
     for (const QString &imageFilename : fileList) {
         const QString absoluteImageFilename = pdfimages.workingDirectory() + QChar('/') + imageFilename;
-        if (imageFilename.endsWith(QStringLiteral(".pbm")) || imageFilename.endsWith(QStringLiteral(".ppm"))) {
+        const QString fileExtension = imageFilename.mid(imageFilename.lastIndexOf(QChar('.')));
+        if (blacklistedFileExtensions.contains(fileExtension)) {
             /// Skip this type of files
             QFile(absoluteImageFilename).remove();
             continue;
@@ -290,6 +291,12 @@ void FileAnalyzerPDF::extractEmbeddedFiles(QString &metaText, Poppler::Document 
     const QList<Poppler::EmbeddedFile *> embeddedFiles = popplerDocument->embeddedFiles();
     if (!embeddedFiles.isEmpty()) {
         for (Poppler::EmbeddedFile *ef : embeddedFiles) {
+            const QString fileExtension = ef->name().mid(ef->name().lastIndexOf(QChar('.')));
+            if (blacklistedFileExtensions.contains(fileExtension)) {
+                /// Skip this type of files
+                continue;
+            }
+
             const QString size = ef->size() >= 0 ? QString(QStringLiteral(" size=\"%1\"")).arg(ef->size()) : QString();
             const QString mimetype = ef->mimeType().isEmpty() ? DocScan::guessMimetype(ef->name()) : ef->mimeType();
             const QString mimetypeAsAttribute = QString(QStringLiteral(" mimetype=\"%1\"")).arg(mimetype);
@@ -387,11 +394,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFErrorOutput = QString::fromUtf8(veraPDF.readAllStandardError().constData()).trimmed();
         if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
             const QString startOfOutput = veraPDFStandardOutput.left(8192);
-            const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDF"));
-            const int p2 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), p1);
-            const int p3a = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p2 - 64);
-            const int p3b = startOfOutput.indexOf(QStringLiteral(" recordPasses=\"true\""), p2 - 64);
-            veraPDFIsPDFA1B = p1 == p2 && ((p3a > 0 && p3a < p2 + 64) || (p3b > 0 && p3b < p2 + 64));
+            const int tagStart = startOfOutput.indexOf(QStringLiteral("<validationResult "));
+            const int tagEnd = startOfOutput.indexOf(QStringLiteral(">"), tagStart + 10);
+            const int flavourPos = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), tagStart + 10);
+            const int isCompliantPos = startOfOutput.indexOf(QStringLiteral(" isCompliant=\""), tagStart + 10);
+            veraPDFIsPDFA1B = tagStart > 1 && tagEnd > tagStart && flavourPos > tagStart && flavourPos < tagEnd && isCompliantPos > tagStart && isCompliantPos < tagEnd && startOfOutput.mid(isCompliantPos + 14, 4) == QStringLiteral("true");
             const int p4 = startOfOutput.indexOf(QStringLiteral("item size=\""));
             if (p4 > 1) {
                 const int p5 = startOfOutput.indexOf(QStringLiteral("\""), p4 + 11);
@@ -500,10 +507,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFErrorOutput = veraPDFErrorOutput + QStringLiteral("\n") + QString::fromUtf8(veraPDF.readAllStandardError().constData()).trimmed();
         if (veraPDFExitCode == 0) {
             const QString startOfOutput = newStdOut.left(8192);
-            const int p1 = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_A\""));
-            const int p2a = startOfOutput.indexOf(QStringLiteral(" isCompliant=\"true\""), p1 - 64);
-            const int p2b = startOfOutput.indexOf(QStringLiteral(" recordPasses=\"true\""), p1 - 64);
-            veraPDFIsPDFA1A = p1 > 0 && ((p2a > 0 && p2a < p1 + 64) || (p2b > 0 && p2b < p1 + 64));
+            const int tagStart = startOfOutput.indexOf(QStringLiteral("<validationResult "));
+            const int tagEnd = startOfOutput.indexOf(QStringLiteral(">"), tagStart + 10);
+            const int flavourPos = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_A\""), tagStart + 10);
+            const int isCompliantPos = startOfOutput.indexOf(QStringLiteral(" isCompliant=\""), tagStart + 10);
+            veraPDFIsPDFA1A = tagStart > 1 && tagEnd > tagStart && flavourPos > tagStart && flavourPos < tagEnd && isCompliantPos > tagStart && isCompliantPos < tagEnd && startOfOutput.mid(isCompliantPos + 14, 4) == QStringLiteral("true");
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFErrorOutput;
     }
@@ -624,3 +632,5 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     m_isAlive = false;
 }
+
+const QStringList FileAnalyzerPDF::blacklistedFileExtensions = QStringList() << QStringLiteral(".pbm") << QStringLiteral(".ppm") << QStringLiteral(".ccitt") << QStringLiteral(".params") << QStringLiteral(".joboptions");

@@ -84,6 +84,8 @@ private:
     QString m_pdfboxValidatorJavaClass;
     QString m_callasPdfAPilotCLI;
 
+    static const QStringList blacklistedFileExtensions;
+
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);

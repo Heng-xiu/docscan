@@ -26,6 +26,7 @@
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QStringList>
+#include <QDebug>
 
 namespace DocScan
 {
@@ -110,9 +111,10 @@ QString guessMimetype(const QString &filename) {
     static const QRegularExpression fileExtensionRegExp(QStringLiteral("\\.[a-z0-9]{1,4}$"));
     const QString fileExtension = fileExtensionRegExp.match(lowerFilename).captured(0);
 
-    if (fileExtension.isEmpty())
+    if (fileExtension.isEmpty()) {
+        qWarning() << "Filename is empty";
         return QString();
-    else if (fileExtension == QStringLiteral(".htm") || fileExtension == QStringLiteral(".html"))
+    } else if (fileExtension == QStringLiteral(".htm") || fileExtension == QStringLiteral(".html"))
         return QStringLiteral("text/html");
     else if (fileExtension == QStringLiteral(".pdf"))
         return QStringLiteral("application/pdf");
@@ -120,16 +122,23 @@ QString guessMimetype(const QString &filename) {
         return QStringLiteral("application/xml");
     else if (fileExtension == QStringLiteral(".jpg") || fileExtension == QStringLiteral(".jpeg") || fileExtension == QStringLiteral(".jpe") || fileExtension == QStringLiteral(".jfif"))
         return QStringLiteral("image/jpeg");
+    else if (fileExtension == QStringLiteral(".jp2") || fileExtension == QStringLiteral(".jpf") || fileExtension == QStringLiteral(".jpx"))
+        return QStringLiteral("image/jp2");
     else if (fileExtension == QStringLiteral(".png"))
         return QStringLiteral("image/png");
     else if (fileExtension == QStringLiteral(".tif") || fileExtension == QStringLiteral(".tiff"))
         return QStringLiteral("image/tiff");
-    else
+    else {
+        qWarning() << "Cannot guess mimetype for filename " << filename;
         return QString();
+    }
 }
 
 QString extensionForMimetype(const QString &mimetype) {
-    if (mimetype == QStringLiteral("text/html"))
+    if (mimetype.isEmpty()) {
+        qWarning() << "Mimetype is empty";
+        return QStringLiteral(".data");
+    } else if (mimetype == QStringLiteral("text/html"))
         return QStringLiteral(".html");
     else if (mimetype == QStringLiteral("application/pdf"))
         return QStringLiteral(".pdf");
@@ -137,12 +146,16 @@ QString extensionForMimetype(const QString &mimetype) {
         return QStringLiteral(".xml");
     else if (mimetype == QStringLiteral("image/jpeg"))
         return QStringLiteral(".jpeg");
+    else if (mimetype == QStringLiteral("image/jp2"))
+        return QStringLiteral(".jp2");
     else if (mimetype == QStringLiteral("image/png"))
         return QStringLiteral(".png");
     else if (mimetype == QStringLiteral("image/tiff"))
         return QStringLiteral(".tiff");
-    else
+    else {
+        qWarning() << "Don't know file extension for mimetype" << mimetype;
         return QStringLiteral(".data");
+    }
 }
 
 } // end of namespace
