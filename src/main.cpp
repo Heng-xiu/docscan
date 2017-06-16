@@ -193,6 +193,9 @@ bool evaluateConfigfile(const QString &filename)
                     } else if (value.contains(QStringLiteral("openxml"))) {
                         fileAnalyzer = new FileAnalyzerOpenXML();
                         qDebug() << "fileanalyzer = FileAnalyzerOpenXML";
+                    } else if (value.contains(QStringLiteral("zip"))) {
+                        fileAnalyzer = new FileAnalyzerZIP();
+                        qDebug() << "fileanalyzer = FileAnalyzerZIP";
 #endif // HAVE_QUAZIP5
                     } else if (value.contains(QStringLiteral("pdf"))) {
                         fileAnalyzer = new FileAnalyzerPDF();

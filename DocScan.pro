@@ -110,8 +110,10 @@ quazip5 {
 
     DEFINES += HAVE_QUAZIP5
 
-    SOURCES += src/fileanalyzeropenxml.cpp src/fileanalyzerodf.cpp
-    HEADERS += src/fileanalyzeropenxml.h src/fileanalyzerodf.h
+    SOURCES += src/fileanalyzeropenxml.cpp src/fileanalyzerodf.cpp \
+               src/fileanalyzerzip.cpp
+    HEADERS += src/fileanalyzeropenxml.h src/fileanalyzerodf.h \
+               src/fileanalyzerzip.h
 }
 
 unix {

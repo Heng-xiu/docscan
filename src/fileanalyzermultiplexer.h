@@ -27,6 +27,7 @@
 #ifdef HAVE_QUAZIP5
 #include "fileanalyzerodf.h"
 #include "fileanalyzeropenxml.h"
+#include "fileanalyzerzip.h"
 #endif // HAVE_QUAZIP5
 #include "fileanalyzerpdf.h"
 #ifdef HAVE_WV2
@@ -71,6 +72,7 @@ private:
 #ifdef HAVE_QUAZIP5
     FileAnalyzerODF m_fileAnalyzerODF;
     FileAnalyzerOpenXML m_fileAnalyzerOpenXML;
+    FileAnalyzerZIP m_fileAnalyzerZIP;
 #endif // HAVE_QUAZIP5
     FileAnalyzerPDF m_fileAnalyzerPDF;
 #ifdef HAVE_WV2

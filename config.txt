@@ -32,7 +32,7 @@ textExtraction=aspell
 # ('|'). File patterns are not regular expressions,
 # instead they rather work like file patterns in
 # a POSIX shell.
-filter=*.pdf.xz|*.pdf|*.jpg|*.jpeg|*.jpe|*.jfif
+filter=*.pdf.xz|*.pdf|*.jpg|*.jpeg|*.jpe|*.jfif|*.zip
 
 # Directory where to start searching for files for
 # analysis. The search in the file system will be
@@ -61,6 +61,8 @@ filesystemscan=/tmp/pdf
 #  compoundbinary  Apply analysis for legacy Microsoft
 #                Office formats on every file found
 #                matiching the filter
+#  zip           Scan .zip files' content; found files will be
+#                delegated to the multiplexer
 #  jpeg          Analyze JPEG photo/image files
 # Note 1: Only 'multiplexer' can handle compressed files
 # Note 2: It is a safe choice to pick 'multiplexer' here

@@ -46,6 +46,8 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     connect(&m_fileAnalyzerOpenXML, &FileAnalyzerOpenXML::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
     connect(&m_fileAnalyzerODF, &FileAnalyzerODF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
     connect(&m_fileAnalyzerODF, &FileAnalyzerODF::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
+    connect(&m_fileAnalyzerZIP, &FileAnalyzerZIP::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerZIP, &FileAnalyzerZIP::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 #endif // HAVE_QUAZIP5
     connect(&m_fileAnalyzerPDF, &FileAnalyzerPDF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
     connect(&m_fileAnalyzerPDF, &FileAnalyzerPDF::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
@@ -62,6 +64,7 @@ bool FileAnalyzerMultiplexer::isAlive()
     bool result = m_fileAnalyzerPDF.isAlive();
 #ifdef HAVE_QUAZIP5
     result |= m_fileAnalyzerOpenXML.isAlive() || m_fileAnalyzerODF.isAlive();
+    result |= m_fileAnalyzerZIP.isAlive();
 #endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
     result |= m_fileAnalyzerCompoundBinary.isAlive();
@@ -192,6 +195,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 #ifdef HAVE_QUAZIP5
     static const QRegExp odfExtension(QStringLiteral("[.]od[pst]$"));
     static const QRegExp openXMLExtension(QStringLiteral("[.](doc|ppt|xls)x$"));
+    static const QRegExp zipExtension(QStringLiteral("[.](zip)$"));
 #endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
     static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
@@ -224,6 +228,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerOpenXML.analyzeFile(filename);
         else
             qDebug() << "Skipping unmatched extension" << openXMLExtension.cap(0);
+    } else if (zipExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + zipExtension.cap(0)))
+            m_fileAnalyzerZIP.analyzeFile(filename);
+        else
+            qDebug() << "Skipping unmatched extension" << zipExtension.cap(0);
 #endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
     } else if (compoundBinaryExtension.indexIn(filename) >= 0) {
