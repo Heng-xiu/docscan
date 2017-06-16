@@ -194,7 +194,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 {
 #ifdef HAVE_QUAZIP5
     static const QRegExp odfExtension(QStringLiteral("[.]od[pst]$"));
-    static const QRegExp openXMLExtension(QStringLiteral("[.](doc|ppt|xls)x$"));
+    static const QRegExp openXMLExtension(QStringLiteral("[.]((doc|ppt|xls)x)$"));
     static const QRegExp zipExtension(QStringLiteral("[.](zip)$"));
 #endif // HAVE_QUAZIP5
 #ifdef HAVE_WV2
