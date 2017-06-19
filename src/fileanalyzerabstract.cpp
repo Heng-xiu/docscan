@@ -54,6 +54,10 @@ void FileAnalyzerAbstract::setTextExtraction(TextExtraction textExtraction) {
     this->textExtraction = textExtraction;
 }
 
+void FileAnalyzerAbstract::setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis) {
+    this->enableEmbeddedFilesAnalysis = enableEmbeddedFilesAnalysis;
+}
+
 QStringList FileAnalyzerAbstract::runAspell(const QString &text, const QString &dictionary) const
 {
     QStringList wordList;

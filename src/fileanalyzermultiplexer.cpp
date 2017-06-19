@@ -78,10 +78,24 @@ void FileAnalyzerMultiplexer::setTextExtraction(TextExtraction textExtraction) {
 #ifdef HAVE_QUAZIP5
     m_fileAnalyzerOpenXML.setTextExtraction(textExtraction);
     m_fileAnalyzerODF.setTextExtraction(textExtraction);
+    // m_fileAnalyzerZIP.setTextExtraction(textExtraction); ///< no point in extracting text from a ZIP archive
 #endif // HAVE_QUAZIP5
     m_fileAnalyzerPDF.setTextExtraction(textExtraction);
 #ifdef HAVE_WV2
     m_fileAnalyzerCompoundBinary.setTextExtraction(textExtraction);
+#endif // HAVE_WV2
+}
+
+void FileAnalyzerMultiplexer::setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis) {
+    FileAnalyzerAbstract::setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
+#ifdef HAVE_QUAZIP5
+    m_fileAnalyzerOpenXML.setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
+    m_fileAnalyzerODF.setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
+    // m_fileAnalyzerZIP.setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis); ///< no point in disabling following embedded files for ZIP archives
+#endif // HAVE_QUAZIP5
+    m_fileAnalyzerPDF.setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
+#ifdef HAVE_WV2
+    m_fileAnalyzerCompoundBinary.setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
 #endif // HAVE_WV2
 }
 

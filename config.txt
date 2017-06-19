@@ -27,6 +27,12 @@ pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
 #             via 'aspell'
 textExtraction=aspell
 
+# Control if embedded files or images of documents
+# such as JPEG images in PDF documents shall be analyzed
+# as well.
+# Note: ZIP files' content will always be analyzed.
+embeddedfilesanalysis=false
+
 # Filter for files matching a certain pattern.
 # Multiple patterns are separated by pipe symbols
 # ('|'). File patterns are not regular expressions,

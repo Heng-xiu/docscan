@@ -47,6 +47,7 @@ public:
     explicit FileAnalyzerAbstract(QObject *parent = nullptr);
 
     virtual void setTextExtraction(TextExtraction textExtraction);
+    virtual void setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis);
 
 signals:
     /**
@@ -72,6 +73,7 @@ protected:
     static const QRegExp microsoftToolRegExp;
 
     TextExtraction textExtraction;
+    bool enableEmbeddedFilesAnalysis;
 
     QString guessLanguage(const QString &text) const;
     QStringList runAspell(const QString &text, const QString &dictionary) const;

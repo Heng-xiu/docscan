@@ -130,11 +130,13 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         popplerDocument->getPdfVersion(&majorVersion, &minorVersion);
         metaText.append(QString(QStringLiteral("<fileformat>\n<mimetype>application/pdf</mimetype>\n<version major=\"%1\" minor=\"%2\">%1.%2</version>\n<security locked=\"%3\" encrypted=\"%4\" />\n</fileformat>\n")).arg(QString::number(majorVersion), QString::number(minorVersion), popplerDocument->isLocked() ? QStringLiteral("yes") : QStringLiteral("no"), popplerDocument->isEncrypted() ? QStringLiteral("yes") : QStringLiteral("no")));
 
-        metaText.append(QStringLiteral("<embeddedfiles>\n"));
-        metaText.append(QStringLiteral("<parentfilename>") + DocScan::xmlify(filename) + QStringLiteral("</parentfilename>\n"));
-        extractImages(metaText, filename);
-        extractEmbeddedFiles(metaText, popplerDocument);
-        metaText.append(QStringLiteral("</embeddedfiles>\n"));
+        if (enableEmbeddedFilesAnalysis) {
+            metaText.append(QStringLiteral("<embeddedfiles>\n"));
+            metaText.append(QStringLiteral("<parentfilename>") + DocScan::xmlify(filename) + QStringLiteral("</parentfilename>\n"));
+            extractImages(metaText, filename);
+            extractEmbeddedFiles(metaText, popplerDocument);
+            metaText.append(QStringLiteral("</embeddedfiles>\n"));
+        }
 
         /// guess and evaluate editor (a.k.a. creator)
         QString toolXMLtext;

@@ -51,6 +51,7 @@ public:
 
     virtual bool isAlive();
     virtual void setTextExtraction(TextExtraction textExtraction);
+    virtual void setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis);
 
     void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);

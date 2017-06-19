@@ -55,6 +55,7 @@ QString veraPDFcliTool;
 QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
 FileAnalyzerAbstract::TextExtraction textExtraction;
+bool enableEmbeddedFilesAnalysis;
 
 bool evaluateConfigfile(const QString &filename)
 {
@@ -88,6 +89,8 @@ bool evaluateConfigfile(const QString &filename)
                         textExtraction = FileAnalyzerAbstract::teAspell;
                     else
                         qWarning() << "Invalid value for \"textExtraction\":" << value;
+                } else if (key == QStringLiteral("embeddedfilesanalysis")) {
+                    enableEmbeddedFilesAnalysis = value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || value.compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0;
                 } else if (key == QStringLiteral("requiredcontent")) {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
@@ -257,6 +260,7 @@ int main(int argc, char *argv[])
     numHits = defaultNumHits;
     webcrawlermaxvisitedpages = 0;
     textExtraction = FileAnalyzerAbstract::teNone;
+    enableEmbeddedFilesAnalysis = false;
 
     if (argc != 2) {
         fprintf(stderr, "Require single configuration file as parameter\n");
@@ -287,6 +291,7 @@ int main(int argc, char *argv[])
         if (fileAnalyzer != nullptr) {
             watchDog.addWatchable(fileAnalyzer);
             fileAnalyzer->setTextExtraction(textExtraction);
+            fileAnalyzer->setAnalyzeEmbeddedFiles(enableEmbeddedFilesAnalysis);
         }
         if (downloader != nullptr) watchDog.addWatchable(downloader);
         if (finder != nullptr) watchDog.addWatchable(finder);
