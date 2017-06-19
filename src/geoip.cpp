@@ -83,7 +83,11 @@ void GeoIP::gotHostInfo(const QHostInfo &hostInfo)
 
     QString ipAddress;
     if (!hostInfo.addresses().isEmpty())
+#if QT_VERSION >= 0x050600
         ipAddress = hostInfo.addresses().constFirst().toString();
+#else // if QT_VERSION < 0x050600
+        ipAddress = hostInfo.addresses().first().toString();
+#endif // QT_VERSION
     if (ipAddress.isEmpty()) {
         --m_numRunningTasks;
         return;
