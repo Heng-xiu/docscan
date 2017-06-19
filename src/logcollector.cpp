@@ -26,11 +26,15 @@
 
 #include <QDateTime>
 
+#include "general.h"
+
 LogCollector::LogCollector(QIODevice *output, QObject *parent)
     : QObject(parent), m_ts(output), m_output(output), m_tagStart(QStringLiteral("<(\\w+)\\b"))
 {
     setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
     m_ts << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl << "<log isodate=\"" << QDateTime::currentDateTimeUtc().toString(Qt::ISODate) << "\">" << endl;
+
+    logGitVersion();
 }
 
 bool LogCollector::isAlive()
@@ -49,4 +53,14 @@ void LogCollector::close()
     m_ts << "</log>" << endl << "<!-- " << QDateTime::currentDateTimeUtc().toString(Qt::ISODate) << " -->" << endl;
     m_ts.flush();
     m_output->close();
+}
+
+void LogCollector::logGitVersion() {
+    static const QString gitCommit(QStringLiteral(GIT_COMMIT));
+    static const QString gitCommitCount(QStringLiteral(GIT_COMMIT_COUNT));
+    static const QDateTime gitCommitDate = QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1000) * GIT_COMMIT_DATE);
+    if (!gitCommit.isEmpty() && !gitCommitCount.isEmpty()) {
+        static const QString message(QString(QStringLiteral("<git commit=\"%1\" commitcount=\"%2\">\n%3</git>\n")).arg(gitCommit, gitCommitCount, DocScan::formatDateTime(gitCommitDate, QStringLiteral("commitdate"))));
+        receiveLog(QStringLiteral("logcollector"), message);
+    }
 }

@@ -70,6 +70,8 @@ private:
     QTextStream m_ts;
     QIODevice *m_output;
     QRegExp m_tagStart;
+
+    void logGitVersion();
 };
 
 #endif // LOGCOLLECTOR_H

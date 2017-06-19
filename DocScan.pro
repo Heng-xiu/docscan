@@ -120,3 +120,5 @@ unix {
     CONFIG += link_pkgconfig
     PKGCONFIG += poppler-qt5
 }
+
+include(gitversion.pri)
