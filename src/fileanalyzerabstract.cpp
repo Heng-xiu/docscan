@@ -139,11 +139,6 @@ QString FileAnalyzerAbstract::guessTool(const QString &toolString, const QString
     return result;
 }
 
-QString FileAnalyzerAbstract::formatDate(const QDate date, const QString &base) const
-{
-    return QString(QStringLiteral("<date epoch=\"%6\"%5 year=\"%1\" month=\"%2\" day=\"%3\">%4</date>\n")).arg(QString::number(date.year()), QString::number(date.month()), QString::number(date.day()), date.toString(Qt::ISODate), base.isEmpty() ? QString() : QString(QStringLiteral(" base=\"%1\"")).arg(base), QString::number(QDateTime(date).toTime_t()));
-}
-
 QString FileAnalyzerAbstract::evaluatePaperSize(int mmw, int mmh) const
 {
     QString formatName;

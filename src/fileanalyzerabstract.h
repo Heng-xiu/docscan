@@ -76,7 +76,6 @@ protected:
     QString guessLanguage(const QString &text) const;
     QStringList runAspell(const QString &text, const QString &dictionary) const;
     QString guessTool(const QString &toolString, const QString &altToolString = QString()) const;
-    QString formatDate(const QDate date, const QString &base = QString()) const;
     QString evaluatePaperSize(int mmw, int mmh) const;
     QString dataToTemporaryFile(const QByteArray &data, const QString &mimetype);
 

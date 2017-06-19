@@ -128,9 +128,9 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         if (jhoveIsJPEG && jhoveImageWidth > INT_MIN && jhoveImageHeight > INT_MIN && jhoveFilesize > INT_MIN) {
             report.append(QStringLiteral("<meta>\n"));
             if (jhoveCreationDate.isValid())
-                report.append(formatDate(jhoveCreationDate, creationDate));
+                report.append(DocScan::formatDate(jhoveCreationDate, creationDate));
             if (jhoveModificationDate.isValid())
-                report.append(formatDate(jhoveModificationDate, modificationDate));
+                report.append(DocScan::formatDate(jhoveModificationDate, modificationDate));
             report.append(QString(QStringLiteral("<rect width=\"%1\" height=\"%2\" />\n")).arg(jhoveImageWidth).arg(jhoveImageHeight));
             report.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(jhoveFilesize));
             report.append(QStringLiteral("</meta>\n"));

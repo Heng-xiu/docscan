@@ -182,11 +182,11 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         /// format creation date
         QDate date = popplerDocument->date(QStringLiteral("CreationDate")).toUTC().date();
         if (date.isValid())
-            headerText.append(formatDate(date, creationDate));
+            headerText.append(DocScan::formatDate(date, creationDate));
         /// format modification date
         date = popplerDocument->date(("ModDate")).toUTC().date();
         if (date.isValid())
-            headerText.append(formatDate(date, modificationDate));
+            headerText.append(DocScan::formatDate(date, modificationDate));
 
         /// retrieve author
         const QString author = popplerDocument->info(QStringLiteral("Author")).simplified();

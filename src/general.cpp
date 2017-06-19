@@ -82,7 +82,11 @@ QString dexmlify(const QString &xml)
 
 QString formatDate(const QDate date, const QString &base)
 {
-    return QString(QStringLiteral("<date epoch=\"%6\" base=\"%5\" day=\"%3\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(QString::number(date.year()), QString::number(date.month()), QString::number(date.day()), date.toString(Qt::ISODate), base, QString::number(QDateTime(date).toTime_t()));
+    return QString(QStringLiteral("<date epoch=\"%6\"%5 day=\"%3\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate), base.isEmpty() ? QString() : QStringLiteral(" base=\"") + base + QStringLiteral("\"")).arg(QDateTime(date).toTime_t());
+}
+
+QString formatDateTime(const QDateTime datetime, const QString &base) {
+    return QString(QStringLiteral("<date epoch=\"%6\"%5 day=\"%3\" month=\"%2\" year=\"%1\" hour=\"%7\" minute=\"%8\" second=\"%9\">%4</date>\n")).arg(datetime.date().year()).arg(datetime.date().month()).arg(datetime.date().day()).arg(datetime.toString(Qt::ISODate), base.isEmpty() ? QString() : QStringLiteral(" base=\"") + base + QStringLiteral("\"")).arg(datetime.toTime_t()).arg(datetime.time().hour()).arg(datetime.time().minute()).arg(datetime.time().second());
 }
 
 QString formatMap(const QString &key, const QHash<QString, QString> &attrs)
