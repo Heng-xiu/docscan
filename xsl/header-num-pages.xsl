@@ -32,12 +32,11 @@
 <xsl:template match="log">
 
 <!-- column header  -->
-<xsl:text>filename	number of pages</xsl:text>
+<xsl:text>filename	number of pages
+</xsl:text>
 
 <xsl:for-each select="/log/logitem/fileanalysis[@status='ok']">
 <xsl:sort select="body/@numpages"/>
-<xsl:text>
-</xsl:text>
 
 <!-- either use file's name or, if decompressed, its original filename -->
 <xsl:variable name="filename" select="@filename" />
@@ -52,6 +51,8 @@
 
 <xsl:text>	</xsl:text>
 <xsl:value-of select="body/@numpages" />
+<xsl:text>
+</xsl:text>
 </xsl:for-each>
 
 </xsl:template><!-- match="log" -->
