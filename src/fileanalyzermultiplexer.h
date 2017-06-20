@@ -34,6 +34,7 @@
 #include "fileanalyzercompoundbinary.h"
 #endif // HAVE_WV2
 #include "fileanalyzerjpeg.h"
+#include "fileanalyzerjp2.h"
 
 /**
  * Automatically redirects a file to be analyzed
@@ -80,6 +81,7 @@ private:
     FileAnalyzerCompoundBinary m_fileAnalyzerCompoundBinary;
 #endif // HAVE_WV2
     FileAnalyzerJPEG m_fileAnalyzerJPEG;
+    FileAnalyzerJP2 m_fileAnalyzerJP2;
     const QStringList &m_filters;
 
     void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);

@@ -34,6 +34,7 @@
 const QStringList FileAnalyzerMultiplexer::defaultFilters = QStringList()
         << QStringLiteral("*.pdf") << QStringLiteral("*.pdf.lzma") << QStringLiteral("*.pdf.xz") << QStringLiteral("*.pdf.gz") ///< PDF
         << QStringLiteral("*.jpg") << QStringLiteral("*.jpeg") << QStringLiteral("*.jpe") << QStringLiteral("*.jfif") ///< JPEG
+        << QStringLiteral("*.jp2") << QStringLiteral("*.jpf") << QStringLiteral("*.jpx") ///< JPEG2000
         ;
 
 FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent)
@@ -57,6 +58,8 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
 #endif // HAVE_WV2
     connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
     connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
+    connect(&m_fileAnalyzerJP2, &FileAnalyzerJP2::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerJP2, &FileAnalyzerJP2::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 }
 
 bool FileAnalyzerMultiplexer::isAlive()
@@ -70,6 +73,7 @@ bool FileAnalyzerMultiplexer::isAlive()
     result |= m_fileAnalyzerCompoundBinary.isAlive();
 #endif // HAVE_WV2
     result |= m_fileAnalyzerJPEG.isAlive();
+    result |= m_fileAnalyzerJP2.isAlive();
     return result;
 }
 
@@ -103,6 +107,7 @@ void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
 {
     m_fileAnalyzerPDF.setupJhove(shellscript);
     m_fileAnalyzerJPEG.setupJhove(shellscript);
+    m_fileAnalyzerJP2.setupJhove(shellscript);
 }
 
 void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
@@ -215,6 +220,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
     static const QRegExp compoundBinaryExtension(QStringLiteral("[.](doc|ppt|xls)$"));
 #endif // HAVE_WV2
     static const QRegExp jpegExtension(QStringLiteral("[.](jpeg|jpg|jpe|jfif)$"));
+    static const QRegExp jpeg2000Extension(QStringLiteral("[.](jp2|jpf|jpx)$"));
 
     qDebug() << "Analyzing file" << filename;
 
@@ -260,6 +266,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerJPEG.analyzeFile(filename);
         } else
             qDebug() << "Skipping unmatched extension" << jpegExtension.cap(0);
+    } else if (jpeg2000Extension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + jpeg2000Extension.cap(0))) {
+            m_fileAnalyzerJP2.analyzeFile(filename);
+        } else
+            qDebug() << "Skipping unmatched extension" << jpeg2000Extension.cap(0);
     } else
         qWarning() << "Unsupported filetype for file" << filename;
 }

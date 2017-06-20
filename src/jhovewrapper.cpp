@@ -78,7 +78,7 @@ QString JHoveWrapper::setupJhove(QObject *parent, const QString &_jhoveShellscri
 }
 
 QProcess *JHoveWrapper::launchJHove(QObject *parent, const Module module, const QString &filename) {
-    const QString moduleName = module == JHoveJPEG ? QStringLiteral("JPEG-hul") : (module == JHovePDF ? QStringLiteral("PDF-hul") : QString());
+    const QString moduleName = hulName(module);
     if (!jhoveShellscript.isEmpty() && !moduleName.isEmpty()) {
         /// External programs should be both CPU and I/O 'nice'
         static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
@@ -89,6 +89,17 @@ QProcess *JHoveWrapper::launchJHove(QObject *parent, const Module module, const 
         return jhoveProcess;
     } else
         return nullptr;
+}
+
+QString JHoveWrapper::hulName(Module module) {
+    switch (module) {
+    case JHovePDF: return QStringLiteral("PDF-hul");
+    case JHoveJPEG: return QStringLiteral("JPEG-hul");
+    case JHoveJPEG2000: return QStringLiteral("JPEG2000-hul");
+    default:
+        qWarning() << "Unchecked case for module=" << module;
+        return QString();
+    }
 }
 
 QString JHoveWrapper::jhoveShellscript;

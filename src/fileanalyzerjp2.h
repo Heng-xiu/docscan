@@ -20,26 +20,31 @@
 
  */
 
-#ifndef JHOVEWRAPPER_H
-#define JHOVEWRAPPER_H
+#ifndef FILEANALYZERJP2_H
+#define FILEANALYZERJP2_H
 
-#include <QProcess>
+#include <QObject>
+
+#include "fileanalyzerabstract.h"
+#include "jhovewrapper.h"
 
 /**
- * Wrapping the command line tool 'jhove'.
+ * Analyzing code for JPEG2000 data
  *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
-class JHoveWrapper
+class FileAnalyzerJP2 : public FileAnalyzerAbstract, public JHoveWrapper
 {
+    Q_OBJECT
 public:
-    enum Module {JHovePDF, JHoveJPEG, JHoveJPEG2000};
-protected:
-    static QString jhoveShellscript;
+    explicit FileAnalyzerJP2(QObject *parent = nullptr);
 
-    QString setupJhove(QObject *parent, const QString &jhoveShellscript);
-    QProcess *launchJHove(QObject *parent, const Module module, const QString &filename);
-    static QString hulName(Module module);
+    virtual bool isAlive();
+
+    void setupJhove(const QString &shellscript);
+
+public slots:
+    virtual void analyzeFile(const QString &filename);
 };
 
-#endif // JHOVEWRAPPER_H
+#endif // FILEANALYZERJP2_H

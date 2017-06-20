@@ -317,6 +317,11 @@ int main(int argc, char *argv[])
                 FileAnalyzerJPEG *fileAnalyzerJPEG = qobject_cast<FileAnalyzerJPEG *>(fileAnalyzer);
                 if (fileAnalyzerJPEG != nullptr)
                     fileAnalyzerJPEG->setupJhove(jhoveShellscript);
+                else {
+                    FileAnalyzerJP2 *fileAnalyzerJP2 = qobject_cast<FileAnalyzerJP2 *>(fileAnalyzer);
+                    if (fileAnalyzerJP2 != nullptr)
+                        fileAnalyzerJP2->setupJhove(jhoveShellscript);
+                }
             }
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setupJhove(jhoveShellscript);

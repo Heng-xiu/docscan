@@ -20,7 +20,7 @@
 
  */
 
-#include "fileanalyzerjpeg.h"
+#include "fileanalyzerjp2.h"
 
 #include <QDebug>
 #include <QRegularExpression>
@@ -33,18 +33,18 @@ static const int twoMinutesInMillisec = oneMinuteInMillisec * 2;
 static const int fourMinutesInMillisec = oneMinuteInMillisec * 4;
 static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 
-FileAnalyzerJPEG::FileAnalyzerJPEG(QObject *parent)
+FileAnalyzerJP2::FileAnalyzerJP2(QObject *parent)
     : FileAnalyzerAbstract(parent)
 {
     setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
-bool FileAnalyzerJPEG::isAlive()
+bool FileAnalyzerJP2::isAlive()
 {
     return false; // TODO
 }
 
-void FileAnalyzerJPEG::setupJhove(const QString &shellscript) {
+void FileAnalyzerJP2::setupJhove(const QString &shellscript) {
     const QString report = JHoveWrapper::setupJhove(this, shellscript);
     if (!report.isEmpty()) {
         /// This was the first time 'setupJhove' inherited from JHoveWrapper was called
@@ -53,11 +53,11 @@ void FileAnalyzerJPEG::setupJhove(const QString &shellscript) {
     }
 }
 
-void FileAnalyzerJPEG::analyzeFile(const QString &filename)
+void FileAnalyzerJP2::analyzeFile(const QString &filename)
 {
-    // TODO code de-duplication with FileAnalyzerJP2
+    // TODO code de-duplication with FileAnalyzerJPEG
 
-    QProcess *jhoveProcess = launchJHove(this, JHoveJPEG, filename);
+    QProcess *jhoveProcess = launchJHove(this, JHoveJPEG2000, filename);
     const bool jhoveStarted = jhoveProcess != nullptr && jhoveProcess->waitForStarted(oneMinuteInMillisec);
     if (jhoveProcess != nullptr && !jhoveStarted)
         qWarning() << "Failed to start jhove for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
@@ -65,11 +65,10 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
     // TODO add more tests there while JHove is running
 
     int jhoveExitCode = INT_MIN;
-    bool jhoveIsJPEG = false;
+    bool jhoveIsJPEG2000 = false;
     bool jhoveIsWellformedAndValid = false;
     int jhoveImageWidth = INT_MIN, jhoveImageHeight = INT_MIN, jhoveFilesize = INT_MIN;
     QString jhoveErrorMessage;
-    QDate jhoveCreationDate, jhoveModificationDate;
     QString jhoveStandardOutput;
     QString jhoveErrorOutput;
     if (jhoveStarted) {
@@ -79,17 +78,17 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         jhoveStandardOutput = QString::fromUtf8(jhoveProcess->readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         jhoveErrorOutput = QString::fromUtf8(jhoveProcess->readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
-            jhoveIsJPEG = jhoveStandardOutput.contains(QStringLiteral(" MIMEtype: image/jpeg###"));
-            jhoveIsWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral(" Status: Well-Formed and valid###"));
-            static const QRegularExpression imageSizeRegExp(QStringLiteral(" Image(Width|Height): ([1-9][0-9]*)###"));
+            jhoveIsJPEG2000 = jhoveStandardOutput.contains(QStringLiteral(" MIMEtype: image/jp2###"));
+            jhoveIsWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral(" Status: Well-Formed and valid#"));
+            static const QRegularExpression imageSizeRegExp(QStringLiteral(" (X|Y)Size: ([1-9][0-9]*)###"));
             QRegularExpressionMatchIterator itImageSize = imageSizeRegExp.globalMatch(jhoveStandardOutput);
             while (itImageSize.hasNext()) {
                 const QRegularExpressionMatch match = itImageSize.next();
                 bool ok = false;
-                if (match.captured(1) == QStringLiteral("Width")) {
+                if (match.captured(1) == QStringLiteral("X")) {
                     jhoveImageWidth = match.captured(2).toInt(&ok);
                     if (!ok) jhoveImageWidth = INT_MIN;
-                } else if (match.captured(1) == QStringLiteral("Height")) {
+                } else if (match.captured(1) == QStringLiteral("Y")) {
                     jhoveImageHeight = match.captured(2).toInt(&ok);
                     if (!ok) jhoveImageHeight = INT_MIN;
                 }
@@ -100,18 +99,6 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
                 bool ok = false;
                 jhoveFilesize = fileSizeMatch.captured(1).toInt(&ok);
                 if (!ok) jhoveFilesize = INT_MIN;
-            }
-            static const QRegularExpression dateRegExp(QStringLiteral(" xmp:(Create|Modify)Date=\"((19[89]|20[012345])[0-9]-[01][0-9]-[0-3][0-9])"));
-            QRegularExpressionMatchIterator itDate = dateRegExp.globalMatch(jhoveStandardOutput);
-            while (itDate.hasNext()) {
-                const QRegularExpressionMatch match = itDate.next();
-                const QDate date = QDate::fromString(match.captured(2), QStringLiteral("yyyy-MM-dd"));
-                if (date.isValid()) {
-                    if (match.captured(1) == QStringLiteral("Create"))
-                        jhoveCreationDate = date;
-                    else if (match.captured(1) == QStringLiteral("Modify"))
-                        jhoveModificationDate = date;
-                }
             }
             static const QRegularExpression errorMessageRegExp(QStringLiteral(" ErrorMessage: (.*?)###"));
             const QRegularExpressionMatch errorMessageMatch = errorMessageRegExp.match(jhoveStandardOutput);
@@ -125,14 +112,10 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         emit analysisReport(objectName(), QString(QStringLiteral("<fileanalysis filename=\"%1\" message=\"jhove-not-started\" status=\"error\" />\n")).arg(DocScan::xmlify(filename)));
     else {
         QString report = QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\">\n")).arg(DocScan::xmlify(filename));
-        report.append(QString(QStringLiteral("<jhove exitcode=\"%1\" jpeg=\"%2\" wellformedandvalid=\"%3\">\n")).arg(QString::number(jhoveExitCode), jhoveIsJPEG ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")));
+        report.append(QString(QStringLiteral("<jhove exitcode=\"%1\" jpeg2000=\"%2\" wellformedandvalid=\"%3\">\n")).arg(QString::number(jhoveExitCode), jhoveIsJPEG2000 ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsWellformedAndValid ? QStringLiteral("yes") : QStringLiteral("no")));
 
-        if (jhoveIsJPEG && jhoveImageWidth > INT_MIN && jhoveImageHeight > INT_MIN && jhoveFilesize > INT_MIN) {
+        if (jhoveIsJPEG2000 && jhoveImageWidth > INT_MIN && jhoveImageHeight > INT_MIN && jhoveFilesize > INT_MIN) {
             report.append(QStringLiteral("<meta>\n"));
-            if (jhoveCreationDate.isValid())
-                report.append(DocScan::formatDate(jhoveCreationDate, creationDate));
-            if (jhoveModificationDate.isValid())
-                report.append(DocScan::formatDate(jhoveModificationDate, modificationDate));
             report.append(QString(QStringLiteral("<rect width=\"%1\" height=\"%2\" />\n")).arg(jhoveImageWidth).arg(jhoveImageHeight));
             report.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(jhoveFilesize));
             report.append(QStringLiteral("</meta>\n"));

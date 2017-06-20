@@ -70,6 +70,7 @@ filesystemscan=/tmp/pdf
 #  zip           Scan .zip files' content; found files will be
 #                delegated to the multiplexer
 #  jpeg          Analyze JPEG photo/image files
+#  jp2           Analyze JPEG2000 photo/image files
 # Note 1: Only 'multiplexer' can handle compressed files
 # Note 2: It is a safe choice to pick 'multiplexer' here
 #         and specify a filter above.
