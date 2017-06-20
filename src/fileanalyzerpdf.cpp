@@ -124,6 +124,7 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
     const bool popplerWrapperOk = popplerDocument != nullptr;
     if (popplerWrapperOk) {
         QString guess, headerText;
+        const int numPages = popplerDocument->numPages();
 
         /// file format including mime type and file format version
         int majorVersion = 0, minorVersion = 0;
@@ -156,26 +157,33 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         if (!toolXMLtext.isEmpty())
             metaText.append(QStringLiteral("<tools>\n")).append(toolXMLtext).append(QStringLiteral("</tools>\n"));
 
-        Poppler::FontIterator *fontIterator = popplerDocument->newFontIterator();
         QHash<QString, struct ExtendedFontInfo> knownFonts;
-        for (int pageNumber = 1; fontIterator->hasNext(); ++pageNumber) {
-            const QList<Poppler::FontInfo> fontList = fontIterator->next();
-            for (const Poppler::FontInfo &fi : fontList) {
-                const QString fontName = fi.name();
-                if (knownFonts.contains(fontName)) {
-                    struct ExtendedFontInfo efi = knownFonts[fontName];
-                    efi.recordOccurrence(pageNumber);
-                    knownFonts[fontName] = efi;
-                } else {
-                    const struct ExtendedFontInfo efi(fi, pageNumber);
-                    knownFonts[fontName] = efi;
+        for (int pageNumber = 0; pageNumber < numPages;) {
+            Poppler::FontIterator *fontIterator = popplerDocument->newFontIterator(pageNumber);
+            ++pageNumber;
+            if (fontIterator == nullptr) continue;
+
+            if (fontIterator->hasNext()) {
+                const QList<Poppler::FontInfo> fontList = fontIterator->next();
+                for (const Poppler::FontInfo &fi : fontList) {
+                    const QString fontName = fi.name();
+                    if (knownFonts.contains(fontName)) {
+                        struct ExtendedFontInfo &efi = knownFonts[fontName];
+                        efi.recordOccurrence(pageNumber);
+                    } else {
+                        const struct ExtendedFontInfo efi(fi, pageNumber);
+                        knownFonts[fontName] = efi;
+                    }
                 }
             }
+            delete fontIterator; ///< clean memory
         }
-        delete fontIterator; ///< clean memory
         QString fontXMLtext;
         for (QHash<QString, struct ExtendedFontInfo>::ConstIterator it = knownFonts.constBegin(); it != knownFonts.constEnd(); ++it) {
-            fontXMLtext.append(QString(QStringLiteral("<font firstpage=\"%5\" lastpage=\"%6\" embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(it.value().name, it.value().typeName), it.value().isEmbedded ? QStringLiteral("yes") : QStringLiteral("no"), it.value().isSubset ? QStringLiteral("yes") : QStringLiteral("no"), it.value().fileName.isEmpty() ? QString() : QString(QStringLiteral(" filename=\"%1\"")).arg(it.value().fileName)).arg(it.value().firstPageNumber).arg(it.value().lastPageNumber));
+            bool oninnerpage = false;
+            for (int pageNumber = 4; !oninnerpage && pageNumber < numPages - 4; ++pageNumber)
+                oninnerpage = it.value().pageNumbers.contains(pageNumber);
+            fontXMLtext.append(QString(QStringLiteral("<font firstpage=\"%5\" lastpage=\"%6\" oninnerpage=\"%7\" embedded=\"%2\" subset=\"%3\"%4>\n%1</font>\n")).arg(Guessing::fontToXML(it.value().name, it.value().typeName), it.value().isEmbedded ? QStringLiteral("yes") : QStringLiteral("no"), it.value().isSubset ? QStringLiteral("yes") : QStringLiteral("no"), it.value().fileName.isEmpty() ? QString() : QString(QStringLiteral(" filename=\"%1\"")).arg(it.value().fileName)).arg(it.value().firstPageNumber).arg(it.value().lastPageNumber).arg(oninnerpage ? QStringLiteral("yes") : QStringLiteral("no")));
         }
         if (!fontXMLtext.isEmpty())
             /// Wrap multiple <font> tags into one <fonts> tag
@@ -213,7 +221,6 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         if (!keywords.isEmpty())
             headerText.append(QString(QStringLiteral("<keyword>%1</keyword>\n")).arg(DocScan::xmlify(keywords)));
 
-        const int numPages = popplerDocument->numPages();
         QString bodyText = QString(QStringLiteral("<body numpages=\"%1\"")).arg(numPages);
         if (textExtraction > teNone) {
             QString text;

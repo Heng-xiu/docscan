@@ -56,6 +56,7 @@ private:
         QString name, typeName, fileName;
         bool isEmbedded, isSubset;
         int firstPageNumber, lastPageNumber;
+        QSet<int> pageNumbers;
 
         explicit ExtendedFontInfo()
             : firstPageNumber(INT_MAX), lastPageNumber(INT_MIN) {
@@ -66,12 +67,13 @@ private:
             : name(fi.name()), typeName(fi.typeName()), fileName(fi.file()), isEmbedded(fi.isEmbedded()), isSubset(fi.isSubset()),
               firstPageNumber(pageNumber), lastPageNumber(pageNumber)
         {
-            /// nothing
+            pageNumbers.insert(pageNumber);
         }
 
         void recordOccurrence(int pageNumber) {
             if (pageNumber < firstPageNumber) firstPageNumber = pageNumber;
             if (pageNumber > lastPageNumber) lastPageNumber = pageNumber;
+            pageNumbers.insert(pageNumber);
         }
 
         bool isValid() const {
