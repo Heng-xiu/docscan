@@ -36,7 +36,7 @@
 </xsl:text>
 
 <xsl:for-each select="/log/logitem/fileanalysis[@status='ok']">
-<xsl:sort select="body/@numpages"/>
+<xsl:sort data-type="number" order="descending" select="body/@numpages"/>
 
 <!-- either use file's name or, if decompressed, its original filename -->
 <xsl:variable name="filename" select="@filename" />
