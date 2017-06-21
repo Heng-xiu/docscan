@@ -25,7 +25,7 @@ pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
 #  fulltext   Extract text and store it in logs
 #  aspell     Extract text, store it, and guess language
 #             via 'aspell'
-textExtraction=aspell
+textExtraction=none
 
 # Control if embedded files or images of documents
 # such as JPEG images in PDF documents shall be analyzed
