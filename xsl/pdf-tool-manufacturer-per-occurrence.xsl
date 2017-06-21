@@ -53,6 +53,27 @@ total	</xsl:text>
 </xsl:text>
 </xsl:for-each>
 
+<xsl:text>SPECIAL:microsoft-AND-adobe	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/name/@manufacturer='adobe' and meta/tools/tool/name/@manufacturer='microsoft'])" />
+<xsl:text>
+</xsl:text>
+
+<xsl:text>SPECIAL:microsoft-BUT-NO-adobe	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/name/@manufacturer='microsoft' and not(meta/tools/tool/name/@manufacturer='adobe')])" />
+<xsl:text>
+</xsl:text>
+
+<xsl:text>SPECIAL:ONLY-microsoft	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor']/name/@manufacturer='microsoft' and meta/tools/tool[@type='producer']/name/@manufacturer='microsoft'])" />
+<xsl:text>
+</xsl:text>
+
+<xsl:text>SPECIAL:ONLY-adobe	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor']/name/@manufacturer='adobe' and meta/tools/tool[@type='producer']/name/@manufacturer='adobe'])" />
+<xsl:text>
+</xsl:text>
+
+
 </xsl:template><!-- match="log" -->
 
 </xsl:stylesheet>
