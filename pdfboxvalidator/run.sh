@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export version=2.0.6
+export version=${version:-2.0.7}
 
 cd "$(dirname "${0}")"
 ./build.sh
