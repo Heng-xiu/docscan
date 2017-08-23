@@ -58,6 +58,15 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
     // TODO code de-duplication with FileAnalyzerJP2
 
     QProcess *jhoveProcess = launchJHove(this, JHoveJPEG, filename);
+    QByteArray jhoveStandardOutputData, jhoveStandardErrorData;
+    connect(jhoveProcess, &QProcess::readyReadStandardOutput, [jhoveProcess, &jhoveStandardOutputData]() {
+        const QByteArray d(jhoveProcess->readAllStandardOutput());
+        jhoveStandardOutputData.append(d);
+    });
+    connect(jhoveProcess, &QProcess::readyReadStandardError, [jhoveProcess, &jhoveStandardErrorData]() {
+        const QByteArray d(jhoveProcess->readAllStandardError());
+        jhoveStandardErrorData.append(d);
+    });
     const bool jhoveStarted = jhoveProcess != nullptr && jhoveProcess->waitForStarted(oneMinuteInMillisec);
     if (jhoveProcess != nullptr && !jhoveStarted)
         qWarning() << "Failed to start jhove for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
@@ -76,8 +85,8 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         if (!jhoveProcess->waitForFinished(fourMinutesInMillisec))
             qWarning() << "Waiting for jHove failed or exceeded time limit for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
         jhoveExitCode = jhoveProcess->exitCode();
-        jhoveStandardOutput = QString::fromUtf8(jhoveProcess->readAllStandardOutput().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
-        jhoveErrorOutput = QString::fromUtf8(jhoveProcess->readAllStandardError().constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        jhoveErrorOutput = QString::fromUtf8(jhoveStandardErrorData).replace(QLatin1Char('\n'), QStringLiteral("###"));
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsJPEG = jhoveStandardOutput.contains(QStringLiteral(" MIMEtype: image/jpeg###"));
             jhoveIsWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral(" Status: Well-Formed and valid###"));
