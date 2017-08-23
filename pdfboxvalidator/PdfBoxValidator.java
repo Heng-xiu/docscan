@@ -57,7 +57,7 @@ public class PdfBoxValidator {
         if (result.isValid())
         {
             if (xmlOutput)
-                System.out.println("<result pdfa1b=\"yes\">");
+                System.out.print("<result pdfa1b=\"yes\">");
             System.out.print("The file '" + filename + "' is a valid PDF/A-1b file");
             if (xmlOutput)
                 System.out.println("</result>");
@@ -75,16 +75,23 @@ public class PdfBoxValidator {
                 System.out.println("</result>");
             else
                 System.out.println();
-            for (int i = 0; i < errors.size(); ++i)
+            for (int i = 0; i < errors.size(); ++i) {
+                String details = errors.get(i).getDetails();
+                /// Details contains a 'buffer' that will print binary garbage; remove it
+                int p = details.indexOf("; buffer");
+                if (p > 0) {
+                    details = details.substring(0, p + 1);
+                }
                 if (xmlOutput) {
                     System.out.format("<error id=\"%d\"", i);
                     if (errors.get(i).getPageNumber() != null) System.out.format(" page=\"%s\"", errors.get(i).getPageNumber());
-                    System.out.format(" errorcode=\"%s\">%s</error>\n", errors.get(i).getErrorCode(), errors.get(i).getDetails().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
+                    System.out.format(" errorcode=\"%s\">%s</error>\n", errors.get(i).getErrorCode(), details.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"));
                 } else {
-                    System.out.format("%6d: %s", i, errors.get(i).getDetails(), errors.get(i).getErrorCode());
+                    System.out.format("%6d: %s", i, details, errors.get(i).getErrorCode());
                     if (errors.get(i).getPageNumber() != null) System.out.format(" on page %s", errors.get(i).getPageNumber());
                     System.out.format(" (error code %s)\n", errors.get(i).getErrorCode());
                 }
+            }
             System.exit(0);
         }
     }
