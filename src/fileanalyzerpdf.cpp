@@ -63,9 +63,10 @@ void FileAnalyzerPDF::setupJhove(const QString &shellscript) {
 
 void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 {
-    m_veraPDFcliTool = cliTool;
+    const QFileInfo fi(cliTool);
+    if (fi.isFile() && fi.isExecutable()) {
+        m_veraPDFcliTool = cliTool;
 
-    if (!m_veraPDFcliTool.isEmpty()) {
         QProcess veraPDF(this);
         const QStringList arguments = QStringList() << QStringLiteral("--version");
         veraPDF.start(m_veraPDFcliTool, arguments, QIODevice::ReadOnly);
@@ -98,10 +99,9 @@ void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 }
 
 void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass) {
-    m_pdfboxValidatorJavaClass = pdfboxValidatorJavaClass;
-
-    const QFileInfo fi(m_pdfboxValidatorJavaClass);
+    const QFileInfo fi(pdfboxValidatorJavaClass);
     if (fi.isFile()) {
+        m_pdfboxValidatorJavaClass = pdfboxValidatorJavaClass;
         const QDir dir = fi.dir();
         const QStringList jarList = dir.entryList(QStringList() << QStringLiteral("pdfbox-*.jar"), QDir::Files);
         static const QRegularExpression regExpVersionNumber(QStringLiteral("pdfbox-(([0-9]+[.])+[0-9]+)\\.jar"));
@@ -114,9 +114,12 @@ void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaCla
 }
 
 void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
-    m_callasPdfAPilotCLI = callasPdfAPilotCLI;
+    const QFileInfo fi(callasPdfAPilotCLI);
+    if (fi.isFile() && fi.isExecutable()) {
+        m_callasPdfAPilotCLI = callasPdfAPilotCLI;
 
-    // TODO version number logging
+        // TODO version number logging
+    }
 }
 
 bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText, QString &metaText) {
