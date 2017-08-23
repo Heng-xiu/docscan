@@ -58,6 +58,9 @@ QString xmlify(const QString &text);
  */
 QString dexmlify(const QString &xml);
 
+QString removeBinaryGarbage(const QString &xml);
+QByteArray removeBinaryGarbage(const QByteArray &data);
+
 /**
  * Create an XML representation like
  * '<date epoch="1317333600" base="creation" year="2011" month="9" day="30">2011-09-30</date>'

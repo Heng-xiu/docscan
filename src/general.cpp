@@ -80,6 +80,68 @@ QString dexmlify(const QString &xml)
     return result;
 }
 
+QString removeBinaryGarbage(const QString &xml)
+{
+    QString result;
+    for (const QChar &c : xml) {
+        if (c.unicode() == 0x00ad) /// soft hyphen
+            result.append(QChar('-'));
+        else if (c.unicode() == 9 || c.unicode() == 10 || c.unicode() == 13 || c.unicode() == 38 || c.unicode() == 59 || c.unicode() == 60 || c.unicode() == 62 || (c.unicode() >= 0x20 && !c.isNonCharacter() && !c.isNull() && c.isPrint()))
+            result.append(c);
+        else
+            qDebug() << "Found garbage character with unicode number " << c.unicode();
+    }
+    return result;
+}
+
+QByteArray removeBinaryGarbage(const QByteArray &data)
+{
+    QByteArray result;result.reserve(data.size());
+    for (int i=0;i<data.size();++i){
+        const unsigned char b=data[i];
+        if ((b&128)==0){
+            /// Plain ASCII, most-significant bit not set
+            if (b>=32 ||b==9||b==10||b==13){
+                /// Skip lower ASCII characters except for tab, line break, and cardrige return
+            result.append(b);
+            }
+        }else if ((b&224)==192&&i<data.size()-1&&(data[i+1]&192)==128){
+            /// Two-byte UTF-8 data
+            result.append(b);
+            ++i;
+            result.append(data[i]);
+        }else if ((b&240)==224&&i<data.size()-2&&(data[i+1]&192)==128&&(data[i+2]&192)==128){
+            /// Three-byte UTF-8 data
+
+            /// Skipping those sequences, most likely garbage
+            i+=2;
+            /*
+            result.append(b);
+            ++i;
+            result.append(data[i]);
+            ++i;
+            result.append(data[i]);
+            */
+        }else if ((b&248)==240&&i<data.size()-3&&(data[i+1]&192)==128&&(data[i+2]&192)==128&&(data[i+3]&192)==128){
+            /// Four-byte UTF-8 data
+
+            /// Skipping those sequences, most likely garbage
+            i+=3;
+            /*
+            result.append(b);
+            ++i;
+            result.append(data[i]);
+            ++i;
+            result.append(data[i]);
+            ++i;
+            result.append(data[i]);
+            */
+        }else
+            qWarning()<<"Removing invalid byte from QByteArray";
+    }
+    return result;
+}
+
 QString formatDate(const QDate date, const QString &base)
 {
     return QString(QStringLiteral("<date epoch=\"%6\"%5 day=\"%3\" month=\"%2\" year=\"%1\">%4</date>\n")).arg(date.year()).arg(date.month()).arg(date.day()).arg(date.toString(Qt::ISODate), base.isEmpty() ? QString() : QStringLiteral(" base=\"") + base + QStringLiteral("\"")).arg(QDateTime(date).toTime_t());

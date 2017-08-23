@@ -434,7 +434,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
-        veraPDFStandardOutput = QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed();
+        veraPDFStandardOutput = DocScan::removeBinaryGarbage(QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed());
         /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
         if ((!veraPDFStandardOutput.contains(QStringLiteral("<rawResults>")) || !veraPDFStandardOutput.contains(QStringLiteral("</rawResults>"))) && (!veraPDFStandardOutput.contains(QStringLiteral("<ns2:cliReport")) || !veraPDFStandardOutput.contains(QStringLiteral("</ns2:cliReport>"))))
             veraPDFStandardOutput = QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(veraPDFStandardOutput) + QStringLiteral("</error>");
@@ -529,8 +529,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!pdfboxValidator.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
         pdfboxValidatorExitCode = pdfboxValidator.exitCode();
-        pdfboxValidatorStandardOutput = QString::fromUtf8(pdfboxValidatorStandardOutputData.constData()).trimmed();
-        pdfboxValidatorStandardError = QString::fromUtf8(pdfboxValidatorStandardErrorData.constData()).trimmed();
+        pdfboxValidatorStandardOutput = QString::fromUtf8(DocScan::removeBinaryGarbage(pdfboxValidatorStandardOutputData).constData()).trimmed();
+        pdfboxValidatorStandardError = QString::fromUtf8(DocScan::removeBinaryGarbage(pdfboxValidatorStandardErrorData).constData()).trimmed();
         if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
         else
@@ -542,7 +542,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
         /// Some string magic to skip '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' from second output
-        const QString newStdOut = QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed();
+        const QString newStdOut = DocScan::removeBinaryGarbage(QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed());
         const int p = newStdOut.indexOf(QStringLiteral("?>"));
         /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
         if ((newStdOut.contains(QStringLiteral("<rawResults>")) && newStdOut.contains(QStringLiteral("</rawResults>"))) || (newStdOut.contains(QStringLiteral("<ns2:cliReport")) && newStdOut.contains(QStringLiteral("</ns2:cliReport>"))))
