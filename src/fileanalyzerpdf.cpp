@@ -90,9 +90,9 @@ void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
 
                 QString report = QString(QStringLiteral("<toolcheck name=\"verapdf\" exitcode=\"%1\" status=\"%2\"%3>\n")).arg(veraPDFExitCode).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
                 if (!veraPDFStandardOutput.isEmpty())
-                    report.append(QStringLiteral("<output>")).append(DocScan::xmlify(veraPDFStandardOutput)).append(QStringLiteral("</output>\n"));
+                    report.append(QStringLiteral("<output>")).append(DocScan::xmlifyLines(veraPDFStandardOutput)).append(QStringLiteral("</output>\n"));
                 if (!veraPDFErrorOutput.isEmpty())
-                    report.append(QStringLiteral("<error>")).append(DocScan::xmlify(veraPDFErrorOutput)).append(QStringLiteral("</error>\n"));
+                    report.append(QStringLiteral("<error>")).append(DocScan::xmlifyLines(veraPDFErrorOutput)).append(QStringLiteral("</error>\n"));
                 report.append(QStringLiteral("</toolcheck>\n"));
                 emit analysisReport(objectName(), report);
             }
@@ -239,7 +239,7 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
                     if (!language.isEmpty())
                         bodyText.append(QString(QStringLiteral("<language tool=\"aspell\">%1</language>\n")).arg(language));
                 }
-                bodyText.append(QStringLiteral("<text>")).append(DocScan::xmlify(text)).append(QStringLiteral("</text>\n"));
+                bodyText.append(QStringLiteral("<text>")).append(DocScan::xmlifyLines(text)).append(QStringLiteral("</text>\n"));
                 bodyText.append(QStringLiteral("</body>\n"));
             } else
                 bodyText.append(QStringLiteral(" />\n"));
@@ -437,7 +437,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFStandardOutput = DocScan::removeBinaryGarbage(QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed());
         /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
         if ((!veraPDFStandardOutput.contains(QStringLiteral("<rawResults>")) || !veraPDFStandardOutput.contains(QStringLiteral("</rawResults>"))) && (!veraPDFStandardOutput.contains(QStringLiteral("<ns2:cliReport")) || !veraPDFStandardOutput.contains(QStringLiteral("</ns2:cliReport>"))))
-            veraPDFStandardOutput = QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(veraPDFStandardOutput) + QStringLiteral("</error>");
+            veraPDFStandardOutput = QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlifyLines(veraPDFStandardOutput) + QStringLiteral("</error>");
         veraPDFStandardError = QString::fromUtf8(veraPDFStandardErrorData.constData()).trimmed();
         if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
             const QString startOfOutput = veraPDFStandardOutput.left(8192);
@@ -548,7 +548,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if ((newStdOut.contains(QStringLiteral("<rawResults>")) && newStdOut.contains(QStringLiteral("</rawResults>"))) || (newStdOut.contains(QStringLiteral("<ns2:cliReport")) && newStdOut.contains(QStringLiteral("</ns2:cliReport>"))))
             veraPDFStandardOutput.append(QStringLiteral("\n") + (p > 1 ? newStdOut.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : newStdOut));
         else
-            veraPDFStandardOutput.append(QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlify(newStdOut.left(512)) + QStringLiteral("</error>"));
+            veraPDFStandardOutput.append(QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlifyLines(newStdOut.left(512)) + QStringLiteral("</error>"));
 
         veraPDFStandardError = veraPDFStandardError + QStringLiteral("\n") + QString::fromUtf8(veraPDFStandardErrorData.constData()).trimmed();
         if (veraPDFExitCode == 0) {
@@ -603,12 +603,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
                 metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
             }
-            /*
             if (!jhoveStandardOutput.isEmpty())
-                metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlify(jhoveStandardOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
-            */
+                metaText.append(QString(QStringLiteral("<output>%1</output>\n")).arg(DocScan::xmlifyLines(jhoveStandardOutput)));
             if (!jhoveStandardError.isEmpty())
-                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveStandardError.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+                metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(jhoveStandardError)));
             metaText.append(QStringLiteral("</jhove>\n"));
         }
     } else if (!jhoveShellscript.isEmpty())
@@ -624,7 +622,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
             metaText.append(p > 1 ? veraPDFStandardOutput.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : veraPDFStandardOutput);
         } else if (!veraPDFStandardError.isEmpty())
-            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(veraPDFStandardError)));
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(veraPDFStandardError)));
         metaText.append(QStringLiteral("</verapdf>\n"));
     } else if (!m_veraPDFcliTool.isEmpty())
         metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
@@ -638,11 +636,11 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             if (!pdfboxValidatorStandardOutput.startsWith(QChar('<')) || !pdfboxValidatorStandardOutput.endsWith(QChar('>'))) {
                 /// Output does not look like XML output or is capped.
                 /// Treat like plain text.
-                metaText.append(DocScan::xmlify(pdfboxValidatorStandardOutput));
+                metaText.append(DocScan::xmlifyLines(pdfboxValidatorStandardOutput));
             } else
                 metaText.append(pdfboxValidatorStandardOutput);
         } else if (!pdfboxValidatorStandardError.isEmpty())
-            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(pdfboxValidatorStandardError)));
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
         metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
     } else if (!m_pdfboxValidatorJavaClass.isEmpty())
         metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
@@ -654,9 +652,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
         metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!callasPdfAPilotStandardOutput.isEmpty())
-            metaText.append(DocScan::xmlify(callasPdfAPilotStandardOutput));
+            metaText.append(DocScan::xmlifyLines(callasPdfAPilotStandardOutput));
         else if (!callasPdfAPilotStandardError.isEmpty())
-            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(callasPdfAPilotStandardError)));
+            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(callasPdfAPilotStandardError)));
         metaText.append(QStringLiteral("</callaspdfapilot>"));
     } else if (!m_callasPdfAPilotCLI.isEmpty())
         metaText.append(QStringLiteral("<callaspdfapilot><error>callas PDF/A Pilot failed to start or was never started</error></callaspdfapilot>\n"));

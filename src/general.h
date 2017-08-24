@@ -51,6 +51,15 @@ QString xmlNodeToText(const XMLNode &node);
 QString xmlify(const QString &text);
 
 /**
+ * Make a text XML-safe by rewriting critical symbols such as <, & or, >.
+ * In constrast to @see xmlify, it will keep line breaks
+ *
+ * @param text plain text
+ * @return text encoded as XML
+ */
+QString xmlifyLines(const QString &text);
+
+/**
  * Rewrite XML encodings like &aml; back to plain text like &.
  *
  * @param xml text encoded as XML

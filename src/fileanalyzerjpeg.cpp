@@ -148,9 +148,9 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         }
 
         if (!jhoveErrorMessage.isEmpty())
-            report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorMessage)));
+            report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(jhoveErrorMessage)));
         if (!jhoveErrorOutput.isEmpty())
-            report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlify(jhoveErrorOutput.replace(QStringLiteral("###"), QStringLiteral("\n")))));
+            report.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(jhoveErrorOutput)));
 
         report.append(QStringLiteral("</jhove>\n"));
         report.append(QStringLiteral("</fileanalysis>"));

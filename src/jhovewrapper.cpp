@@ -66,9 +66,9 @@ QString JHoveWrapper::setupJhove(QObject *parent, const QString &_jhoveShellscri
 
             QString report = QString(QStringLiteral("<toolcheck name=\"jhove\" exitcode=\"%1\" status=\"%2\"%3>\n")).arg(jhoveExitCode).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
             if (!jhoveStandardOutput.isEmpty())
-                report.append(QStringLiteral("<output>")).append(DocScan::xmlify(jhoveStandardOutput)).append(QStringLiteral("</output>\n"));
+                report.append(QStringLiteral("<output>")).append(DocScan::xmlifyLines(jhoveStandardOutput)).append(QStringLiteral("</output>\n"));
             if (!jhoveErrorOutput.isEmpty())
-                report.append(QStringLiteral("<error>")).append(DocScan::xmlify(jhoveErrorOutput)).append(QStringLiteral("</error>\n"));
+                report.append(QStringLiteral("<error>")).append(DocScan::xmlifyLines(jhoveErrorOutput)).append(QStringLiteral("</error>\n"));
             report.append(QStringLiteral("</toolcheck>\n"));
             return report;
         }

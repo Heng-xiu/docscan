@@ -70,6 +70,26 @@ QString xmlify(const QString &text)
     return result;
 }
 
+QStringList splitLines(QString input)
+{
+    QStringList result;
+    QTextStream ts(&input, QIODevice::ReadOnly);
+    while (!ts.atEnd())
+        result << ts.readLine();
+    return result;
+}
+
+QString xmlifyLines(const QString &text) {
+    const QStringList lines = splitLines(text);
+    QString result;
+    for (const QString &line : lines) {
+        if (!result.isEmpty())
+            result.append(QChar('\n'));
+        result.append(xmlify(line));
+    }
+    return result;
+}
+
 QString dexmlify(const QString &xml)
 {
     QString result = xml;
