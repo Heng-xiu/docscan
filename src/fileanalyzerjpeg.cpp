@@ -85,12 +85,12 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
         if (!jhoveProcess->waitForFinished(fourMinutesInMillisec))
             qWarning() << "Waiting for jHove failed or exceeded time limit for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
         jhoveExitCode = jhoveProcess->exitCode();
-        jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData).replace(QLatin1Char('\n'), QStringLiteral("###"));
-        jhoveErrorOutput = QString::fromUtf8(jhoveStandardErrorData).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData);
+        jhoveErrorOutput = QString::fromUtf8(jhoveStandardErrorData);
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
-            jhoveIsJPEG = jhoveStandardOutput.contains(QStringLiteral(" MIMEtype: image/jpeg###"));
-            jhoveIsWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral(" Status: Well-Formed and valid###"));
-            static const QRegularExpression imageSizeRegExp(QStringLiteral(" Image(Width|Height): ([1-9][0-9]*)###"));
+            jhoveIsJPEG = jhoveStandardOutput.contains(QStringLiteral(" MIMEtype: image/jpeg"));
+            jhoveIsWellformedAndValid = jhoveStandardOutput.contains(QStringLiteral(" Status: Well-Formed and valid"));
+            static const QRegularExpression imageSizeRegExp(QStringLiteral(" Image(Width|Height): ([1-9][0-9]*)"));
             QRegularExpressionMatchIterator itImageSize = imageSizeRegExp.globalMatch(jhoveStandardOutput);
             while (itImageSize.hasNext()) {
                 const QRegularExpressionMatch match = itImageSize.next();
@@ -103,7 +103,7 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
                     if (!ok) jhoveImageHeight = INT_MIN;
                 }
             }
-            static const QRegularExpression fileSizeRegExp(QStringLiteral(" Size: ([1-9][0-9]*)###"));
+            static const QRegularExpression fileSizeRegExp(QStringLiteral(" Size: ([1-9][0-9]*)"));
             const QRegularExpressionMatch fileSizeMatch = fileSizeRegExp.match(jhoveStandardOutput);
             if (fileSizeMatch.hasMatch()) {
                 bool ok = false;
@@ -122,7 +122,7 @@ void FileAnalyzerJPEG::analyzeFile(const QString &filename)
                         jhoveModificationDate = date;
                 }
             }
-            static const QRegularExpression errorMessageRegExp(QStringLiteral(" ErrorMessage: (.*?)###"));
+            static const QRegularExpression errorMessageRegExp(QStringLiteral(" ErrorMessage: (.*?)"));
             const QRegularExpressionMatch errorMessageMatch = errorMessageRegExp.match(jhoveStandardOutput);
             if (errorMessageMatch.hasMatch())
                 jhoveErrorMessage = errorMessageMatch.captured(1);

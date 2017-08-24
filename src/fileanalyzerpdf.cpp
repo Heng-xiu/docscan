@@ -508,18 +508,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!jhoveProcess->waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for jHove failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
         jhoveExitCode = jhoveProcess->exitCode();
-        jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData.constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
-        jhoveStandardError = QString::fromUtf8(jhoveStandardErrorData.constData()).replace(QLatin1Char('\n'), QStringLiteral("###"));
+        jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData.constData());
+        jhoveStandardError = QString::fromUtf8(jhoveStandardErrorData.constData());
         if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF")) && !jhoveStandardOutput.contains(QStringLiteral("ErrorMessage:"));
-            static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([^#]+)"));
+            static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([-.0-9a-zA-Z ]+)"));
             if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
                 jhovePDFWellformed = pdfStatusRegExp.cap(1).startsWith(QStringLiteral("Well-Formed"), Qt::CaseInsensitive);
                 jhovePDFValid = pdfStatusRegExp.cap(1).endsWith(QStringLiteral("and valid"));
             }
-            static const QRegExp pdfVersionRegExp(QStringLiteral("\\bVersion: ([^#]+)#"));
+            static const QRegExp pdfVersionRegExp(QStringLiteral("\\bVersion: ([.0-9]+)"));
             jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString();
-            static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([^#]+)(#|$)"));
+            static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([-.,/0-9a-zA-Z ]+)"));
             jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString();
         } else
             qWarning() << "Execution of jHove failed for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory() << ": " << jhoveStandardError;
