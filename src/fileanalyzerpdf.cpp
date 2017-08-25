@@ -465,8 +465,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 veraPDFStartedRun2 = veraPDF.waitForStarted(twoMinutesInMillisec);
                 if (!veraPDFStartedRun2)
                     qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
-            } else
-                qDebug() << "Skipping second run of veraPDF as file " << filename << "is not PDF/A-1b";
+            }
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
     }
@@ -491,8 +490,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 callasPdfAPilotStartedRun2 = callasPdfAPilot.waitForStarted(oneMinuteInMillisec);
                 if (!callasPdfAPilotStartedRun2)
                     qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
-            } else
-                qDebug() << "Skipping second run of callas PDF/A Pilot as file " << filename << "is not PDF/A-1";
+            }
         } else
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotStandardError;
     }
