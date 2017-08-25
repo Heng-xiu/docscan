@@ -619,7 +619,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             /// Check for and omit XML header if it exists
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
             metaText.append(p > 1 ? veraPDFStandardOutput.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : veraPDFStandardOutput);
-        } else if (!veraPDFStandardError.isEmpty())
+        }
+        if (!veraPDFStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(veraPDFStandardError)));
         metaText.append(QStringLiteral("</verapdf>\n"));
     } else if (!m_veraPDFcliTool.isEmpty())
@@ -637,7 +638,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(DocScan::xmlifyLines(pdfboxValidatorStandardOutput));
             } else
                 metaText.append(pdfboxValidatorStandardOutput);
-        } else if (!pdfboxValidatorStandardError.isEmpty())
+        }
+        if (!pdfboxValidatorStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
         metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
     } else if (!m_pdfboxValidatorJavaClass.isEmpty())
@@ -651,7 +653,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!callasPdfAPilotStandardOutput.isEmpty())
             metaText.append(DocScan::xmlifyLines(callasPdfAPilotStandardOutput));
-        else if (!callasPdfAPilotStandardError.isEmpty())
+        if (!callasPdfAPilotStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(callasPdfAPilotStandardError)));
         metaText.append(QStringLiteral("</callaspdfapilot>"));
     } else if (!m_callasPdfAPilotCLI.isEmpty())
