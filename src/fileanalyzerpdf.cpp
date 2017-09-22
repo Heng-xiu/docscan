@@ -391,14 +391,16 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     QProcess *jhoveProcess = launchJHove(this, JHovePDF, filename);
     QByteArray jhoveStandardOutputData, jhoveStandardErrorData;
-    connect(jhoveProcess, &QProcess::readyReadStandardOutput, [jhoveProcess, &jhoveStandardOutputData]() {
-        const QByteArray d(jhoveProcess->readAllStandardOutput());
-        jhoveStandardOutputData.append(d);
-    });
-    connect(jhoveProcess, &QProcess::readyReadStandardError, [jhoveProcess, &jhoveStandardErrorData]() {
-        const QByteArray d(jhoveProcess->readAllStandardError());
-        jhoveStandardErrorData.append(d);
-    });
+    if (jhoveProcess != nullptr){
+        connect(jhoveProcess, &QProcess::readyReadStandardOutput, [jhoveProcess, &jhoveStandardOutputData]() {
+            const QByteArray d(jhoveProcess->readAllStandardOutput());
+            jhoveStandardOutputData.append(d);
+        });
+        connect(jhoveProcess, &QProcess::readyReadStandardError, [jhoveProcess, &jhoveStandardErrorData]() {
+            const QByteArray d(jhoveProcess->readAllStandardError());
+            jhoveStandardErrorData.append(d);
+        });
+    }
     const bool jhoveStarted = jhoveProcess != nullptr && jhoveProcess->waitForStarted(oneMinuteInMillisec);
     if (jhoveProcess != nullptr && !jhoveStarted)
         qWarning() << "Failed to start jhove for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
