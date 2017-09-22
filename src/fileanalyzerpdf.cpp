@@ -358,7 +358,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFStandardErrorData.append(d);
     });
     if (!m_veraPDFcliTool.isEmpty()) {
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1b") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("-1") << QStringLiteral("--maxfailuresdisplayed") << QStringLiteral("-1") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         veraPDFStartedRun1 = veraPDF.waitForStarted(twoMinutesInMillisec);
         if (!veraPDFStartedRun1)
@@ -465,7 +465,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 /// So, it is PDF-A/1b, then test for PDF-A/1a
                 veraPDFStandardOutputData.clear(); ///< reset before launching new veraPDF process
                 veraPDFStandardErrorData.clear(); ///< reset before launching new veraPDF process
-                const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") /** Extracts and reports PDF features. */ << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("1") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+                const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("-1") << QStringLiteral("--maxfailuresdisplayed") << QStringLiteral("-1") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
                 veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
                 veraPDFStartedRun2 = veraPDF.waitForStarted(twoMinutesInMillisec);
                 if (!veraPDFStartedRun2)
