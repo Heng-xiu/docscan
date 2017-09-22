@@ -97,7 +97,8 @@ void FileAnalyzerPDF::setupVeraPDF(const QString &cliTool)
                 emit analysisReport(objectName(), report);
             }
         }
-    }
+    } else
+        qWarning() << "Program file for veraPDF does not exist or not executable:" << cliTool;
 }
 
 void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass) {
@@ -112,7 +113,8 @@ void FileAnalyzerPDF::setupPdfBoXValidator(const QString &pdfboxValidatorJavaCla
         const QString versionNumber = status ? regExpVersionNumberMatch.captured(1) : QString();
         const QString report = QString(QStringLiteral("<toolcheck name=\"pdfboxvalidator\" status=\"%1\"%2 />\n")).arg(status ? QStringLiteral("ok") : QStringLiteral("error")).arg(status ? QString(QStringLiteral(" version=\"%1\"")).arg(versionNumber) : QString());
         emit analysisReport(objectName(), report);
-    }
+    } else
+        qWarning() << "Class file for Apache PDFBox Validator does not exist:" << pdfboxValidatorJavaClass;
 }
 
 void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
@@ -121,7 +123,8 @@ void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI)
         m_callasPdfAPilotCLI = callasPdfAPilotCLI;
 
         // TODO version number logging
-    }
+    } else
+        qWarning() << "Program file for Callas PDF/A Pilot does not exist or not executable:" << callasPdfAPilotCLI;
 }
 
 bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText, QString &metaText) {
