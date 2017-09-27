@@ -44,6 +44,13 @@ function cleanup_on_exit {
 }
 trap cleanup_on_exit EXIT
 
+# Limit memory usage to ${memlimitGB} GB
+memlimitGB=6
+memlimitB=$(( ${memlimitGB} * 1024 * 1024 * 1024 ))
+memlimitPages=$(( ${memlimitB} / $(getconf PAGE_SIZE) ))
+renice -n 10 $$
+ionice -c 3 -p $$
+
 for xmlfile in "${@}" ; do
 	echo "${xmlfile}" >&2
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
@@ -60,11 +67,21 @@ for xmlfile in "${@}" ; do
 	for xslfile in "$(dirname "$0")"/*.xsl ; do
 		extension="csv"
 		[[ "${xslfile}" =~ '-to-html.xsl' ]] && extension="html"
-		echo "nice xsltproc \"${xslfile}\" \"${thisxml}\" >\"${stem}-$(basename "${xslfile/.xsl/}").${extension}\""
+		outputfile="${stem}-$(basename "${xslfile/.xsl/}").${extension}"
+		echo "( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; )"
 	done >>${tempdir}/q2.txt
 done
+
+test -d /sys/fs/cgroup/memory/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/memory/xsltprocsandbox || exit 1
+test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; }
+echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes >/dev/null || exit 1
+echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null || exit 1
+
+# Limit to 90% CPU time ('xsltproc' is a single core process)
+test -d /sys/fs/cgroup/cpu/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/cpu/xsltprocsandbox || exit 1
+echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || exit 1
 
 randline -q <${tempdir}/q1.txt >${tempdir}/q-rand.txt
 echo "WAIT" >>${tempdir}/q-rand.txt
 randline -q <${tempdir}/q2.txt >>${tempdir}/q-rand.txt
-queue -V -s ${tempdir}/q-rand.txt
+queue -V -j 1 -s ${tempdir}/q-rand.txt
