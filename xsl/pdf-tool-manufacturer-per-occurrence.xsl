@@ -73,6 +73,15 @@ total	</xsl:text>
 <xsl:text>
 </xsl:text>
 
+<xsl:text>SPECIAL:unknown	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and not(meta/tools/tool[@type='editor']/name/@manufacturer) and not(meta/tools/tool[@type='producer']/name/@manufacturer)])" />
+<xsl:text>
+</xsl:text>
+
+<xsl:text>SPECIAL:number-of-files	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok'])" />
+<xsl:text>
+</xsl:text>
 
 </xsl:template><!-- match="log" -->
 
