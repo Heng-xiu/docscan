@@ -58,19 +58,25 @@ for xmlfile in "${@}" ; do
 	echo -n "." >&2
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
 
-	if [[ "${xmlfile}" =~ '.xml.xz' ]] ; then echo -n "nice -n 15 ionice -c 3 unxz <\"${xmlfile}\" >${thisxml} || exit 1"
-	elif [[ "${xmlfile}" =~ '.xml' ]] ; then echo -n "cp \"${xmlfile}\" ${thisxml} || exit 1"
-	else echo -n "rm -f ${thisxml} ; exit 1" ; fi >>${tempdir}/q1.txt
-	echo -n " ; test -s ${thisxml} || exit 1" >>${tempdir}/q1.txt
 
-	echo " ; nice sed -i -r 's![\d1\d6\d3\d11\d12\d14\d15\d16\d17\d19\d20\d21\d22\d23\d25\d27\d28\d29]!_!g;s!<error([ ][^>]*)?>[^<]*</error>!!g' ${thisxml} || exit 1" >>${tempdir}/q1.txt
+
+	# Unpack compressed XML files if necessary
+	# Apply 'sed' to remove invalid byte code sequences
+	## instead of 'remcoch' you may use:   sed -r 's![\d1\d6\d3\d11\d12\d14\d15\d16\d17\d19\d20\d21\d22\d23\d25\d27\d28\d29]!_!g'
+	## Not used as it takes too much time (?):    sed -r 's!<error([ ][^>]*)?>[^<]*</error>!!g'
+	## 'remerror' and "sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d'" remove error messages that may not be relevant here and only slow down XSL transformations; can be safely removed if not available
+	if [[ "${xmlfile}" =~ '.xml.xz' ]] ; then echo -n "unxz <\"${xmlfile}\" | remcoch | remerror | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' >\"${thisxml}\" || exit 1"
+	elif [[ "${xmlfile}" =~ '.xml' ]] ; then echo -n "cat \"${xmlfile}\" | remcoch | remerror | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' >\"${thisxml}\" || exit 1"
+	else echo -n "rm -f \"${thisxml}\" ; exit 1" ; fi >>${tempdir}/q.txt
+	echo -n " ; test -s \"${thisxml}\" || exit 1 ; " >>${tempdir}/q.txt
 
 	for xslfile in "$(dirname "$0")"/*.xsl ; do
 		extension="csv"
 		[[ "${xslfile}" =~ '-to-html.xsl' ]] && extension="html"
 		outputfile="${stem}-$(basename "${xslfile/.xsl/}").${extension}"
-		echo "( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; )"
-	done >>${tempdir}/q2.txt
+		echo -n "( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; echo -n \"  $(basename "${xslfile}")\" ; ) ; "
+	done >>${tempdir}/q.txt
+	echo "rm -f \"${thisxml}\"" >>${tempdir}/q.txt
 done
 echo >&2
 
@@ -83,7 +89,5 @@ echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.
 test -d /sys/fs/cgroup/cpu/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/cpu/xsltprocsandbox || exit 1
 echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || exit 1
 
-randline -q <${tempdir}/q1.txt >${tempdir}/q-rand.txt
-echo "WAIT" >>${tempdir}/q-rand.txt
-randline -q <${tempdir}/q2.txt >>${tempdir}/q-rand.txt
+randline -q <${tempdir}/q.txt >${tempdir}/q-rand.txt
 queue -V -j 1 -s ${tempdir}/q-rand.txt
