@@ -52,7 +52,7 @@ renice -n 10 $$
 ionice -c 3 -p $$
 
 for xmlfile in "${@}" ; do
-	echo "${xmlfile}" >&2
+	echo -n "." >&2
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
 
 	if [[ "${xmlfile}" =~ '.xml.xz' ]] ; then echo -n "nice -n 15 ionice -c 3 unxz <\"${xmlfile}\" >${thisxml} || exit 1"
@@ -71,6 +71,7 @@ for xmlfile in "${@}" ; do
 		echo "( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; )"
 	done >>${tempdir}/q2.txt
 done
+echo >&2
 
 test -d /sys/fs/cgroup/memory/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/memory/xsltprocsandbox || exit 1
 test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; }
