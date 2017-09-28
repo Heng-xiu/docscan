@@ -52,6 +52,9 @@ renice -n 10 $$
 ionice -c 3 -p $$
 
 for xmlfile in "${@}" ; do
+	stem="${xmlfile/.xml.xz/}"
+	stem="${stem/.xml/}"
+
 	echo -n "." >&2
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
 
@@ -62,8 +65,6 @@ for xmlfile in "${@}" ; do
 
 	echo " ; nice sed -i -r 's![\d1\d6\d3\d11\d12\d14\d15\d16\d17\d19\d20\d21\d22\d23\d25\d27\d28\d29]!_!g;s!<error([ ][^>]*)?>[^<]*</error>!!g' ${thisxml} || exit 1" >>${tempdir}/q1.txt
 
-	stem="${xmlfile/.xml.xz/}"
-	stem="${stem/.xml/}"
 	for xslfile in "$(dirname "$0")"/*.xsl ; do
 		extension="csv"
 		[[ "${xslfile}" =~ '-to-html.xsl' ]] && extension="html"
