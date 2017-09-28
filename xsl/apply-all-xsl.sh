@@ -59,6 +59,13 @@ for xmlfile in "${@}" ; do
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
 
 
+	# If all output files exist, do not run XSL transformations
+	for xslfile in "$(dirname "$0")"/*.xsl ; do
+		extension="csv"
+		[[ "${xslfile}" =~ '-to-html.xsl' ]] && extension="html"
+		echo -n "test -f \"${stem}-$(basename "${xslfile/.xsl/}").${extension}\" && "
+	done >>${tempdir}/q.txt
+	echo -n "exit 0 ; " >>${tempdir}/q.txt
 
 	# Unpack compressed XML files if necessary
 	# Apply 'sed' to remove invalid byte code sequences
@@ -74,7 +81,7 @@ for xmlfile in "${@}" ; do
 		extension="csv"
 		[[ "${xslfile}" =~ '-to-html.xsl' ]] && extension="html"
 		outputfile="${stem}-$(basename "${xslfile/.xsl/}").${extension}"
-		echo -n "( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; echo -n \"  $(basename "${xslfile}")\" ; ) ; "
+		echo -n "test -f \"${outputfile}\" || ( echo \$\$ | sudo -n /usr/bin/tee /sys/fs/cgroup/memory/xsltprocsandbox/cgroup.procs | sudo -n /usr/bin/tee /sys/fs/cgroup/cpu/xsltprocsandbox/cgroup.procs >/dev/null || exit 1 ; prlimit --rss="${memlimitPages}" xsltproc \"${xslfile}\" \"${thisxml}\" >\"${outputfile}\" || { rm -f \"${outputfile}\" ; exit 1 ; } ; echo -n \"  $(basename "${xslfile}")\" ; ) ; "
 	done >>${tempdir}/q.txt
 	echo "rm -f \"${thisxml}\"" >>${tempdir}/q.txt
 done
