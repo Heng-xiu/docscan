@@ -76,7 +76,13 @@ total	</xsl:text>
 <xsl:text>	</xsl:text>
 <xsl:value-of select="meta/pdfboxvalidator/@pdfa1b" />
 <xsl:text>	</xsl:text>
-<xsl:value-of select="meta/callaspdfapilot/@pdfa1b" />
+<xsl:choose>
+ <xsl:when test="meta/callaspdfapilot/@pdfa1b">
+  <xsl:value-of select="meta/callaspdfapilot/@pdfa1b" />
+ </xsl:when>
+ <!-- Callas pdfApilot is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
+</xsl:choose>
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(meta/*[@pdfa1b='yes']) + count(meta/jhove/profile[@pdfa1b='yes'])" />
 <xsl:text>
