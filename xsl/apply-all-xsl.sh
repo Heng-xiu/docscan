@@ -35,8 +35,6 @@
 # 4. Resulting .csv files will be located next to the original .xml/.xml.xz file,
 #    with the filename enhanced with the xsl filename that was used to generate
 #    the .csv file
-# This script is parallelized as much as possible using the 'queue' command.
-# See here: https://gitlab.com/tfscripts/linuxcommandline
 
 export tempdir=$(mktemp --tmpdir -d 'apply-all-xsl-XXXXXXXXXXXXXXXX.d')
 function cleanup_on_exit {
@@ -99,4 +97,4 @@ echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || 
 
 randline -q <${tempdir}/q.txt >${tempdir}/q-rand.txt
 rm -rf /tmp/.apply-all-xsl-queue-output ; mkdir -p /tmp/.apply-all-xsl-queue-output
-queue -V -j 1 -p /tmp/.apply-all-xsl-queue-output ${tempdir}/q-rand.txt
+bash ${tempdir}/q-rand.txt > >(tee /tmp/.apply-all-xsl-queue-output/stdout.txt) 2> >(tee /tmp/.apply-all-xsl-queue-output/stderr.txt)
