@@ -58,6 +58,7 @@ for xmlfile in "${@}" ; do
 	echo -n "." >&2
 	thisxml=${tempdir}/$(md5sum <<<"${xmlfile}" | cut -f 1 -d ' ')".xml"
 
+	echo -n "echo \"${xmlfile}\" ; " >>${tempdir}/q.txt
 
 	# If all output files exist, do not run XSL transformations
 	for xslfile in "$(dirname "$0")"/*.xsl ; do
@@ -97,4 +98,5 @@ test -d /sys/fs/cgroup/cpu/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/cpu/xslt
 echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || exit 1
 
 randline -q <${tempdir}/q.txt >${tempdir}/q-rand.txt
-queue -V -j 1 -s ${tempdir}/q-rand.txt
+rm -rf /tmp/.apply-all-xsl-queue-output ; mkdir -p /tmp/.apply-all-xsl-queue-output
+queue -V -j 1 -p /tmp/.apply-all-xsl-queue-output ${tempdir}/q-rand.txt
