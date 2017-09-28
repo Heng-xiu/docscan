@@ -44,10 +44,8 @@ function cleanup_on_exit {
 }
 trap cleanup_on_exit EXIT
 
-cat <<EOF
-<?xml version="1.0" encoding="UTF-8" ?>
-<log isodate="2017-06-20T12:31:33Z">
-EOF
+echo '<?xml version="1.0" encoding="UTF-8" ?>'
+echo '<log isodate="'$(date -u '+%Y-%m-%dT%H:%M:%SZ')'">'
 
 for xmlfile in "${@}" ; do
 	echo "${xmlfile}" >&2
@@ -57,8 +55,6 @@ for xmlfile in "${@}" ; do
 	test -s ${tempxml} && { grep -vP '^<([?]xml |/log>|log |!-- 20[12])' ${tempxml} | nice -n 15 sed -r 's![\d1\d6\d3\d11\d12\d14\d15\d16\d17\d19\d20\d21\d22\d23\d25\d27\d28\d29]!_!g' | nice -n 15 sed -r 's!<error([ ][^>]*)?>[^<]*</error>!!g' || exit 1 ; }
 done
 
-cat <<EOF
-</log>
-<!-- 2017-06-20T12:35:20Z -->
-EOF
+echo '</log>'
+echo '<!-- '$(date -u '+%Y-%m-%dT%H:%M:%SZ')' -->'
 
