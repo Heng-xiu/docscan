@@ -391,7 +391,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     QProcess *jhoveProcess = launchJHove(this, JHovePDF, filename);
     QByteArray jhoveStandardOutputData, jhoveStandardErrorData;
-    if (jhoveProcess != nullptr){
+    if (jhoveProcess != nullptr) {
         connect(jhoveProcess, &QProcess::readyReadStandardOutput, [jhoveProcess, &jhoveStandardOutputData]() {
             const QByteArray d(jhoveProcess->readAllStandardOutput());
             jhoveStandardOutputData.append(d);

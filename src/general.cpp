@@ -116,25 +116,25 @@ QString removeBinaryGarbage(const QString &xml)
 
 QByteArray removeBinaryGarbage(const QByteArray &data)
 {
-    QByteArray result;result.reserve(data.size());
-    for (int i=0;i<data.size();++i){
-        const unsigned char b=data[i];
-        if ((b&128)==0){
+    QByteArray result; result.reserve(data.size());
+    for (int i = 0; i < data.size(); ++i) {
+        const unsigned char b = data[i];
+        if ((b & 128) == 0) {
             /// Plain ASCII, most-significant bit not set
-            if (b>=32 ||b==9||b==10||b==13){
+            if (b >= 32 || b == 9 || b == 10 || b == 13) {
                 /// Skip lower ASCII characters except for tab, line break, and cardrige return
-            result.append(b);
+                result.append(b);
             }
-        }else if ((b&224)==192&&i<data.size()-1&&(data[i+1]&192)==128){
+        } else if ((b & 224) == 192 && i < data.size() - 1 && (data[i + 1] & 192) == 128) {
             /// Two-byte UTF-8 data
             result.append(b);
             ++i;
             result.append(data[i]);
-        }else if ((b&240)==224&&i<data.size()-2&&(data[i+1]&192)==128&&(data[i+2]&192)==128){
+        } else if ((b & 240) == 224 && i < data.size() - 2 && (data[i + 1] & 192) == 128 && (data[i + 2] & 192) == 128) {
             /// Three-byte UTF-8 data
 
             /// Skipping those sequences, most likely garbage
-            i+=2;
+            i += 2;
             /*
             result.append(b);
             ++i;
@@ -142,11 +142,11 @@ QByteArray removeBinaryGarbage(const QByteArray &data)
             ++i;
             result.append(data[i]);
             */
-        }else if ((b&248)==240&&i<data.size()-3&&(data[i+1]&192)==128&&(data[i+2]&192)==128&&(data[i+3]&192)==128){
+        } else if ((b & 248) == 240 && i < data.size() - 3 && (data[i + 1] & 192) == 128 && (data[i + 2] & 192) == 128 && (data[i + 3] & 192) == 128) {
             /// Four-byte UTF-8 data
 
             /// Skipping those sequences, most likely garbage
-            i+=3;
+            i += 3;
             /*
             result.append(b);
             ++i;
@@ -156,8 +156,8 @@ QByteArray removeBinaryGarbage(const QByteArray &data)
             ++i;
             result.append(data[i]);
             */
-        }else
-            qWarning()<<"Removing invalid byte from QByteArray";
+        } else
+            qWarning() << "Removing invalid byte from QByteArray";
     }
     return result;
 }
