@@ -490,7 +490,7 @@ QString Guessing::programToXML(const QString &program) {
         if (easypdfVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = easypdfVersion.cap(0);
     } else if (text.contains(QStringLiteral("pdfmaker"))) {
-        static const QRegExp pdfmakerVersion("\\b\\d+(\\.\\d+)+\\b");
+        static const QRegExp pdfmakerVersion(" \\d+(\\.\\d+)*\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("adobe");
         xml[QStringLiteral("product")] = QStringLiteral("pdfmaker");
         if (pdfmakerVersion.indexIn(text) >= 0)
@@ -541,13 +541,13 @@ QString Guessing::programToXML(const QString &program) {
         if (arbortextVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = arbortextVersion.cap(0);
     } else if (text.contains(QStringLiteral("3b2"))) {
-        static const QRegExp threeB2Version("\\d+(\\.[0-9a-z]+)+)");
+        static const QRegExp threeB2Version("\\d+(\\.[0-9a-z]+)+");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("ptc");
         xml[QStringLiteral("product")] = QStringLiteral("3b2");
         if (threeB2Version.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = threeB2Version.cap(0);
     } else if (text.startsWith(QStringLiteral("3-heights"))) {
-        static const QRegExp threeHeightsVersion("\\b\\d+(\\.\\d+)+)");
+        static const QRegExp threeHeightsVersion("\\b\\d+(\\.\\d+)+");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("pdftoolsag");
         xml[QStringLiteral("product")] = QStringLiteral("3-heights");
         if (threeHeightsVersion.indexIn(text) >= 0)
@@ -717,7 +717,7 @@ QString Guessing::programToXML(const QString &program) {
         if (stamppdfbatchVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = stamppdfbatchVersion.cap(0);
     } else if (text.startsWith(QStringLiteral("xyenterprise "))) {
-        static const QRegExp xyVersion("\b\\d+(\\.\\[0-9a-z])+)( patch \\S*\\d)\\b");
+        static const QRegExp xyVersion("\\b(\\d+(\\.\\[0-9a-z])+)( patch \\S*\\d)?\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("dakota");
         xml[QStringLiteral("product")] = QStringLiteral("xyenterprise");
         if (xyVersion.indexIn(text) >= 0)
@@ -855,9 +855,9 @@ QString Guessing::programToXML(const QString &program) {
             xml[QStringLiteral("version")] = OOoVersion1.cap(1);
         else {
             /// Fallback: conventional version string like "3.0"
-            static const QRegExp OOoVersion2("\\b(\\d+(\\.\\d+)+)\\b", Qt::CaseInsensitive);
+            static const QRegExp OOoVersion2("\\b\\d+(\\.\\d+)+\\b", Qt::CaseInsensitive);
             if (OOoVersion2.indexIn(text) >= 0)
-                xml[QStringLiteral("version")] = OOoVersion2.cap(1);
+                xml[QStringLiteral("version")] = OOoVersion2.cap(0);
         }
 
         if (text.indexOf(QStringLiteral("unix")) >= 0)
