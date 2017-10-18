@@ -603,6 +603,34 @@ QString Guessing::programToXML(const QString &program) {
                     versionNumber += 2;
                     xml[QStringLiteral("version")] = QString::number(versionNumber, 'f', 1);
                 }
+            } else {
+                static const QRegExp ccVersion(QStringLiteral("\\bCC\\s*(\\d+([.]\\d+)*)\\b"));
+                if (ccVersion.indexIn(text) >= 0) {
+                    bool ok = false;
+                    double versionNumber = ccVersion.cap(1).toDouble(&ok);
+                    if (ccVersion.cap(0) == QStringLiteral("CC"))
+                        xml[QStringLiteral("version")] = QStringLiteral("9.2");
+                    else if (ok) {
+                        if (versionNumber == 2014)
+                            xml[QStringLiteral("version")] = QStringLiteral("10");
+                        else if (versionNumber == 2014.1)
+                            xml[QStringLiteral("version")] = QStringLiteral("10.1");
+                        else if (versionNumber == 2014.2)
+                            xml[QStringLiteral("version")] = QStringLiteral("10.2");
+                        else if (versionNumber == 2015)
+                            xml[QStringLiteral("version")] = QStringLiteral("11.0");
+                        else if (versionNumber == 2015.1)
+                            xml[QStringLiteral("version")] = QStringLiteral("11.1");
+                        else if (versionNumber == 2015.2)
+                            xml[QStringLiteral("version")] = QStringLiteral("11.2");
+                        else if (versionNumber == 2015.4)
+                            xml[QStringLiteral("version")] = QStringLiteral("11.4");
+                        else if (versionNumber == 2017)
+                            xml[QStringLiteral("version")] = QStringLiteral("12.0");
+                        else if (versionNumber == 2017.1)
+                            xml[QStringLiteral("version")] = QStringLiteral("12.1");
+                    }
+                }
             }
         }
     } else if (text.indexOf(QStringLiteral("illustrator")) >= 0) {
@@ -830,6 +858,22 @@ QString Guessing::programToXML(const QString &program) {
     } else if (text == QStringLiteral("google")) {
         xml[QStringLiteral("manufacturer")] = QStringLiteral("google");
         xml[QStringLiteral("product")] = QStringLiteral("docs");
+    } else if (text.startsWith(QStringLiteral("apache "))) {
+        xml[QStringLiteral("manufacturer")] = QStringLiteral("apache");
+        if (text.contains(QStringLiteral(" fop ")))
+            xml[QStringLiteral("product")] = QStringLiteral("fop");
+        static const QRegExp apacheVersion("\\bVersion (\\d+(\\.\\d+)+\\b");
+        if (apacheVersion.indexIn(text, Qt::CaseInsensitive) >= 0)
+            xml[QStringLiteral("version")] = apacheVersion.cap(0);
+    } else if (text.startsWith(QStringLiteral("pdftk "))) {
+        xml[QStringLiteral("manufacturer")] = QStringLiteral("pdflabs");
+        xml[QStringLiteral("product")] = QStringLiteral("pdftk");
+        static const QRegExp pdftkVersion(" (\\d+(\\.\\d+)*\\b");
+        if (pdftkVersion.indexIn(text, Qt::CaseInsensitive) >= 0)
+            xml[QStringLiteral("version")] = pdftkVersion.cap(0);
+    } else if (text.startsWith(QStringLiteral("pdfmerge!"))) {
+        xml[QStringLiteral("manufacturer")] = QStringLiteral("lulusoftware");
+        xml[QStringLiteral("product")] = QStringLiteral("pdfmerge");
     } else if (!text.contains(QStringLiteral("words"))) {
         static const QRegExp microsoftProducts("powerpoint|excel|word|outlook|visio|access");
         static const QRegExp microsoftVersion("\\b(starter )?(20[01][0-9]|1?[0-9]\\.[0-9]+|9[5-9])\\b");
