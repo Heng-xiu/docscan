@@ -89,7 +89,7 @@ echo >&2
 test -d /sys/fs/cgroup/memory/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/memory/xsltprocsandbox || exit 1
 test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; }
 echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes >/dev/null || exit 1
-echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null || exit 1
+test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; } || exit 1
 
 # Limit to 90% CPU time ('xsltproc' is a single core process)
 test -d /sys/fs/cgroup/cpu/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/cpu/xsltprocsandbox || exit 1
