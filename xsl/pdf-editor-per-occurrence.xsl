@@ -35,10 +35,10 @@
 <xsl:template match="log">
 
 <!-- column header  -->
-<xsl:text>pdfeditor	manufacturer	file count</xsl:text>
+<xsl:text>pdfeditor	manufacturer	product	version	file count</xsl:text>
 
 <xsl:text>
-total	</xsl:text>
+total		no-data	no-data	no-data	no-data</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/@type='editor'])" />
 <xsl:text>
 </xsl:text>
@@ -49,6 +49,10 @@ total	</xsl:text>
 <xsl:value-of select="name" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="name/@manufacturer" />
+<xsl:text>	</xsl:text>
+<xsl:value-of select="name/@product" />
+<xsl:text>	</xsl:text>
+<xsl:value-of select="name/@version" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/tool[@type='editor' and name=$cmpto])+count(/log/logitem/fileanalysis[@status='ok']/meta/tools/tool[@type='editor' and name=$cmpto])" />
 <xsl:text>

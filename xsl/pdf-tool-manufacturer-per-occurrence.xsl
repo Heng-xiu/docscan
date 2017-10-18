@@ -35,10 +35,10 @@
 <xsl:template match="log">
 
 <!-- column header  -->
-<xsl:text>manufacturer	file count</xsl:text>
+<xsl:text>manufacturer	product	version	file count</xsl:text>
 
 <xsl:text>
-total	</xsl:text>
+total		no-data	no-data	no-data	no-data</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor' or @type='producer']/name/@manufacturer])" />
 <xsl:text>
 </xsl:text>
@@ -48,37 +48,41 @@ total	</xsl:text>
 <xsl:variable name="cmpto" select="name/@manufacturer" />
 <xsl:value-of select="name/@manufacturer" />
 <xsl:text>	</xsl:text>
+<xsl:value-of select="name/@product" />
+<xsl:text>	</xsl:text>
+<xsl:value-of select="name/@version" />
+<xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[(@type='editor' or @type='producer') and name/@manufacturer=$cmpto]])" />
 <xsl:text>
 </xsl:text>
 </xsl:for-each>
 
-<xsl:text>SPECIAL:microsoft-AND-adobe	</xsl:text>
+<xsl:text>SPECIAL:microsoft-AND-adobe	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/name/@manufacturer='adobe' and meta/tools/tool/name/@manufacturer='microsoft'])" />
 <xsl:text>
 </xsl:text>
 
-<xsl:text>SPECIAL:microsoft-BUT-NO-adobe	</xsl:text>
+<xsl:text>SPECIAL:microsoft-BUT-NO-adobe	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/name/@manufacturer='microsoft' and not(meta/tools/tool/name/@manufacturer='adobe')])" />
 <xsl:text>
 </xsl:text>
 
-<xsl:text>SPECIAL:ONLY-microsoft	</xsl:text>
+<xsl:text>SPECIAL:ONLY-microsoft	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor']/name/@manufacturer='microsoft' and meta/tools/tool[@type='producer']/name/@manufacturer='microsoft'])" />
 <xsl:text>
 </xsl:text>
 
-<xsl:text>SPECIAL:ONLY-adobe	</xsl:text>
+<xsl:text>SPECIAL:ONLY-adobe	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor']/name/@manufacturer='adobe' and meta/tools/tool[@type='producer']/name/@manufacturer='adobe'])" />
 <xsl:text>
 </xsl:text>
 
-<xsl:text>SPECIAL:unknown	</xsl:text>
+<xsl:text>SPECIAL:unknown	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and not(meta/tools/tool[@type='editor']/name/@manufacturer) and not(meta/tools/tool[@type='producer']/name/@manufacturer)])" />
 <xsl:text>
 </xsl:text>
 
-<xsl:text>SPECIAL:number-of-files	</xsl:text>
+<xsl:text>SPECIAL:number-of-files	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok'])" />
 <xsl:text>
 </xsl:text>
