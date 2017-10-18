@@ -97,4 +97,4 @@ echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || 
 
 randline -q <${tempdir}/q.txt >${tempdir}/q-rand.txt
 rm -rf /tmp/.apply-all-xsl-queue-output ; mkdir -p /tmp/.apply-all-xsl-queue-output
-bash ${tempdir}/q-rand.txt > >(tee /tmp/.apply-all-xsl-queue-output/stdout.txt) 2> >(tee /tmp/.apply-all-xsl-queue-output/stderr.txt)
+queue -j1 -V -p /tmp/.apply-all-xsl-queue-output ${tempdir}/q-rand.txt
