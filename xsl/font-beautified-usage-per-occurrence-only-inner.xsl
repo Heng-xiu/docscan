@@ -44,19 +44,19 @@ total		</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/fonts/font/@oninnerpage='yes'])" />
 
 <xsl:text>
-open		</xsl:text>
+SPECIAL:open		</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/fonts/font[@oninnerpage='yes' and license/@type='open'])" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/fonts/font[@oninnerpage='yes']/license/@type='open'])" />
 
 <xsl:text>
-proprietary		</xsl:text>
+SPECIAL:proprietary		</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/fonts/font[@oninnerpage='yes' and license/@type='proprietary'])" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/fonts/font[@oninnerpage='yes']/license/@type='proprietary'])" />
 
 <xsl:text>
-unknown		</xsl:text>
+SPECIAL:unknown		</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/fonts/font[@oninnerpage='yes' and license/@type='unknown'])" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/fonts/font[@oninnerpage='yes']/license/@type='unknown'])" />
