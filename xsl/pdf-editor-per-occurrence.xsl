@@ -38,7 +38,7 @@
 <xsl:text>pdfeditor	manufacturer	product	version	file count</xsl:text>
 
 <xsl:text>
-total		no-data	no-data	no-data	no-data</xsl:text>
+total	no-data	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool/@type='editor'])" />
 <xsl:text>
 </xsl:text>
