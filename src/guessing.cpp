@@ -324,6 +324,7 @@ QString Guessing::programToXML(const QString &program) {
     if (text.indexOf(QStringLiteral("dvips")) >= 0) {
         static const QRegExp radicaleyeVersion("\\b\\d+\\.\\d+[a-z]*\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("radicaleye");
+        xml[QStringLiteral("product")] = QStringLiteral("dvips");
         if (radicaleyeVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = radicaleyeVersion.cap(0);
     } else if (text.indexOf(QStringLiteral("ghostscript")) >= 0) {
@@ -359,12 +360,20 @@ QString Guessing::programToXML(const QString &program) {
         xml[QStringLiteral("product")] = QStringLiteral("dvipdfm");
         if (dvipdfmVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = dvipdfmVersion.cap(0);
-    } else if (text.indexOf(QStringLiteral("tex output")) >= 0) {
+    } else if (text.indexOf(QStringLiteral("tex output")) >= 0 || text == QStringLiteral("tex") || text.startsWith(QStringLiteral("tex "))) {
         static const QRegExp texVersion("\\b\\d+([.:]\\d+)+\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("tex");
         xml[QStringLiteral("product")] = QStringLiteral("tex");
         if (texVersion.indexIn(text) >= 0)
             xml[QStringLiteral("version")] = texVersion.cap(0);
+    } else if (text.startsWith(QStringLiteral("gnuplot "))) {
+        static const QRegExp gnuplotVersion("\\b(\\d+([.]\\d+)*)( patchlevel (\\d+))?\\b");
+        xml[QStringLiteral("product")] = QStringLiteral("gnuplot");
+        if (gnuplotVersion.indexIn(text) >= 0) {
+            xml[QStringLiteral("version")] = gnuplotVersion.cap(1);
+            if (!gnuplotVersion.cap(4).isEmpty())
+                xml[QStringLiteral("version")] += QStringLiteral("p") + gnuplotVersion.cap(4);
+        }
     } else if (text.indexOf(QStringLiteral("koffice")) >= 0) {
         static const QRegExp kofficeVersion("/(d+([.]\\d+)*)\\b");
         xml[QStringLiteral("manufacturer")] = QStringLiteral("kde");
