@@ -44,14 +44,18 @@ bool LogCollector::isAlive()
 
 void LogCollector::receiveLog(const QString &origin, const QString &message)
 {
-    const QString time = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-    m_ts << "<logitem epoch=\"" << (QDateTime::currentMSecsSinceEpoch() / 1000) << "\" source=\"" << origin << "\" time=\"" << time << "\">" << endl << message << "</logitem>" << endl;
+    if (m_output->isOpen()) {
+        const QString time = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+        m_ts << "<logitem epoch=\"" << (QDateTime::currentMSecsSinceEpoch() / 1000) << "\" source=\"" << origin << "\" time=\"" << time << "\">" << endl << message << "</logitem>" << endl;
+    }
 }
 
 void LogCollector::close()
 {
-    m_ts << "</log>" << endl << "<!-- " << QDateTime::currentDateTimeUtc().toString(Qt::ISODate) << " -->" << endl;
-    m_ts.flush();
+    if (m_output->isOpen()) {
+        m_ts << "</log>" << endl << "<!-- " << QDateTime::currentDateTimeUtc().toString(Qt::ISODate) << " -->" << endl;
+        m_ts.flush();
+    }
     m_output->close();
 }
 
