@@ -38,7 +38,8 @@ SOURCES += src/main.cpp src/watchdog.cpp \
     src/geoip.cpp \
     src/searchenginespringerlink.cpp \
     src/networkaccessmanager.cpp \
-    src/guessing.cpp
+    src/guessing.cpp \
+    src/directorymonitor.cpp
 HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
@@ -54,7 +55,8 @@ HEADERS += src/searchengineabstract.h \
     src/geoip.h \
     src/searchenginespringerlink.h \
     src/networkaccessmanager.h \
-    src/guessing.h
+    src/guessing.h \
+    src/directorymonitor.h
 
 wv2 {
     SOURCES += src/wv2/crc32.c src/wv2/handlers.cpp src/wv2/word_helper.cpp \

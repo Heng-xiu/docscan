@@ -47,7 +47,7 @@ filter=*.pdf.xz|*.pdf|*.jpg|*.jpeg|*.jpe|*.jfif|*.zip
 #  webcrawler, searchenginegoogle, searchenginebing,
 #  searchenginespringerlink, filefinderlist,
 #  fromlogfilefilefinder, fromlogfiledownloader,
-#  urldownloader
+#  urldownloader, directorymonitor
 filesystemscan=/tmp/pdf
 
 # Which unit used to analyze found files. Possible

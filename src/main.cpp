@@ -35,6 +35,7 @@
 #include "fakedownloader.h"
 #include "urldownloader.h"
 #include "filesystemscan.h"
+#include "directorymonitor.h"
 #include "fileanalyzermultiplexer.h"
 #include "watchdog.h"
 #include "webcrawler.h"
@@ -158,6 +159,18 @@ bool evaluateConfigfile(const QString &filename)
                 } else if (key == QStringLiteral("filesystemscan") && finder == nullptr) {
                     qDebug() << "filesystemscan =" << value;
                     finder = new FileSystemScan(filter, value);
+                } else if (key == QStringLiteral("directorymonitor") && finder == nullptr) {
+                    const QStringList arguments = value.split(QChar(','));
+                    if (arguments.count() == 2 && !arguments[0].isEmpty() && !arguments[1].isEmpty()) {
+                        bool ok = false;
+                        int timeout = arguments[1].toInt(&ok);
+                        if (ok) {
+                            qDebug() << "directorymonitor =" << arguments[0] << "  timeout=" << timeout;
+                            finder = new DirectoryMonitor(timeout, filter, arguments[0]);
+                        } else
+                            qWarning() << "Is not a number: " << arguments[1];
+                    } else
+                        qWarning() << "Invalid argument for 'directorymonitor': " << value;
                 } else if (key == QStringLiteral("filefinderlist") && finder == nullptr) {
                     qDebug() << "filefinderlist =" << value;
                     finder = new FileFinderList(value);
