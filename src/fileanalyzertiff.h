@@ -20,26 +20,35 @@
 
  */
 
-#ifndef JHOVEWRAPPER_H
-#define JHOVEWRAPPER_H
+#ifndef FILEANALYZERTIFF_H
+#define FILEANALYZERTIFF_H
 
-#include <QProcess>
+#include <QObject>
+
+#include "fileanalyzerabstract.h"
+#include "jhovewrapper.h"
 
 /**
- * Wrapping the command line tool 'jhove'.
+ * Analyzing code for TIFF data
  *
  * @author Thomas Fischer <thomas.fischer@his.se>
  */
-class JHoveWrapper
+class FileAnalyzerTIFF : public FileAnalyzerAbstract, public JHoveWrapper
 {
+    Q_OBJECT
 public:
-    enum Module {JHovePDF, JHoveJPEG, JHoveJPEG2000, JHoveTIFF};
-protected:
-    static QString jhoveShellscript;
+    explicit FileAnalyzerTIFF(QObject *parent = nullptr);
 
-    QString setupJhove(QObject *parent, const QString &jhoveShellscript);
-    QProcess *launchJHove(QObject *parent, const Module module, const QString &filename);
-    static QString hulName(Module module);
+    virtual bool isAlive();
+
+    void setupJhove(const QString &shellscript);
+    void setupDPFManager(const QString &dpfmangerJFXjar);
+
+public slots:
+    virtual void analyzeFile(const QString &filename);
+
+private:
+    QString dpfmangerJFXjar;
 };
 
-#endif // JHOVEWRAPPER_H
+#endif // FILEANALYZERTIFF_H

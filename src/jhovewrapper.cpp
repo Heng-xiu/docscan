@@ -96,6 +96,7 @@ QString JHoveWrapper::hulName(Module module) {
     case JHovePDF: return QStringLiteral("PDF-hul");
     case JHoveJPEG: return QStringLiteral("JPEG-hul");
     case JHoveJPEG2000: return QStringLiteral("JPEG2000-hul");
+    case JHoveTIFF: return QStringLiteral("TIFF-hul");
     default:
         qWarning() << "Unchecked case for module=" << module;
         return QString();

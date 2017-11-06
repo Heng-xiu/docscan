@@ -35,6 +35,7 @@
 #endif // HAVE_WV2
 #include "fileanalyzerjpeg.h"
 #include "fileanalyzerjp2.h"
+#include "fileanalyzertiff.h"
 
 /**
  * Automatically redirects a file to be analyzed
@@ -58,6 +59,7 @@ public:
     void setupVeraPDF(const QString &cliTool);
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
+    void setupDPFManager(const QString &dpfmangerJFXjar);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -82,6 +84,7 @@ private:
 #endif // HAVE_WV2
     FileAnalyzerJPEG m_fileAnalyzerJPEG;
     FileAnalyzerJP2 m_fileAnalyzerJP2;
+    FileAnalyzerTIFF m_fileAnalyzerTIFF;
     const QStringList &m_filters;
 
     void uncompressAnalyzefile(const QString &filename, const QString &extension, const QString &uncompressTool);

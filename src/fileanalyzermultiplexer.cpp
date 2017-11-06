@@ -35,6 +35,7 @@ const QStringList FileAnalyzerMultiplexer::defaultFilters = QStringList()
         << QStringLiteral("*.pdf") << QStringLiteral("*.pdf.lzma") << QStringLiteral("*.pdf.xz") << QStringLiteral("*.pdf.gz") ///< PDF
         << QStringLiteral("*.jpg") << QStringLiteral("*.jpeg") << QStringLiteral("*.jpe") << QStringLiteral("*.jfif") ///< JPEG
         << QStringLiteral("*.jp2") << QStringLiteral("*.jpf") << QStringLiteral("*.jpx") ///< JPEG2000
+        << QStringLiteral("*.tif") << QStringLiteral("*.tiff") ///< TIFF
         ;
 
 FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent)
@@ -60,6 +61,8 @@ FileAnalyzerMultiplexer::FileAnalyzerMultiplexer(const QStringList &filters, QOb
     connect(&m_fileAnalyzerJPEG, &FileAnalyzerJPEG::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
     connect(&m_fileAnalyzerJP2, &FileAnalyzerJP2::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
     connect(&m_fileAnalyzerJP2, &FileAnalyzerJP2::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
+    connect(&m_fileAnalyzerTIFF, &FileAnalyzerTIFF::analysisReport, this, &FileAnalyzerMultiplexer::analysisReport);
+    connect(&m_fileAnalyzerTIFF, &FileAnalyzerTIFF::foundEmbeddedFile, this, &FileAnalyzerMultiplexer::foundEmbeddedFile);
 }
 
 bool FileAnalyzerMultiplexer::isAlive()
@@ -74,6 +77,7 @@ bool FileAnalyzerMultiplexer::isAlive()
 #endif // HAVE_WV2
     result |= m_fileAnalyzerJPEG.isAlive();
     result |= m_fileAnalyzerJP2.isAlive();
+    result |= m_fileAnalyzerTIFF.isAlive();
     return result;
 }
 
@@ -108,6 +112,7 @@ void FileAnalyzerMultiplexer::setupJhove(const QString &shellscript)
     m_fileAnalyzerPDF.setupJhove(shellscript);
     m_fileAnalyzerJPEG.setupJhove(shellscript);
     m_fileAnalyzerJP2.setupJhove(shellscript);
+    m_fileAnalyzerTIFF.setupJhove(shellscript);
 }
 
 void FileAnalyzerMultiplexer::setupVeraPDF(const QString &cliTool) {
@@ -120,6 +125,10 @@ void FileAnalyzerMultiplexer::setupPdfBoXValidator(const QString &pdfboxValidato
 
 void FileAnalyzerMultiplexer::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI) {
     m_fileAnalyzerPDF.setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
+}
+
+void FileAnalyzerMultiplexer::setupDPFManager(const QString &dpfmangerJFXjar) {
+    m_fileAnalyzerTIFF.setupDPFManager(dpfmangerJFXjar);
 }
 
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
@@ -221,6 +230,7 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
 #endif // HAVE_WV2
     static const QRegExp jpegExtension(QStringLiteral("[.](jpeg|jpg|jpe|jfif)$"));
     static const QRegExp jpeg2000Extension(QStringLiteral("[.](jp2|jpf|jpx)$"));
+    static const QRegExp tiffExtension(QStringLiteral("[.]tiff?$"));
 
     qDebug() << "Analyzing file" << filename;
 
@@ -271,6 +281,11 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
             m_fileAnalyzerJP2.analyzeFile(filename);
         } else
             qDebug() << "Skipping unmatched extension" << jpeg2000Extension.cap(0);
+    } else if (tiffExtension.indexIn(filename) >= 0) {
+        if (m_filters.contains(QChar('*') + tiffExtension.cap(0))) {
+            m_fileAnalyzerTIFF.analyzeFile(filename);
+        } else
+            qDebug() << "Skipping unmatched extension" << tiffExtension.cap(0);
     } else
         qWarning() << "Unsupported filetype for file" << filename;
 }

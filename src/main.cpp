@@ -52,6 +52,7 @@ FileAnalyzerAbstract *fileAnalyzer;
 static const int defaultNumHits = 25000;
 int numHits, webcrawlermaxvisitedpages;
 QString jhoveShellscript;
+QString dpfmangerJFXjar;
 QString veraPDFcliTool;
 QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
@@ -101,6 +102,12 @@ bool evaluateConfigfile(const QString &filename)
                     const QFileInfo script(jhoveShellscript);
                     if (jhoveShellscript.isEmpty() || !script.exists() || !script.isExecutable())
                         qCritical() << "Value for jhoveShellscript does not refer to an existing, executable script or program";
+                } else if (key == QStringLiteral("dpfmanagerjar")) {
+                    dpfmangerJFXjar = value;
+                    qDebug() << "dpfmangerJFXjar =" << dpfmangerJFXjar;
+                    const QFileInfo javaClass(dpfmangerJFXjar);
+                    if (dpfmangerJFXjar.isEmpty() || !javaClass.exists() || javaClass.isExecutable())
+                        qCritical() << "Value for dpfmangerJFXjar does refer to an non-existing xor executable file: " << dpfmangerJFXjar;
                 } else if (key == QStringLiteral("verapdf")) {
                     veraPDFcliTool = value;
                     qDebug() << "veraPDFcliTool = " << veraPDFcliTool;
@@ -221,6 +228,9 @@ bool evaluateConfigfile(const QString &filename)
                         fileAnalyzer = new FileAnalyzerCompoundBinary();
                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
 #endif // HAVE_WV2
+                    } else if (value.contains(QStringLiteral("tiff"))) {
+                        fileAnalyzer = new FileAnalyzerTIFF();
+                        qDebug() << "fileanalyzer = FileAnalyzerTIFF";
                     } else
                         fileAnalyzer = nullptr;
                 } else {
@@ -334,10 +344,23 @@ int main(int argc, char *argv[])
                     FileAnalyzerJP2 *fileAnalyzerJP2 = qobject_cast<FileAnalyzerJP2 *>(fileAnalyzer);
                     if (fileAnalyzerJP2 != nullptr)
                         fileAnalyzerJP2->setupJhove(jhoveShellscript);
+                    else {
+                        FileAnalyzerTIFF *fileAnalyzerTIFF = qobject_cast<FileAnalyzerTIFF *>(fileAnalyzer);
+                        if (fileAnalyzerTIFF != nullptr)
+                            fileAnalyzerTIFF->setupJhove(jhoveShellscript);
+                    }
                 }
             }
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setupJhove(jhoveShellscript);
+        }
+
+        if (!dpfmangerJFXjar.isEmpty()) {
+            FileAnalyzerTIFF *fileAnalyzerTIFF = qobject_cast<FileAnalyzerTIFF *>(fileAnalyzer);
+            if (fileAnalyzerTIFF != nullptr)
+                fileAnalyzerTIFF->setupDPFManager(dpfmangerJFXjar);
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupDPFManager(dpfmangerJFXjar);
         }
 
         if (!veraPDFcliTool.isEmpty()) {

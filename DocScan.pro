@@ -27,7 +27,7 @@ SOURCES += src/main.cpp src/watchdog.cpp \
     src/searchengineabstract.cpp \
     src/searchenginebing.cpp src/downloader.cpp \
     src/fileanalyzerabstract.cpp src/fileanalyzerjpeg.cpp \
-    src/fileanalyzerjp2.cpp \
+    src/fileanalyzerjp2.cpp src/fileanalyzertiff.cpp \
     src/fileanalyzerpdf.cpp src/searchenginegoogle.cpp \
     src/logcollector.cpp src/jhovewrapper.cpp \
     src/general.cpp src/urldownloader.cpp \
@@ -44,7 +44,7 @@ HEADERS += src/searchengineabstract.h \
     src/searchenginebing.h src/downloader.h \
     src/fileanalyzerabstract.h src/searchenginegoogle.h \
     src/fileanalyzerpdf.h src/fileanalyzerjpeg.h \
-    src/fileanalyzerjp2.h \
+    src/fileanalyzerjp2.h src/fileanalyzertiff.h \
     src/watchdog.h src/watchable.h \
     src/logcollector.h src/fromlogfile.h \
     src/general.h src/urldownloader.h \

@@ -13,6 +13,10 @@ verapdf=/home/fish/HiS/Research/OSS/verapdf/verapdf
 #  PdfBoxValidator.class
 pdfboxvalidator=/home/fish/HiS/Research/OSS/pdfbox/PdfBoxValidator.class
 
+# Full path and filename to DPF Manager's JAR file
+# (most likely called 'DPF Manager-jfx.jar')
+dpfmanagerjar=/home/fish/HiS/Research/OSS/DPFManager/DPF Manager-jfx.jar
+
 # Full path and filename of Callas pdfaPilots's executable script
 # Requires either an expensive commercial license or a
 # 30-day evaluation copy
@@ -38,7 +42,7 @@ embeddedfilesanalysis=false
 # ('|'). File patterns are not regular expressions,
 # instead they rather work like file patterns in
 # a POSIX shell.
-filter=*.pdf.xz|*.pdf|*.jpg|*.jpeg|*.jpe|*.jfif|*.zip
+filter=*.pdf.xz|*.pdf|*.jpg|*.jpeg|*.jpe|*.jfif|*.zip|*.tif|*.tiff
 
 # Directory where to start searching for files for
 # analysis. The search in the file system will be
@@ -71,6 +75,7 @@ filesystemscan=/tmp/pdf
 #                delegated to the multiplexer
 #  jpeg          Analyze JPEG photo/image files
 #  jp2           Analyze JPEG2000 photo/image files
+#  tiff          Analyze TIFF photo/image files
 # Note 1: Only 'multiplexer' can handle compressed files
 # Note 2: It is a safe choice to pick 'multiplexer' here
 #         and specify a filter above.
