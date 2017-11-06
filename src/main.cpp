@@ -228,6 +228,12 @@ bool evaluateConfigfile(const QString &filename)
                         fileAnalyzer = new FileAnalyzerCompoundBinary();
                         qDebug() << "fileanalyzer = FileAnalyzerCompoundBinary";
 #endif // HAVE_WV2
+                    } else if (value.contains(QStringLiteral("jpeg"))) {
+                        fileAnalyzer = new FileAnalyzerJPEG();
+                        qDebug() << "fileanalyzer = FileAnalyzerJPEG";
+                    } else if (value.contains(QStringLiteral("jp2"))) {
+                        fileAnalyzer = new FileAnalyzerJP2();
+                        qDebug() << "fileanalyzer = FileAnalyzerJP2";
                     } else if (value.contains(QStringLiteral("tiff"))) {
                         fileAnalyzer = new FileAnalyzerTIFF();
                         qDebug() << "fileanalyzer = FileAnalyzerTIFF";
