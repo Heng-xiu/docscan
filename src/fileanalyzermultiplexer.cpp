@@ -232,7 +232,8 @@ void FileAnalyzerMultiplexer::analyzeFile(const QString &filename)
     static const QRegExp jpeg2000Extension(QStringLiteral("[.](jp2|jpf|jpx)$"));
     static const QRegExp tiffExtension(QStringLiteral("[.]tiff?$"));
 
-    qDebug() << "Analyzing file" << filename;
+    QFileInfo fi(filename);
+    qDebug() << "Analyzing file" << filename << "of size " << ((fi.size() + 511) / 1024) << "KiB";
 
     if (filename.endsWith(QStringLiteral(".xz"))) {
         uncompressAnalyzefile(filename, QStringLiteral(".xz"), QStringLiteral("unxz"));
