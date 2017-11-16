@@ -25,6 +25,7 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QDateTime>
+#include <QTimer>
 #include <QProcess>
 #include <QCoreApplication>
 #include <QDir>
@@ -47,6 +48,27 @@ FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false)
 {
     FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
+
+    QTimer::singleShot(50, this, &FileAnalyzerPDF::delayedToolcheck);
+}
+
+void FileAnalyzerPDF::delayedToolcheck() {
+    QProcess exiftoolprocess(this);
+    const QStringList arguments = QStringList() << QStringLiteral("-ver");
+    QByteArray exiftoolStandardOutput;
+    connect(&exiftoolprocess, &QProcess::readyReadStandardOutput, [&exiftoolprocess, &exiftoolStandardOutput]() {
+        const QByteArray d(exiftoolprocess.readAllStandardOutput());
+        exiftoolStandardOutput.append(d);
+    });
+    exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
+    if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec)) {
+        const QString report = QString(QStringLiteral("<toolcheck name=\"exiftool\" status=\"error\" exitcode=\"%1\" />\n")).arg(exiftoolprocess.exitCode());
+        emit analysisReport(objectName(), report);
+    } else {
+        const QString stdout = QString::fromLocal8Bit(exiftoolStandardOutput).trimmed();
+        const QString report = QString(QStringLiteral("<toolcheck name=\"exiftool\" status=\"ok\" exitcode=\"%1\" version=\"%2\" />\n")).arg(exiftoolprocess.exitCode()).arg(stdout);
+        emit analysisReport(objectName(), report);
+    }
 }
 
 bool FileAnalyzerPDF::isAlive()
@@ -273,6 +295,93 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         return false;
 }
 
+bool FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
+    QProcess exiftoolprocess(this);
+    const QFileInfo fi(filename);
+    exiftoolprocess.setWorkingDirectory(fi.absolutePath());
+    const QStringList arguments = QStringList() << QStringLiteral("-xmp")  << QStringLiteral("-b") << filename;
+    QByteArray exiftoolStandardOutput;
+    connect(&exiftoolprocess, &QProcess::readyReadStandardOutput, [&exiftoolprocess, &exiftoolStandardOutput]() {
+        const QByteArray d(exiftoolprocess.readAllStandardOutput());
+        exiftoolStandardOutput.append(d);
+    });
+    exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
+    if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec))
+        return false;
+
+    const QString output = QString::fromLocal8Bit(exiftoolStandardOutput);
+    if (output.isEmpty()) return false;
+
+    static const QString pdfPartTag(QStringLiteral("<pdfaid:part>"));
+    const int pPdfPartTag = output.indexOf(pdfPartTag);
+    QChar part;
+    if (pdfPartTag > 0 && output[pPdfPartTag + 13] != QLatin1Char('<') && output[pPdfPartTag + 14] == QLatin1Char('<'))
+        part = output[pPdfPartTag + 13];
+
+    static const QString pdfPartConformance(QStringLiteral("<pdfaid:conformance>"));
+    const int pPdfPartConformance = output.indexOf(pdfPartConformance);
+    QChar conformance;
+    if (pPdfPartConformance > 0 && output[pPdfPartConformance + 20] != QLatin1Char('<') && output[pPdfPartConformance + 21] == QLatin1Char('<'))
+        conformance = output[pPdfPartConformance + 20].toLower();
+
+    XMPPDFConformance xmpPDFConformance = xmpNone;
+
+    if (part.isNull() || conformance.isNull())
+        xmpPDFConformance = xmpNone;
+    else if (part == QLatin1Char('1')) {
+        if (conformance == QLatin1Char('a'))
+            xmpPDFConformance = xmpPDFA1a;
+        else if (conformance == QLatin1Char('b'))
+            xmpPDFConformance = xmpPDFA1b;
+    } else if (part == QLatin1Char('2')) {
+        if (conformance == QLatin1Char('a'))
+            xmpPDFConformance = xmpPDFA2a;
+        else if (conformance == QLatin1Char('b'))
+            xmpPDFConformance = xmpPDFA2b;
+        else if (conformance == QLatin1Char('u'))
+            xmpPDFConformance = xmpPDFA2u;
+    } else if (part == QLatin1Char('3')) {
+        if (conformance == QLatin1Char('a'))
+            xmpPDFConformance = xmpPDFA3a;
+        else if (conformance == QLatin1Char('b'))
+            xmpPDFConformance = xmpPDFA3b;
+        else if (conformance == QLatin1Char('u'))
+            xmpPDFConformance = xmpPDFA3u;
+    } else if (part == QLatin1Char('4'))
+        xmpPDFConformance = xmpPDFA4;
+
+    // TODO pdf:Producer xap:ModifyDate xap:CreateDate xap:CreatorTool xap:MetadataDate xapMM:DocumentID xapMM:InstanceID dc:title dc:creator
+
+    metaText.append(QString(QStringLiteral("<xmp><pdfconformance pdfa1b=\"%1\" pdfa1a=\"%2\" pdfa2b=\"%3\" pdfa2a=\"%4\" pdfa2u=\"%5\" pdfa3b=\"%6\" pdfa3a=\"%7\" pdfa3u=\"%8\">%9</pdfconformance></xmp>\n"))
+                    .arg(xmpPDFConformance == xmpPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA2b ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA2a ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA2u ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA3b ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA3a ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformance == xmpPDFA3u ? QStringLiteral("yes") : QStringLiteral("no"))
+                    .arg(xmpPDFConformanceToString(xmpPDFConformance)));
+
+    return true;
+}
+
+QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const {
+    switch (xmpPDFConformance) {
+    case xmpNone: return QString();
+    case xmpPDFA1b: return QStringLiteral("PDF/A-1b");
+    case xmpPDFA1a: return QStringLiteral("PDF/A-1a");
+    case xmpPDFA2b: return QStringLiteral("PDF/A-2b");
+    case xmpPDFA2a: return QStringLiteral("PDF/A-2a");
+    case xmpPDFA2u: return QStringLiteral("PDF/A-2u");
+    case xmpPDFA3b: return QStringLiteral("PDF/A-3b");
+    case xmpPDFA3a: return QStringLiteral("PDF/A-3a");
+    case xmpPDFA3u: return QStringLiteral("PDF/A-3u");
+    case xmpPDFA4: return QStringLiteral("PDF/A-4");
+    }
+    return QStringLiteral("invalid");
+}
+
 void FileAnalyzerPDF::extractImages(QString &metaText, const QString &filename) {
     static const QString pdfimagesBinary = QStandardPaths::findExecutable(QStringLiteral("pdfimages"));
     if (pdfimagesBinary.isEmpty()) return; ///< no analysis without 'pdfimages' binary
@@ -431,9 +540,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start pdfbox Validator for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << QString::fromUtf8(pdfboxValidatorStandardErrorData.constData());
     }
 
+
     /// While external programs run, analyze PDF file using the Poppler library
     QString logText, metaText;
     const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
+
+    xmpAnalysis(filename, metaText);
 
     if (veraPDFStartedRun1) {
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))

@@ -50,6 +50,7 @@ public:
 
 public slots:
     virtual void analyzeFile(const QString &filename);
+    void delayedToolcheck();
 
 private:
     struct ExtendedFontInfo {
@@ -88,7 +89,11 @@ private:
 
     static const QStringList blacklistedFileExtensions;
 
+    enum XMPPDFConformance {xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
+
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
+    bool xmpAnalysis(const QString &filename, QString &metaText);
+    inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);
 };
