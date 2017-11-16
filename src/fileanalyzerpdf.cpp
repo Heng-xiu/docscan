@@ -749,12 +749,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         /// insert result from Apache's PDFBox
         metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!pdfboxValidatorStandardOutput.isEmpty()) {
-            if (!pdfboxValidatorStandardOutput.startsWith(QChar('<')) || !pdfboxValidatorStandardOutput.endsWith(QChar('>'))) {
+            QTextStream ts(&pdfboxValidatorStandardOutput);
+            QString buffer;
+            while (!ts.atEnd() && buffer.length() < 16384)
+                buffer.append(ts.readLine(1024));
+            if (!buffer.startsWith(QChar('<')) || !buffer.endsWith(QChar('>'))) {
                 /// Output does not look like XML output or is capped.
                 /// Treat like plain text.
-                metaText.append(DocScan::xmlifyLines(pdfboxValidatorStandardOutput));
+                metaText.append(DocScan::xmlifyLines(buffer));
             } else
-                metaText.append(pdfboxValidatorStandardOutput);
+                metaText.append(buffer);
+            if (!ts.atEnd())
+                metaText.append(QStringLiteral("\n<!--  PDFBox Validator output too long  -->"));
         }
         if (!pdfboxValidatorStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
