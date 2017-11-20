@@ -84,7 +84,8 @@ QProcess *JHoveWrapper::launchJHove(QObject *parent, const Module module, const 
         static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
 
         QProcess *jhoveProcess = new QProcess(parent);
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << jhoveShellscript << QStringLiteral("-m") << moduleName << QStringLiteral("-t") << QStringLiteral("/tmp") << QStringLiteral("-b") << QStringLiteral("131072") << filename;
+        const QString quotedFilename = filename.contains(QLatin1Char(' ')) ? QLatin1Char('"') + filename + QLatin1Char('"') : filename;
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << QStringLiteral("/bin/bash") << jhoveShellscript << QStringLiteral("-m") << moduleName << QStringLiteral("-t") << QStringLiteral("/tmp") << QStringLiteral("-b") << QStringLiteral("131072") << quotedFilename;
         jhoveProcess->start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         return jhoveProcess;
     } else
