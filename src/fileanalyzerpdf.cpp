@@ -543,6 +543,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     /// While external programs run, analyze PDF file using the Poppler library
     QString logText, metaText;
+    metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
     const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
 
     xmpAnalysis(filename, metaText);
@@ -788,8 +789,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const QFileInfo fi = QFileInfo(filename);
     metaText.append(QString(QStringLiteral("<file size=\"%1\" />\n")).arg(fi.size()));
 
-    if (!metaText.isEmpty())
+    if (!metaText.isEmpty()) {
+        metaText.squeeze();
         logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
+    }
     const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
 
     logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
