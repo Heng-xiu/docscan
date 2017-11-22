@@ -209,6 +209,12 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
         /// Check if uncompression process exited ok.
         success &= uncompressProcess.state() == QProcess::NotRunning || uncompressProcess.waitForFinished();
         success &= uncompressProcess.exitStatus() == QProcess::NormalExit && uncompressProcess.exitCode() == 0;
+    } else {
+        inputFile.close();
+        QFile::remove(randomTempFilename); ///< Remove uncompressed file after analysis
+        const QString logText = QString(QStringLiteral("<uncompress status=\"error\" tool=\"%1\" time=\"%2\"><error>Opening input file or output file failed</error></uncompress>")).arg(DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime));
+        emit analysisReport(objectName(), logText);
+        return;
     }
 
     QString uncompressedFilename = randomTempFilename;
@@ -216,6 +222,11 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
         /// If there is a valid MD5 sum prefix, rename temporary file accordingly
         uncompressedFilename = QStringLiteral("/tmp/.docscan-") + md5prefix + QStringLiteral("-") + fi.fileName();
         QFile::rename(randomTempFilename, uncompressedFilename);
+    } else {
+        QFile::remove(randomTempFilename); ///< Remove uncompressed file after analysis
+        const QString logText = QString(QStringLiteral("<uncompress status=\"error\" tool=\"%1\" time=\"%2\"><error>Renaming/moving uncompressed file failed</error></uncompress>")).arg(DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime));
+        emit analysisReport(objectName(), logText);
+        return;
     }
 
     const QString logText = QString(QStringLiteral("<uncompress status=\"%1\" tool=\"%2\" time=\"%3\">\n<origin size=\"%8\" md5sum=\"%5\">%4</origin>\n<destination size=\"%9\" md5sum=\"%7\">%6</destination>\n</uncompress>")).arg(success ? QStringLiteral("success") : QStringLiteral("error"), DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime), DocScan::xmlify(filename), QString::fromUtf8(compressedMd5.result().toHex()), DocScan::xmlify(uncompressedFilename), QString::fromUtf8(uncompressedMd5.result().toHex()), QString::number(inputSize), QString::number(outputSize));
