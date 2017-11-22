@@ -194,6 +194,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
                 break;
             };
             outputSize += size;
+            uncompressedMd5.addData(buffer, size); ///< Use uncompressed data to compute MD5 sum
             uncompressProcess.waitForReadyRead(500);
             size = qMin(uncompressProcess.bytesAvailable(), buffer_size);
         }
