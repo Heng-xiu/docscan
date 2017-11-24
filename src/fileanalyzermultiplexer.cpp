@@ -181,7 +181,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
         }
         uncompressProcess.closeWriteChannel();
         inputFile.close();
-        success &= uncompressProcess.waitForBytesWritten();
+        uncompressProcess.waitForFinished(10000);
 
         /// Process remaining uncompressed data after piping compressed data
         /// to uncompression process is done
