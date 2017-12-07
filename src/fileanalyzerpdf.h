@@ -47,6 +47,17 @@ public:
     void setupVeraPDF(const QString &cliTool);
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
+    void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
+
+    /**
+     * A PDF file to be analyzed may be known under a different name.
+     * For example, '/home/user/dissertation851986.pdf.xz' may be have been
+     * uncompressed to a temporary location under the name '/tmp/0gH3yA.pdf'
+     * during this analysis.
+     * Invoking  setAliasName("/tmp/0gH3yA.pdf", "/home/user/dissertation851986.pdf.xz")
+     * established the relation between both files.
+     */
+    void setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -86,6 +97,8 @@ private:
     QString m_veraPDFcliTool;
     QString m_pdfboxValidatorJavaClass;
     QString m_callasPdfAPilotCLI;
+    QString m_adobePreflightReportDirectory;
+    QString m_toAnalyzeFilename, m_aliasFilename;
 
     static const QStringList blacklistedFileExtensions;
 
@@ -94,6 +107,7 @@ private:
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     bool xmpAnalysis(const QString &filename, QString &metaText);
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
+    bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);
 };

@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QHash>
+#include <QXmlQuery>
 #include <QRegularExpression>
 #include <QStandardPaths>
 
@@ -147,6 +148,101 @@ void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI)
         // TODO version number logging
     } else
         qWarning() << "Program file for Callas PDF/A Pilot does not exist or not executable:" << callasPdfAPilotCLI;
+}
+
+void FileAnalyzerPDF::setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
+    m_adobePreflightReportDirectory = adobePreflightReportDirectory;
+    QFileInfo directory(m_adobePreflightReportDirectory);
+    if (directory.exists() && directory.isReadable())
+        emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"adobepreflightreportdirectory\" status=\"ok\"><directory>%1</directory></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
+    else
+        emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"adobepreflightreportdirectory\" status=\"error\"><directory>%1</directory><error>Directory is inaccessible or does not exist</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
+}
+
+void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename) {
+    m_toAnalyzeFilename = toAnalyzeFilename;
+    m_aliasFilename = aliasFilename;
+}
+
+bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QString &metaText) {
+    if (!m_adobePreflightReportDirectory.isEmpty()) return false; ///< no report directory set
+    const QDir startDirectory(m_adobePreflightReportDirectory);
+    if (!startDirectory.exists()) return false; ///< report directory does not exist
+    QVector<QDir> stack = QVector<QDir>() << startDirectory;
+    const QStringList pattern = QStringList() << QFileInfo(filename).fileName().replace(QStringLiteral(".pdf"), QStringLiteral("_report.xml")).remove(QStringLiteral(".xz")).append("*");
+    QString reportXMLfile;
+
+    while (!stack.isEmpty()) {
+        const QDir curDir = stack.front();
+        stack.removeFirst();
+        const QFileInfoList list = curDir.entryInfoList(pattern, QDir::AllDirs | QDir::Files | QDir::NoDotDot | QDir::NoDot, QDir::Name | QDir::DirsLast);
+        if (list.isEmpty()) continue;
+
+        for (const QFileInfo &fi : list) {
+            if (fi.isDir()) {
+                const QDir d = QDir(fi.absoluteFilePath());
+                stack.append(d);
+            } else if (fi.isFile() && fi.isReadable()) {
+                reportXMLfile = fi.absoluteFilePath();
+                break;
+            }
+        }
+    }
+
+    QString xmlCode;
+    if (reportXMLfile.endsWith(QStringLiteral(".xml"))) {
+        QFile f(reportXMLfile);
+        if (f.open(QFile::ReadOnly)) {
+            xmlCode = QString::fromUtf8(f.readAll());
+            f.close();
+        }
+    } else if (reportXMLfile.endsWith(QStringLiteral(".xml.xz"))) {
+        QFile f(reportXMLfile);
+        if (f.open(QFile::ReadOnly)) {
+            const QByteArray compressedData = f.readAll();
+            f.close();
+
+            QProcess unxzProcess(this);
+            QByteArray standardOutput;
+            connect(&unxzProcess, &QProcess::readyReadStandardOutput, [&unxzProcess, &standardOutput]() {
+                const QByteArray d(unxzProcess.readAllStandardOutput());
+                standardOutput.append(d);
+            });
+            unxzProcess.start(QStringLiteral("unxz"), QProcess::ReadWrite);
+            const bool a = unxzProcess.waitForStarted(oneMinuteInMillisec);
+            const bool b = a && unxzProcess.write(compressedData) > 0;
+            const bool c = b && unxzProcess.waitForBytesWritten(oneMinuteInMillisec);
+            unxzProcess.closeWriteChannel();
+            const bool d = c && unxzProcess.waitForFinished(tenMinutesInMillisec);
+            const bool e = d && unxzProcess.exitCode() == 0;
+            const bool f = e && unxzProcess.exitStatus() == QProcess::NormalExit;
+            if (f)
+                xmlCode = QString::fromUtf8(standardOutput);
+        }
+    }
+
+    if (xmlCode.isEmpty()) return false;
+
+    int pq = xmlCode.indexOf(QStringLiteral("?>"));
+    if (pq > 0) xmlCode = xmlCode.mid(pq + 2).trimmed();
+    if (!xmlCode.startsWith(QStringLiteral("<report>")) || !xmlCode.endsWith(QStringLiteral("</report>")))
+        return false;
+
+    QXmlQuery query;
+    query.setFocus(xmlCode);
+    query.setQuery(QStringLiteral("count(//report/results/hits[@severity=\"Warning\" or @severity=\"Error\"])"));
+    if (!query.isValid())
+        return false;
+
+    QString result;
+    query.evaluateTo(&result);
+    bool ok = false;
+    int countWarningsErrors = result.toInt(&ok);
+    if (!ok) return false;
+
+    metaText.append(QString(QStringLiteral("<adobepreflight status=\"ok\" pdfa1b=\"%1\" errorwarningscount=\"%2\" />\n")).arg(countWarningsErrors == 0 ? QStringLiteral("yes") : QStringLiteral("no")).arg(countWarningsErrors));
+
+    return true;
 }
 
 bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText, QString &metaText) {
@@ -545,6 +641,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString logText, metaText;
     metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
     const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
+    /// If for the current filename an alias filename was given,
+    /// use the alias filename to locate the Adobe Preflight report.
+    const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
 
     xmpAnalysis(filename, metaText);
 
@@ -798,7 +897,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\" time=\"%2\" external_time=\"%3\">\n")).arg(DocScan::xmlify(filename), QString::number(endTime - startTime), QString::number(externalProgramsEndTime - startTime)));
     logText += QStringLiteral("</fileanalysis>\n");
 
-    if (popplerWrapperOk || jhoveIsPDF || pdfboxValidatorValidPdf)
+    if (adobePreflightReportAnalysisOk || popplerWrapperOk || jhoveIsPDF || pdfboxValidatorValidPdf)
         /// At least one tool thought the file was ok
         emit analysisReport(objectName(), logText);
     else

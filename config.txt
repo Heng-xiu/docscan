@@ -22,6 +22,14 @@ dpfmanagerjar=/home/fish/HiS/Research/OSS/DPFManager/DPF Manager-jfx.jar
 # 30-day evaluation copy
 #callaspdfapilot=/home/fish/HiS/Research/OSS/callas_pdfaPilot_CLI_x64_Linux_6-2-256/pdfaPilot
 
+# If Adobe Preflight has been run earlier and was
+# configured to write report logs in XML format,
+# provide the report logs' directory here. It will
+# be searched recursively. The report XML files'
+# names must correspond to the PDF files' names:
+# abc.pdf  ->  abc_report.xml
+adobepreflightreportdirectory=/tmp/adobe-preflight-report
+
 # Control if text has to be extracted and how the text
 # is to be processed. Possible values include:
 #  none       No text extraction

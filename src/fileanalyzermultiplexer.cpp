@@ -131,6 +131,10 @@ void FileAnalyzerMultiplexer::setupDPFManager(const QString &dpfmangerJFXjar) {
     m_fileAnalyzerTIFF.setupDPFManager(dpfmangerJFXjar);
 }
 
+void FileAnalyzerMultiplexer::setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
+    m_fileAnalyzerPDF.setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     /// Default prefix for temporary file is a large random number
@@ -230,6 +234,7 @@ void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, con
     }
 
     const QString logText = QString(QStringLiteral("<uncompress status=\"%1\" tool=\"%2\" time=\"%3\">\n<origin size=\"%8\" md5sum=\"%5\">%4</origin>\n<destination size=\"%9\" md5sum=\"%7\">%6</destination>\n</uncompress>")).arg(success ? QStringLiteral("success") : QStringLiteral("error"), DocScan::xmlify(uncompressTool), QString::number(QDateTime::currentMSecsSinceEpoch() - startTime), DocScan::xmlify(filename), QString::fromUtf8(compressedMd5.result().toHex()), DocScan::xmlify(uncompressedFilename), QString::fromUtf8(uncompressedMd5.result().toHex()), QString::number(inputSize), QString::number(outputSize));
+    m_fileAnalyzerPDF.setAliasName(uncompressedFilename, filename);
     emit analysisReport(objectName(), logText);
     analyzeFile(uncompressedFilename);
     QFile::remove(uncompressedFilename); ///< Remove uncompressed file after analysis

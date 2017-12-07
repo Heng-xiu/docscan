@@ -2,7 +2,7 @@
 # Run  qmake CONFIG+=wv2  to enable support for historic Word file formats
 # Run  qmake "CONFIG+=wv2 quazip5"  to enable all features
 
-QT += network xml gui
+QT += network xml gui xmlpatterns
 QT -= webkit
 
 wv2 {

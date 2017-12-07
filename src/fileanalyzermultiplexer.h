@@ -60,6 +60,7 @@ public:
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
     void setupDPFManager(const QString &dpfmangerJFXjar);
+    void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
 
 public slots:
     virtual void analyzeFile(const QString &filename);

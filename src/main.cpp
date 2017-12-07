@@ -56,6 +56,7 @@ QString dpfmangerJFXjar;
 QString veraPDFcliTool;
 QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
+QString adobePreflightReportDirectory;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 bool enableEmbeddedFilesAnalysis;
 
@@ -126,6 +127,12 @@ bool evaluateConfigfile(const QString &filename)
                     const QFileInfo program(callasPdfAPilotCLI);
                     if (callasPdfAPilotCLI.isEmpty() || !program.exists() || !program.isExecutable())
                         qCritical() << "Value for callaspdfapilot does not refer to an existing, executable script or program";
+                } else if (key == QStringLiteral("adobepreflightreportdirectory")) {
+                    adobePreflightReportDirectory = value;
+                    qDebug() << "adobepreflightreportdirectory = " << adobePreflightReportDirectory;
+                    const QFileInfo directory(adobePreflightReportDirectory);
+                    if (!directory.exists() || !directory.isReadable())
+                        qCritical() << "Value for adobepreflightreportdirectory does not refer to an existing and readable directory";
                 } else if (key == QStringLiteral("webcrawler:starturl")) {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -391,6 +398,14 @@ int main(int argc, char *argv[])
                 fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
+        }
+
+        if (!adobePreflightReportDirectory.isEmpty()){
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != nullptr)
+                fileAnalyzerPDF->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
         }
 
         if (finder != nullptr) finder->startSearch(numHits);
