@@ -77,6 +77,11 @@ total	no-data	no-data	</xsl:text>
 <xsl:text>
 </xsl:text>
 
+<xsl:text>SPECIAL:ONLY-apple	no-data	no-data	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor']/name/@manufacturer='apple' and meta/tools/tool[@type='producer']/name/@manufacturer='apple'])" />
+<xsl:text>
+</xsl:text>
+
 <xsl:text>SPECIAL:unknown	no-data	no-data	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and not(meta/tools/tool[@type='editor']/name/@manufacturer) and not(meta/tools/tool[@type='producer']/name/@manufacturer)])" />
 <xsl:text>
