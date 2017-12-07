@@ -86,14 +86,14 @@ for xmlfile in "${@}" ; do
 done
 echo >&2
 
-test -d /sys/fs/cgroup/memory/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/memory/xsltprocsandbox || exit 1
-test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && test -f /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; }
-echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes >/dev/null || exit 1
-test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo tee /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null ; } || exit 1
+test -d /sys/fs/cgroup/memory/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/memory/xsltprocsandbox
+test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo /usr/bin/tee -a /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null  ; }
+test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes && { echo ${memlimitB} | sudo /usr/bin/tee -a /sys/fs/cgroup/memory/xsltprocsandbox/memory.limit_in_bytes >/dev/null  ; }
+test -e /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes && { echo ${memlimitB} | sudo /usr/bin/tee -a /sys/fs/cgroup/memory/xsltprocsandbox/memory.memsw.limit_in_bytes >/dev/null  ; }
 
 # Limit to 90% CPU time ('xsltproc' is a single core process)
 test -d /sys/fs/cgroup/cpu/xsltprocsandbox || sudo mkdir /sys/fs/cgroup/cpu/xsltprocsandbox || exit 1
-echo 900 | sudo tee /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || exit 1
+test -e /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares && { echo 900 | sudo /usr/bin/tee -a /sys/fs/cgroup/cpu/xsltprocsandbox/cpu.shares >/dev/null || exit 1 ; }
 
 randline -q <${tempdir}/q.txt >${tempdir}/q-rand.txt
 rm -rf /tmp/.apply-all-xsl-queue-output ; mkdir -p /tmp/.apply-all-xsl-queue-output
