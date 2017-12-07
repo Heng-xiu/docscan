@@ -7,7 +7,7 @@ cd "$(dirname "${0}")"
 for stem in fontbox pdfbox preflight xmpbox ; do
 	fn="${stem}-${version}.jar"
 	test -s "${fn}" && continue
-	wget "http://www-eu.apache.org/dist/pdfbox/${version}/${fn}" || exit 1
+	wget "https://archive.apache.org/dist/pdfbox/${version}/${fn}" || exit 1
 done
 for tool in commons-logging-1.2 commons-io-2.5 ; do
 	fn="${tool}.jar"
