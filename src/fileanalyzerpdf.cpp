@@ -23,6 +23,7 @@
 #include "fileanalyzerpdf.h"
 
 #include <QFileInfo>
+#include <QTemporaryDir>
 #include <QDebug>
 #include <QDateTime>
 #include <QTimer>
@@ -547,6 +548,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// External programs should be both CPU and I/O 'nice'
     static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
 
+    QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
     bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
     QByteArray veraPDFStandardOutputData, veraPDFStandardErrorData;
@@ -554,6 +556,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     long veraPDFfilesize = 0;
     int veraPDFExitCode = INT_MIN;
     QProcess veraPDF(this);
+    veraPDF.setWorkingDirectory(veraPDFTemporaryDirectory.path());
     connect(&veraPDF, &QProcess::readyReadStandardOutput, [&veraPDF, &veraPDFStandardOutputData]() {
         const QByteArray d(veraPDF.readAllStandardOutput());
         veraPDFStandardOutputData.append(d);
