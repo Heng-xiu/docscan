@@ -160,6 +160,35 @@ void FileAnalyzerPDF::setAdobePreflightReportDirectory(const QString &adobePrefl
         emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"adobepreflightreportdirectory\" status=\"error\"><directory>%1</directory><error>Directory is inaccessible or does not exist</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
 }
 
+void FileAnalyzerPDF::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
+    m_qoppaJPDFPreflightDirectory = qoppaJPDFPreflightDirectory;
+    QFileInfo directory(m_qoppaJPDFPreflightDirectory);
+    if (directory.exists() && directory.isReadable()) {
+        QProcess qoppaJPDFPreflightProcess(this);
+        qoppaJPDFPreflightProcess.setWorkingDirectory(m_qoppaJPDFPreflightDirectory);
+        QByteArray standardError;
+        connect(&qoppaJPDFPreflightProcess, &QProcess::readyReadStandardError, [&qoppaJPDFPreflightProcess, &standardError]() {
+            const QByteArray d(qoppaJPDFPreflightProcess.readAllStandardError());
+            standardError.append(d);
+        });
+        qoppaJPDFPreflightProcess.start(m_qoppaJPDFPreflightDirectory + QStringLiteral("/ValidatePDFA1b.sh"), QStringList(), QIODevice::ReadOnly);
+        if (qoppaJPDFPreflightProcess.waitForStarted(oneMinuteInMillisec) && qoppaJPDFPreflightProcess.waitForFinished(oneMinuteInMillisec)) {
+            QTextStream ts(&standardError);
+            const QString errorText = ts.readLine();
+            const QString versionString = errorText.indexOf("Version: jPDFPreflight ") == 0 ? errorText.mid(23) : QString();
+            if (versionString.isEmpty()) {
+                qWarning() << "Failed to read version number from this string:" << errorText;
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Failed to read version number</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
+            } else
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"ok\"><directory>%1</directory><version>%2</version></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath()), DocScan::xmlify(versionString)));
+        } else {
+            qWarning() << "Failed to start Qoppa jPDFPreflight: " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
+            emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Failed to start Qoppa jPDFPreflight</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
+        }
+    } else
+        emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Directory is inaccessible or does not exist</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
+}
+
 void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename) {
     m_toAnalyzeFilename = toAnalyzeFilename;
     m_aliasFilename = aliasFilename;
@@ -597,6 +626,28 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
     }
 
+    bool qoppaJPDFPreflightStarted = false;
+    int  qoppaJPDFPreflightExitCode = INT_MIN;
+    QByteArray qoppaJPDFPreflightStandardOutputData, qoppaJPDFPreflightStandardErrorData;
+    QString qoppaJPDFPreflightStandardOutput, qoppaJPDFPreflightStandardError;
+    QProcess qoppaJPDFPreflightProcess(this);
+    qoppaJPDFPreflightProcess.setWorkingDirectory(m_qoppaJPDFPreflightDirectory);
+    connect(&qoppaJPDFPreflightProcess, &QProcess::readyReadStandardOutput, [&qoppaJPDFPreflightProcess, &qoppaJPDFPreflightStandardOutputData]() {
+        const QByteArray d(qoppaJPDFPreflightProcess.readAllStandardOutput());
+        qoppaJPDFPreflightStandardOutputData.append(d);
+    });
+    connect(&qoppaJPDFPreflightProcess, &QProcess::readyReadStandardError, [&qoppaJPDFPreflightProcess, &qoppaJPDFPreflightStandardErrorData]() {
+        const QByteArray d(qoppaJPDFPreflightProcess.readAllStandardError());
+        qoppaJPDFPreflightStandardErrorData.append(d);
+    });
+    if (!m_qoppaJPDFPreflightDirectory.isEmpty()) {
+        const QStringList arguments = QStringList() << defaultArgumentsForNice << m_qoppaJPDFPreflightDirectory + QStringLiteral("/ValidatePDFA1b.sh") << filename;
+        qoppaJPDFPreflightProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        qoppaJPDFPreflightStarted = qoppaJPDFPreflightProcess.waitForStarted(oneMinuteInMillisec);
+        if (!qoppaJPDFPreflightStarted)
+            qWarning() << "Failed to start Qoppa jPDFPreflight for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
+    }
+
     QProcess *jhoveProcess = launchJHove(this, JHovePDF, filename);
     QByteArray jhoveStandardOutputData, jhoveStandardErrorData;
     if (jhoveProcess != nullptr) {
@@ -805,7 +856,30 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotStandardError;
     }
 
+    if (qoppaJPDFPreflightStarted) {
+        if (!qoppaJPDFPreflightProcess.waitForFinished(twentyMinutesInMillisec))
+            qWarning() << "Waiting for Qoppa jPDFPreflight failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
+        qoppaJPDFPreflightExitCode = qoppaJPDFPreflightProcess.exitCode();
+        qoppaJPDFPreflightStandardOutput = QString::fromUtf8(qoppaJPDFPreflightStandardOutputData.constData()).trimmed();
+        qoppaJPDFPreflightStandardError = QString::fromUtf8(qoppaJPDFPreflightStandardErrorData.constData()).trimmed();
+
+        if (qoppaJPDFPreflightExitCode != 0 || qoppaJPDFPreflightStandardOutput.isEmpty())
+            qWarning() << "Execution of Qoppa jPDFPreflight failed for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory() << ": " << qoppaJPDFPreflightStandardError;
+    }
+
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
+
+    if (qoppaJPDFPreflightExitCode > INT_MIN) {
+        const int p1 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("<qoppapdfpreflight"));
+        const int p2 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("</qoppapdfpreflight>"), p1 + 1);
+        if (p1 >= 0 && p2 > p1)
+            metaText.append(qoppaJPDFPreflightStandardOutput.mid(p1, p2 - p1 + 20).replace(QStringLiteral("<qoppapdfpreflight "), QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" "))).arg(qoppaJPDFPreflightExitCode) + QStringLiteral("\n"));
+        else {
+            qWarning() << "Missing expected XML output from Qoppa jPDFPreflight for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory() << ": " << qoppaJPDFPreflightStandardError;
+            metaText.append(QString(QStringLiteral("<qoppapdfpreflight filename=\"%1\" exitcode=\"%2\" pdfa1b=\"no\"><error>Missing expected XML output</error><details>%3</details></qoppapdfpreflight>\n")).arg(DocScan::xmlify(filename)).arg(qoppaJPDFPreflightExitCode).arg(DocScan::xmlify(qoppaJPDFPreflightStandardError)));
+        }
+    } else
+        metaText.append(QString(QStringLiteral("<qoppapdfpreflight filename=\"%1\"><info>Qoppa not configured to run</info></qoppapdfpreflight>\n")).arg(DocScan::xmlify(filename)));
 
     if (jhoveExitCode > INT_MIN) {
         /// insert data from jHove

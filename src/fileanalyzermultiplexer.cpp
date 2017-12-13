@@ -135,6 +135,10 @@ void FileAnalyzerMultiplexer::setAdobePreflightReportDirectory(const QString &ad
     m_fileAnalyzerPDF.setAdobePreflightReportDirectory(adobePreflightReportDirectory);
 }
 
+void FileAnalyzerMultiplexer::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
+    m_fileAnalyzerPDF.setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     /// Default prefix for temporary file is a large random number

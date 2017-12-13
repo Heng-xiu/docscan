@@ -30,6 +30,13 @@ dpfmanagerjar=/home/fish/HiS/Research/OSS/DPFManager/DPF Manager-jfx.jar
 # abc.pdf  ->  abc_report.xml
 adobepreflightreportdirectory=/tmp/adobe-preflight-report
 
+# Directory where Qoppa's jPDFPreflight .jar file
+# and license key is located. The Bash script
+# ValidatePDFA.sh will be executed, which in its turn
+# runs code from ValidatePDFA.class (.java source
+# code is provided)
+qoppajpdfpreflightdirectory=/home/fish/HiS/Research/OSS/DocumentScanner/DocScan/qoppa-jpdfpreflight
+
 # Control if text has to be extracted and how the text
 # is to be processed. Possible values include:
 #  none       No text extraction

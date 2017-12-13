@@ -61,6 +61,7 @@ public:
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
     void setupDPFManager(const QString &dpfmangerJFXjar);
     void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
+    void setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
 
 public slots:
     virtual void analyzeFile(const QString &filename);

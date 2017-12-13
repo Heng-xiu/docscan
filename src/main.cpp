@@ -57,6 +57,7 @@ QString veraPDFcliTool;
 QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
 QString adobePreflightReportDirectory;
+QString qoppaJPDFPreflightDirectory;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 bool enableEmbeddedFilesAnalysis;
 
@@ -133,6 +134,12 @@ bool evaluateConfigfile(const QString &filename)
                     const QFileInfo directory(adobePreflightReportDirectory);
                     if (!directory.exists() || !directory.isReadable())
                         qCritical() << "Value for adobepreflightreportdirectory does not refer to an existing and readable directory";
+                } else if (key == QStringLiteral("qoppajpdfpreflightdirectory")) {
+                    qoppaJPDFPreflightDirectory = value;
+                    qDebug() << "qoppajpdfpreflightdirectory = " << qoppaJPDFPreflightDirectory;
+                    const QFileInfo directory(qoppaJPDFPreflightDirectory);
+                    if (!directory.exists() || !directory.isReadable())
+                        qCritical() << "Value for qoppajpdfpreflightdirectory does not refer to an existing and readable directory";
                 } else if (key == QStringLiteral("webcrawler:starturl")) {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -406,6 +413,14 @@ int main(int argc, char *argv[])
                 fileAnalyzerPDF->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+        }
+
+        if (!qoppaJPDFPreflightDirectory.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != nullptr)
+                fileAnalyzerPDF->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
         }
 
         if (finder != nullptr) finder->startSearch(numHits);

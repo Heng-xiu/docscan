@@ -34,7 +34,7 @@
 <xsl:template match="log">
 
 <!-- column header  -->
-<xsl:text>filename	jhove-pdfa1b	verapdf-pdfa1b	pdfboxvalidator-pdfa1b	callaspdfapilot-pdfa1b	votes-pdfa1b</xsl:text>
+<xsl:text>filename	jhove-pdfa1b	verapdf-pdfa1b	pdfboxvalidator-pdfa1b	callaspdfapilot-pdfa1b	qoppa-pdfpreflight	votes-pdfa1b</xsl:text>
 
 <xsl:text>
 total	</xsl:text>
@@ -46,7 +46,9 @@ total	</xsl:text>
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/callaspdfapilot[@pdfa1b='yes'])" />
 <xsl:text>	</xsl:text>
-<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta[jhove/profile/@pdfa1b='yes' or verapdf/@pdfa1b='yes' or pdfboxvalidator/@pdfa1b='yes' or callaspdfapilot/@pdfa1b='yes'])" />
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/qoppapdfpreflight[@pdfa1b='yes'])" />
+<xsl:text>	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta[jhove/profile/@pdfa1b='yes' or verapdf/@pdfa1b='yes' or pdfboxvalidator/@pdfa1b='yes' or callaspdfapilot/@pdfa1b='yes' or qoppapdfpreflight/@pdfa1b='yes'])" />
 <xsl:text>
 </xsl:text>
 
@@ -81,6 +83,14 @@ total	</xsl:text>
   <xsl:value-of select="meta/callaspdfapilot/@pdfa1b" />
  </xsl:when>
  <!-- Callas pdfApilot is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
+</xsl:choose>
+<xsl:text>	</xsl:text>
+<xsl:choose>
+ <xsl:when test="meta/qoppapdfpreflight/@pdfa1b">
+  <xsl:value-of select="meta/qoppapdfpreflight/@pdfa1b" />
+ </xsl:when>
+ <!-- Qoppa PDFPreflight is not always run -->
  <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
 </xsl:choose>
 <xsl:text>	</xsl:text>
