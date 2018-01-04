@@ -139,6 +139,10 @@ void FileAnalyzerMultiplexer::setQoppaJPDFPreflightDirectory(const QString &qopp
     m_fileAnalyzerPDF.setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
 }
 
+void FileAnalyzerMultiplexer::setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey) {
+    m_fileAnalyzerPDF.setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     /// Default prefix for temporary file is a large random number

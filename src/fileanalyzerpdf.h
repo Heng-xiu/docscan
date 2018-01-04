@@ -49,6 +49,7 @@ public:
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
     void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
     void setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
+    void setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey);
 
     /**
      * A PDF file to be analyzed may be known under a different name.
@@ -100,6 +101,7 @@ private:
     QString m_callasPdfAPilotCLI;
     QString m_adobePreflightReportDirectory;
     QString m_qoppaJPDFPreflightDirectory;
+    QString m_threeHeightsValidatorShellCLI, m_threeHeightsValidatorLicenseKey;
     QString m_toAnalyzeFilename, m_aliasFilename;
 
     static const QStringList blacklistedFileExtensions;

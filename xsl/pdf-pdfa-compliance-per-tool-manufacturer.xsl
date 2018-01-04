@@ -42,7 +42,7 @@
 total	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor' or @type='producer']/name/@manufacturer])" />
 <xsl:text>	</xsl:text>
-<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor' or @type='producer']/name/@manufacturer and (count(meta/*[@pdfa1b='yes']) + count(meta/jhove/profile[@pdfa1b='yes']))>=2])" />
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok' and meta/tools/tool[@type='editor' or @type='producer']/name/@manufacturer and (count(meta/*[@pdfa1b='yes']) + count(meta/jhove/profile[@pdfa1b='yes']))>=3])" />
 <xsl:text>
 </xsl:text>
 

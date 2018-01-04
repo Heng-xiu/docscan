@@ -62,6 +62,7 @@ public:
     void setupDPFManager(const QString &dpfmangerJFXjar);
     void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
     void setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
+    void setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey);
 
 public slots:
     virtual void analyzeFile(const QString &filename);

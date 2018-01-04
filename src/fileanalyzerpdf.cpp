@@ -189,6 +189,40 @@ void FileAnalyzerPDF::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPre
         emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Directory is inaccessible or does not exist</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
 }
 
+void FileAnalyzerPDF::setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey) {
+    QFileInfo threeHeightsFileInfo(threeHeightsValidatorShellCLI);
+    m_threeHeightsValidatorLicenseKey = threeHeightsValidatorLicenseKey;
+    m_threeHeightsValidatorShellCLI = threeHeightsFileInfo.absoluteFilePath();
+    if (threeHeightsFileInfo.exists() && threeHeightsFileInfo.isExecutable()) {
+        QProcess threeHeightsProcess(this);
+        QByteArray standardOutput;
+        connect(&threeHeightsProcess, &QProcess::readyReadStandardOutput, [&threeHeightsProcess, &standardOutput]() {
+            const QByteArray d(threeHeightsProcess.readAllStandardOutput());
+            standardOutput.append(d);
+        });
+        static const QStringList arguments = QStringList() << QStringLiteral("-lk") << threeHeightsValidatorLicenseKey;
+        threeHeightsProcess.start(m_threeHeightsValidatorShellCLI, arguments, QIODevice::ReadOnly);
+        if (threeHeightsProcess.waitForStarted(oneMinuteInMillisec) && threeHeightsProcess.waitForFinished(oneMinuteInMillisec)) {
+            QTextStream ts(&standardOutput);
+            const QString firstLine = ts.readLine();
+            if (firstLine.indexOf(QStringLiteral("3-Heights(TM) PDF Validator Shell. Version")) == 0) {
+                const int spacePos = firstLine.indexOf(QLatin1Char(' '), 44);
+                const QString versionString = firstLine.mid(43, spacePos - 43);
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"ok\"><path>%1</path><version>%2</version></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI), DocScan::xmlify(versionString)));
+            } else {
+                qWarning() << "Could not find version string when executing 3-Heights PDF Validator Shell: " << threeHeightsProcess.program() << threeHeightsProcess.arguments().join(' ') << " in directory " << threeHeightsProcess.workingDirectory();
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"error\"><path>%1</path><error>Could not find version string when executing 3-Heights PDF Validator Shell</error></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI)));
+            }
+        } else {
+            qWarning() << "Failed to start 3-Heights PDF Validator Shell: " << threeHeightsProcess.program() << threeHeightsProcess.arguments().join(' ') << " in directory " << threeHeightsProcess.workingDirectory();
+            emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"error\"><path>%1</path><error>Failed to start 3-Heights PDF Validator Shell</error></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI)));
+        }
+    } else {
+        qWarning() << "Binary for 3-Heights PDF Validator Shell does not exist or is not executable:" << m_threeHeightsValidatorShellCLI;
+        emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"error\"><path>%1</path><error>Binary for 3-Heights PDF Validator Shell does not exist or is not executable</error></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI)));
+    }
+}
+
 void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename) {
     m_toAnalyzeFilename = toAnalyzeFilename;
     m_aliasFilename = aliasFilename;
@@ -602,6 +636,28 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
     }
 
+    bool threeHeightsPDFValidatorStartedRun1 = false, threeHeightsPDFValidatorStartedRun2 = false;
+    bool threeHeightsPDFValidatorPDFA1b = false, threeHeightsPDFValidatorPDFA1a = false;
+    int  threeHeightsPDFValidatorExitCode = INT_MIN;
+    QByteArray threeHeightsPDFValidatorStandardOutputData, threeHeightsPDFValidatorStandardErrorData;
+    QString threeHeightsPDFValidatorStandardOutput, threeHeightsPDFValidatorStandardError;
+    QProcess threeHeightsPDFValidatorProcess(this);
+    connect(&threeHeightsPDFValidatorProcess, &QProcess::readyReadStandardOutput, [&threeHeightsPDFValidatorProcess, &threeHeightsPDFValidatorStandardOutputData]() {
+        const QByteArray d(threeHeightsPDFValidatorProcess.readAllStandardOutput());
+        threeHeightsPDFValidatorStandardOutputData.append(d);
+    });
+    connect(&threeHeightsPDFValidatorProcess, &QProcess::readyReadStandardError, [&threeHeightsPDFValidatorProcess, &threeHeightsPDFValidatorStandardErrorData]() {
+        const QByteArray d(threeHeightsPDFValidatorProcess.readAllStandardError());
+        threeHeightsPDFValidatorStandardErrorData.append(d);
+    });
+    if (!m_threeHeightsValidatorShellCLI.isEmpty() && !m_threeHeightsValidatorLicenseKey.isEmpty()) {
+        const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << QStringLiteral("pdfa-1b") << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
+        threeHeightsPDFValidatorProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+        threeHeightsPDFValidatorStartedRun1 = threeHeightsPDFValidatorProcess.waitForStarted(oneMinuteInMillisec);
+        if (!threeHeightsPDFValidatorStartedRun1)
+            qWarning() << "Failed to start 3-Heights PDF Validator Shell for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
+    }
+
     bool callasPdfAPilotStartedRun1 = false, callasPdfAPilotStartedRun2 = false;
     int callasPdfAPilotExitCode = INT_MIN;
     int callasPdfAPilotCountErrors = -1;
@@ -741,6 +797,29 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
     }
 
+    if (threeHeightsPDFValidatorStartedRun1) {
+        if (!threeHeightsPDFValidatorProcess.waitForFinished(twentyMinutesInMillisec))
+            qWarning() << "Waiting for 3-Heights PDF Validator Shell failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
+        threeHeightsPDFValidatorExitCode = threeHeightsPDFValidatorProcess.exitCode();
+        threeHeightsPDFValidatorStandardOutput = QString::fromUtf8(threeHeightsPDFValidatorStandardOutputData.constData()).trimmed();
+        threeHeightsPDFValidatorStandardError = QString::fromUtf8(threeHeightsPDFValidatorStandardErrorData.constData()).trimmed();
+        threeHeightsPDFValidatorPDFA1b = threeHeightsPDFValidatorExitCode == 0;
+
+        if ((threeHeightsPDFValidatorExitCode != 0 && threeHeightsPDFValidatorExitCode != 4) || threeHeightsPDFValidatorStandardOutput.isEmpty())
+            qWarning() << "Execution of 3-Heights PDF Validator Shell failed for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory() << ": " << threeHeightsPDFValidatorStandardError;
+
+        if (threeHeightsPDFValidatorPDFA1b) {
+            /// So, it is PDF-A/1b, then test for PDF-A/1a
+            threeHeightsPDFValidatorStandardOutput.clear(); ///< reset before launching new 3-Heights PDF Validator process
+            threeHeightsPDFValidatorStandardError.clear(); ///< reset before launching new 3-Heights PDF Validator process
+            const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << QStringLiteral("pdfa-1a") << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
+            threeHeightsPDFValidatorProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
+            threeHeightsPDFValidatorStartedRun2 = threeHeightsPDFValidatorProcess.waitForStarted(oneMinuteInMillisec);
+            if (!threeHeightsPDFValidatorStartedRun2)
+                qWarning() << "Failed to start 3-Heights PDF Validator Shell for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
+        }
+    }
+
     if (callasPdfAPilotStartedRun1) {
         if (!callasPdfAPilot.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
@@ -829,6 +908,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             veraPDFIsPDFA1A = tagStart > 1 && tagEnd > tagStart && flavourPos > tagStart && flavourPos < tagEnd && isCompliantPos > tagStart && isCompliantPos < tagEnd && startOfOutput.mid(isCompliantPos + 14, 4) == QStringLiteral("true");
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
+    }
+
+    if (threeHeightsPDFValidatorStartedRun2) {
+        if (!threeHeightsPDFValidatorProcess.waitForFinished(twentyMinutesInMillisec))
+            qWarning() << "Waiting for 3-Heights PDF Validator Shell failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
+        threeHeightsPDFValidatorExitCode = threeHeightsPDFValidatorProcess.exitCode();
+        threeHeightsPDFValidatorStandardOutput = QString::fromUtf8(threeHeightsPDFValidatorStandardOutputData.constData()).trimmed();
+        threeHeightsPDFValidatorStandardError = QString::fromUtf8(threeHeightsPDFValidatorStandardErrorData.constData()).trimmed();
+        threeHeightsPDFValidatorPDFA1a = threeHeightsPDFValidatorExitCode == 0;
+
+        if ((threeHeightsPDFValidatorExitCode != 0 && threeHeightsPDFValidatorExitCode != 4) || threeHeightsPDFValidatorStandardOutput.isEmpty())
+            qWarning() << "Execution of 3-Heights PDF Validator Shell failed for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory() << ": " << threeHeightsPDFValidatorStandardError;
     }
 
     if (callasPdfAPilotStartedRun2) {
@@ -921,6 +1012,35 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
     else
         metaText.append(QStringLiteral("<verapdf><info>veraPDF not configured to run</info></verapdf>\n"));
+
+    if (threeHeightsPDFValidatorExitCode > INT_MIN) {
+        QTextStream ts(&threeHeightsPDFValidatorStandardOutput);
+        QString report;
+        bool insideIssues = false;
+        const QString toBeRemoved = QStringLiteral("\"") + filename + QStringLiteral("\", ");
+        const QString issuesWithStandard = threeHeightsPDFValidatorStartedRun2 ? QStringLiteral("PDF/A-1a") : QStringLiteral("PDF/A-1b");
+        while (!ts.atEnd()) {
+            const QString line = ts.readLine();
+            if (line.startsWith(QStringLiteral("\"/"))) {
+                /// A line reporting an issue
+                if (!insideIssues) {
+                    report += QString(QStringLiteral("\n<issues standard=\"%1\">\n")).arg(issuesWithStandard);
+                    insideIssues = true;
+                }
+                report += QStringLiteral("<issue>") + DocScan::xmlify(QString(line).trimmed().remove(toBeRemoved)) + QStringLiteral("</issue>\n");
+            } else if (line.endsWith("conform to the PDF/A-1b standard.")) {
+                /// Final statement on compliance PDF/A-1b
+                threeHeightsPDFValidatorPDFA1b = !line.contains(QStringLiteral("does not conform"));
+            } else if (line.endsWith("conform to the PDF/A-1a standard.")) {
+                /// Final statement on compliance PDF/A-1a
+                threeHeightsPDFValidatorPDFA1a = !line.contains(QStringLiteral("does not conform"));
+            }
+        }
+        if (insideIssues) report += QStringLiteral("</issues>\n");
+
+        metaText.append(QString(QStringLiteral("<threeheightspdfvalidator exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">")).arg(threeHeightsPDFValidatorExitCode).arg(threeHeightsPDFValidatorPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(threeHeightsPDFValidatorPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")) + report + QStringLiteral("</threeheightspdfvalidator>\n"));
+    } else
+        metaText.append(QString(QStringLiteral("<threeheightspdfvalidator filename=\"%1\"><info>3-Heights PDF Validator Shell not configured to run</info></threeheightspdfvalidator>\n")).arg(DocScan::xmlify(filename)));
 
     if (pdfboxValidatorExitCode > INT_MIN) {
         /// insert result from Apache's PDFBox

@@ -58,6 +58,7 @@ QString pdfboxValidatorJavaClass;
 QString callasPdfAPilotCLI;
 QString adobePreflightReportDirectory;
 QString qoppaJPDFPreflightDirectory;
+QString threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 bool enableEmbeddedFilesAnalysis;
 
@@ -140,6 +141,18 @@ bool evaluateConfigfile(const QString &filename)
                     const QFileInfo directory(qoppaJPDFPreflightDirectory);
                     if (!directory.exists() || !directory.isReadable())
                         qCritical() << "Value for qoppajpdfpreflightdirectory does not refer to an existing and readable directory";
+                } else if (key == QStringLiteral("threeheightsvalidatorshell")) {
+                    const QStringList arguments = value.split(QLatin1Char('|'));
+                    if (arguments.size() == 2) {
+                        threeHeightsValidatorShellCLI = arguments[0];
+                        threeHeightsValidatorLicenseKey = arguments[1];
+                        qDebug() << "threeHeightsValidatorShellCLI = " << threeHeightsValidatorShellCLI;
+                        qDebug() << "threeHeightsValidatorLicenseKey = " << threeHeightsValidatorLicenseKey;
+                        const QFileInfo threeHeightsShellBinary(threeHeightsValidatorShellCLI);
+                        if (!threeHeightsShellBinary.exists() || !threeHeightsShellBinary.isExecutable())
+                            qCritical() << "Value for threeHeightsValidatorShell does not refer to an existing and executable binary";
+                    } else
+                        qCritical() << "Require two arguments separated by '|' for key 'threeHeightsValidatorShell': binary's path and license key";
                 } else if (key == QStringLiteral("webcrawler:starturl")) {
                     startUrl = QUrl(value);
                     qDebug() << "webcrawler:startUrl =" << startUrl.toString();
@@ -421,6 +434,14 @@ int main(int argc, char *argv[])
                 fileAnalyzerPDF->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+        }
+
+        if (!threeHeightsValidatorShellCLI.isEmpty() && !threeHeightsValidatorLicenseKey.isEmpty()) {
+            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+            if (fileAnalyzerPDF != nullptr)
+                fileAnalyzerPDF->setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
+            if (fileAnalyzerMultiplexer != nullptr)
+                fileAnalyzerMultiplexer->setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
         }
 
         if (finder != nullptr) finder->startSearch(numHits);
