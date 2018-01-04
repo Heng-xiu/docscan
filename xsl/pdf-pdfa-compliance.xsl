@@ -72,13 +72,29 @@ total	</xsl:text>
  <xsl:when test="meta/jhove/profile/@pdfa1b">
   <xsl:value-of select="meta/jhove/profile/@pdfa1b" />
  </xsl:when>
- <!-- jHove does not always print a profile tag, so write 'no' if it does not exist -->
- <xsl:otherwise><xsl:text>no</xsl:text></xsl:otherwise>
+ <xsl:when test="meta/jhove/profile">
+  <!-- jHove does not always print a profile tag, so write 'no' if it does not exist -->
+  <xsl:text>no</xsl:text>
+ </xsl:when>
+ <!-- jHove is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
 </xsl:choose>
 <xsl:text>	</xsl:text>
-<xsl:value-of select="meta/verapdf/@pdfa1b" />
+<xsl:choose>
+ <xsl:when test="meta/verapdf/@pdfa1b">
+  <xsl:value-of select="meta/verapdf/@pdfa1b" />
+ </xsl:when>
+ <!-- veraPDF is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
+</xsl:choose>
 <xsl:text>	</xsl:text>
-<xsl:value-of select="meta/pdfboxvalidator/@pdfa1b" />
+<xsl:choose>
+ <xsl:when test="meta/pdfboxvalidator/@pdfa1b">
+  <xsl:value-of select="meta/pdfboxvalidator/@pdfa1b" />
+ </xsl:when>
+ <!-- Apache PDFBox Validator is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
+</xsl:choose>
 <xsl:text>	</xsl:text>
 <xsl:choose>
  <xsl:when test="meta/callaspdfapilot/@pdfa1b">
