@@ -1,2 +1,9 @@
+# Java class files
+*.class
+
 # Qoppa jPDFPreflight license key
 jPDFPreflight.key
+
+# Formatted C++ source code
+*.cpp.orig
+*.h.orig
