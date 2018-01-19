@@ -365,8 +365,9 @@ int main(int argc, char *argv[])
         if (downloader != nullptr) QObject::connect(&watchDog, &WatchDog::firstWarning, downloader, &Downloader::finalReport);
         QObject::connect(&watchDog, &WatchDog::lastWarning, logCollector, &LogCollector::close);
 
+        FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+
         if (!jhoveShellscript.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupJhove(jhoveShellscript);
             else {
@@ -397,7 +398,6 @@ int main(int argc, char *argv[])
         }
 
         if (!veraPDFcliTool.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupVeraPDF(veraPDFcliTool);
             if (fileAnalyzerMultiplexer != nullptr)
@@ -405,7 +405,6 @@ int main(int argc, char *argv[])
         }
 
         if (!pdfboxValidatorJavaClass.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupPdfBoXValidator(pdfboxValidatorJavaClass);
             if (fileAnalyzerMultiplexer != nullptr)
@@ -413,15 +412,13 @@ int main(int argc, char *argv[])
         }
 
         if (!callasPdfAPilotCLI.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setupCallasPdfAPilotCLI(callasPdfAPilotCLI);
         }
 
-        if (!adobePreflightReportDirectory.isEmpty()){
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
+        if (!adobePreflightReportDirectory.isEmpty()) {
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
@@ -429,7 +426,6 @@ int main(int argc, char *argv[])
         }
 
         if (!qoppaJPDFPreflightDirectory.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
@@ -437,7 +433,6 @@ int main(int argc, char *argv[])
         }
 
         if (!threeHeightsValidatorShellCLI.isEmpty() && !threeHeightsValidatorLicenseKey.isEmpty()) {
-            FileAnalyzerPDF *fileAnalyzerPDF = qobject_cast<FileAnalyzerPDF *>(fileAnalyzer);
             if (fileAnalyzerPDF != nullptr)
                 fileAnalyzerPDF->setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
             if (fileAnalyzerMultiplexer != nullptr)
