@@ -143,6 +143,10 @@ void FileAnalyzerMultiplexer::setupThreeHeightsValidatorShellCLI(const QString &
     m_fileAnalyzerPDF.setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
 }
 
+void FileAnalyzerMultiplexer::setDowngradePDFAConformance(const bool downgradeToPDFA1b) {
+    m_fileAnalyzerPDF.setDowngradePDFAConformance(downgradeToPDFA1b);
+}
+
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
 {
     /// Default prefix for temporary file is a large random number

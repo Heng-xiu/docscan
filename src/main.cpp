@@ -59,6 +59,7 @@ QString callasPdfAPilotCLI;
 QString adobePreflightReportDirectory;
 QString qoppaJPDFPreflightDirectory;
 QString threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey;
+bool downgradeToPDFA1b;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 bool enableEmbeddedFilesAnalysis;
 
@@ -96,6 +97,8 @@ bool evaluateConfigfile(const QString &filename)
                         qWarning() << "Invalid value for \"textExtraction\":" << value;
                 } else if (key == QStringLiteral("embeddedfilesanalysis")) {
                     enableEmbeddedFilesAnalysis = value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || value.compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0;
+                } else if (key == QStringLiteral("downgradetopdfa1b")) {
+                    downgradeToPDFA1b = value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || value.compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0;
                 } else if (key == QStringLiteral("requiredcontent")) {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
@@ -317,6 +320,7 @@ int main(int argc, char *argv[])
     webcrawlermaxvisitedpages = 0;
     textExtraction = FileAnalyzerAbstract::teNone;
     enableEmbeddedFilesAnalysis = false;
+    downgradeToPDFA1b = false;
 
     if (argc != 2) {
         fprintf(stderr, "Require single configuration file as parameter\n");
@@ -438,6 +442,11 @@ int main(int argc, char *argv[])
             if (fileAnalyzerMultiplexer != nullptr)
                 fileAnalyzerMultiplexer->setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
         }
+
+        if (fileAnalyzerPDF != nullptr)
+            fileAnalyzerPDF->setDowngradePDFAConformance(downgradeToPDFA1b);
+        if (fileAnalyzerMultiplexer != nullptr)
+            fileAnalyzerMultiplexer->setDowngradePDFAConformance(downgradeToPDFA1b);
 
         if (finder != nullptr) finder->startSearch(numHits);
 

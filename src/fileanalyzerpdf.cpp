@@ -47,9 +47,10 @@ static const int tenMinutesInMillisec = oneMinuteInMillisec * 10;
 static const int twentyMinutesInMillisec = oneMinuteInMillisec * 20;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false)
+    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
 {
     FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
+
 
     QTimer::singleShot(50, this, &FileAnalyzerPDF::delayedToolcheck);
 }
@@ -226,6 +227,10 @@ void FileAnalyzerPDF::setupThreeHeightsValidatorShellCLI(const QString &threeHei
 void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename) {
     m_toAnalyzeFilename = toAnalyzeFilename;
     m_aliasFilename = aliasFilename;
+}
+
+void FileAnalyzerPDF::setDowngradePDFAConformance(const bool downgradeToPDFA1b) {
+    m_downgradeToPDFA1b = downgradeToPDFA1b;
 }
 
 bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QString &metaText) {
@@ -542,6 +547,98 @@ QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPD
     return QStringLiteral("invalid");
 }
 
+bool FileAnalyzerPDF::downgradingPDFA(const QString &filename){
+    static const QString docscanConformanceFakerPrefix(QStringLiteral("docscan-conformance-faker"));
+    if (m_downgradeToPDFA1b && !filename.contains(docscanConformanceFakerPrefix)) {
+        QFile pdfFile(filename);
+        if (pdfFile.open(QFile::ReadOnly)) {
+            QByteArray pdfData = pdfFile.readAll();
+            pdfFile.close();
+            bool doWrite = false;
+            XMPPDFConformance originConformance = xmpNone;
+            const int pPart1 = pdfData.indexOf("<pdfaid:part>1</pdfaid:part>");
+            if (pPart1 > 0) {
+                const int pConformanceA = pdfData.indexOf("<pdfaid:conformance>A</pdfaid:conformance>", qMax(0, pPart1 - 1024));
+                if (pConformanceA > 0) {
+                    pdfData[pConformanceA + 20] = 'B';
+                    originConformance = xmpPDFA1a;
+                    doWrite = true;
+                }
+            } else {
+                const int pCombined = pdfData.indexOf(" pdfaid:part=\"1\" pdfaid:conformance=\"A\">");
+                if (pCombined > 0) {
+                    pdfData[pCombined + 39] = 'B';
+                    originConformance = xmpPDFA1a;
+                    doWrite = true;
+                } else {
+                    const int pPart2 = pdfData.indexOf("<pdfaid:part>2</pdfaid:part>");
+                    if (pPart2 > 0) {
+                        pdfData[pPart2 + 12] = '1';
+                        doWrite = true;
+                        const int pConformanceA = pdfData.indexOf("<pdfaid:conformance>A</pdfaid:conformance>", qMax(0, pPart2 - 1024));
+                        const int pConformanceB = pdfData.indexOf("<pdfaid:conformance>B</pdfaid:conformance>", qMax(0, pPart2 - 1024));
+                        const int pConformanceU = pdfData.indexOf("<pdfaid:conformance>U</pdfaid:conformance>", qMax(0, pPart2 - 1024));
+                        if (pConformanceA > 0) {
+                            pdfData[pConformanceA + 20] = 'B';
+                            originConformance = xmpPDFA2a;
+                        } else if (pConformanceB > 0)
+                            originConformance = xmpPDFA2b;
+                        else if (pConformanceU > 0) {
+                            pdfData[pConformanceU + 20] = 'B';
+                            originConformance = xmpPDFA2u;
+                        }
+                    } else {
+                        const int pCombinedA = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"A\">");
+                        const int pCombinedB = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"B\">");
+                        const int pCombinedU = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"U\">");
+                        if (pCombinedA > 0) {
+                            pdfData[pCombinedA + 14] = '1';
+                            pdfData[pCombinedA + 39] = 'B';
+                            originConformance = xmpPDFA2a;
+                            doWrite = true;
+                        } else if (pCombinedB > 0) {
+                            pdfData[pCombinedA + 14] = '1';
+                            originConformance = xmpPDFA2b;
+                            doWrite = true;
+                        } else if (pCombinedU > 0) {
+                            pdfData[pCombinedA + 14] = '1';
+                            pdfData[pCombinedA + 39] = 'B';
+                            originConformance = xmpPDFA2u;
+                            doWrite = true;
+                        }
+                    }
+                }
+            }
+            if (doWrite) {
+                QString originalFilename = QFileInfo(m_aliasFilename.isEmpty() ? filename : m_aliasFilename).fileName().remove(QStringLiteral(".xz"));
+                if (!originalFilename.isEmpty() && originalFilename[0] == QLatin1Char('.')) originalFilename = originalFilename.mid(1); ///< remove leading dot
+#if QT_VERSION >= 0x050900
+                const QString writeToFilename = m_tempDirDowngradeToPDFA1b.filePath(docscanConformanceFakerPrefix + QStringLiteral("-") + originalFilename);
+#else // QT_VERSION >= 0x050900
+                const QString writeToFilename = m_tempDirDowngradeToPDFA1b.path() + QLatin1Char('/') + docscanConformanceFakerPrefix + QStringLiteral("-") + originalFilename;
+#endif // QT_VERSION >= 0x050900
+                QFile pdfFile(writeToFilename);
+                if (pdfFile.open(QFile::WriteOnly)) {
+                    const QString originConformanceString = xmpPDFConformanceToString(originConformance);
+                    const QString logText = QString(QStringLiteral("<downgradepdfa>\n<origin conformance=\"%3\">%1</origin>\n%4<destination conformance=\"PDF/A-1b\">%2</destination>\n</downgradepdfa>")).arg(DocScan::xmlify(filename), DocScan::xmlify(writeToFilename), DocScan::xmlify(originConformanceString), !m_aliasFilename.isEmpty() ? QStringLiteral("<alias>") + DocScan::xmlify(m_aliasFilename) + QStringLiteral("</alias>\n") : QString());
+                    emit analysisReport(objectName(), logText);
+
+                    pdfFile.write(pdfData);
+                    pdfFile.close();
+
+                    m_toAnalyzeFilename = writeToFilename;
+                    m_aliasFilename.clear();
+                    analyzeFile(writeToFilename);
+
+                    pdfFile.remove();
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void FileAnalyzerPDF::extractImages(QString &metaText, const QString &filename) {
     static const QString pdfimagesBinary = QStandardPaths::findExecutable(QStringLiteral("pdfimages"));
     if (pdfimagesBinary.isEmpty()) return; ///< no analysis without 'pdfimages' binary
@@ -604,6 +701,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         m_isAlive = false;
         return;
     }
+
+    if (downgradingPDFA(filename)) return;
 
     m_isAlive = true;
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();

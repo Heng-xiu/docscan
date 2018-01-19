@@ -24,6 +24,7 @@
 #define FILEANALYZERPDF_H
 
 #include <QObject>
+#include <QTemporaryDir>
 
 #include <poppler-qt5.h>
 
@@ -60,6 +61,8 @@ public:
      * established the relation between both files.
      */
     void setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename);
+
+    void setDowngradePDFAConformance(const bool downgradeToPDFA1b);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -103,6 +106,8 @@ private:
     QString m_qoppaJPDFPreflightDirectory;
     QString m_threeHeightsValidatorShellCLI, m_threeHeightsValidatorLicenseKey;
     QString m_toAnalyzeFilename, m_aliasFilename;
+    bool m_downgradeToPDFA1b;
+    QTemporaryDir m_tempDirDowngradeToPDFA1b;
 
     static const QStringList blacklistedFileExtensions;
 
@@ -110,6 +115,7 @@ private:
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     bool xmpAnalysis(const QString &filename, QString &metaText);
+    bool downgradingPDFA(const QString &filename);
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
     bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);

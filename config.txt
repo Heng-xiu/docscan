@@ -58,6 +58,11 @@ textExtraction=none
 # Note: ZIP files' content will always be analyzed.
 embeddedfilesanalysis=false
 
+# Control if PDF files claiming to be PDF/A-1a should
+# be 'downgraded' to PDF/A-1b by changing a single byte
+# in the metadata of a temporary copy of said PDF file.
+downgradetopdfa1b=true
+
 # Filter for files matching a certain pattern.
 # Multiple patterns are separated by pipe symbols
 # ('|'). File patterns are not regular expressions,

@@ -64,6 +64,8 @@ public:
     void setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
     void setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey);
 
+    void setDowngradePDFAConformance(const bool downgradeToPDFA1b);
+
 public slots:
     virtual void analyzeFile(const QString &filename);
 
