@@ -460,6 +460,32 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         return false;
 }
 
+FileAnalyzerPDF::PDFVersion FileAnalyzerPDF::pdfVersionAnalysis(const QString &filename) {
+    QFile pdfFile(filename);
+    if (pdfFile.open(QFile::ReadOnly)) {
+        const QByteArray header(pdfFile.read(16));
+        pdfFile.close();
+        if (header.size() < 16)
+            return pdfVersionError;
+        if (header[0] != '%' || header[1] != 'P' || header[2] != 'D' || header[3] != 'F' || header[4] != '-')
+            return pdfVersionError;
+        if (header[5] == '1' && header[6] == '.') {
+            switch (header[7]) {
+            case '1': return pdfVersion1dot1;
+            case '2': return pdfVersion1dot2;
+            case '3': return pdfVersion1dot3;
+            case '4': return pdfVersion1dot4;
+            case '5': return pdfVersion1dot5;
+            case '6': return pdfVersion1dot6;
+            case '7': return pdfVersion1dot7;
+            default: return pdfVersionUnknown;
+            }
+        } else
+            return pdfVersionUnknown;
+    } else
+        return pdfVersionError;
+}
+
 FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
     QProcess exiftoolprocess(this);
     const QFileInfo fi(filename);
@@ -551,6 +577,10 @@ QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPD
 bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
     static const QString docscanConformanceFakerPrefix(QStringLiteral("docscan-conformance-faker"));
     if (m_downgradeToPDFA1b && !filename.contains(docscanConformanceFakerPrefix)) {
+        /// Valid PDF/A files of any part/conformance level are either PDF version 1.4 or 1.7
+        const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
+        if (pdfVersion != pdfVersion1dot4 && pdfVersion != pdfVersion1dot7) return false;
+
         QFile pdfFile(filename);
         if (pdfFile.open(QFile::ReadOnly)) {
             QByteArray pdfData = pdfFile.readAll();
