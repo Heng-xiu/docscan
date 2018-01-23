@@ -273,13 +273,16 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "UNKNOWN CONFIG:" << key << "=" << value;
                 }
             } else {
+                qWarning() << "Invalid line: " << line;
                 configFile.close();
                 return false;
             }
         }
         configFile.close();
-    } else
+    } else {
+        qWarning() << "Failed to open " << filename;
         return false;
+    }
 
     return true;
 }
