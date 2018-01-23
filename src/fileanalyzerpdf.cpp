@@ -1034,7 +1034,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(QString(QStringLiteral("<version>%1</version>\n")).arg(DocScan::xmlify(jhovePDFversion)));
             if (!jhovePDFprofile.isEmpty()) {
                 const bool isPDFA1a = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level A"));
-                const bool isPDFA1b = isPDFA1a || jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
+                const bool isPDFA1b = jhovePDFprofile.contains(QStringLiteral("ISO PDF/A-1, Level B"));
                 metaText.append(QString(QStringLiteral("<profile linear=\"%2\" tagged=\"%3\" pdfa1a=\"%4\" pdfa1b=\"%5\" pdfx3=\"%6\">%1</profile>\n")).arg(DocScan::xmlify(jhovePDFprofile), jhovePDFprofile.contains(QStringLiteral("Linearized PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("Tagged PDF")) ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFprofile.contains(QStringLiteral("ISO PDF/X-3")) ? QStringLiteral("yes") : QStringLiteral("no")));
             }
             if (!jhoveStandardOutput.isEmpty())
@@ -1120,7 +1120,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     if (callasPdfAPilotExitCode > INT_MIN) {
         const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
-        const bool isPDFA1b = isPDFA1a || (callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0);
+        const bool isPDFA1b = callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
         metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!callasPdfAPilotStandardOutput.isEmpty())
             metaText.append(DocScan::xmlifyLines(callasPdfAPilotStandardOutput));
