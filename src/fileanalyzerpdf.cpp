@@ -460,7 +460,7 @@ bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText,
         return false;
 }
 
-bool FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
+FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
     QProcess exiftoolprocess(this);
     const QFileInfo fi(filename);
     exiftoolprocess.setWorkingDirectory(fi.absolutePath());
@@ -472,10 +472,10 @@ bool FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
     });
     exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
     if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec))
-        return false;
+        return xmpError;
 
     const QString output = QString::fromLocal8Bit(exiftoolStandardOutput);
-    if (output.isEmpty()) return false;
+    if (output.isEmpty()) return xmpError;
 
     static const QString pdfPartTag(QStringLiteral("<pdfaid:part>"));
     const int pPdfPartTag = output.indexOf(pdfPartTag);
@@ -528,11 +528,12 @@ bool FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
                     .arg(xmpPDFConformance == xmpPDFA3u ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformanceToString(xmpPDFConformance)));
 
-    return true;
+    return xmpPDFConformance;
 }
 
 QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const {
     switch (xmpPDFConformance) {
+    case xmpError: return QStringLiteral("invalid");
     case xmpNone: return QString();
     case xmpPDFA1b: return QStringLiteral("PDF/A-1b");
     case xmpPDFA1a: return QStringLiteral("PDF/A-1a");
@@ -547,7 +548,7 @@ QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPD
     return QStringLiteral("invalid");
 }
 
-bool FileAnalyzerPDF::downgradingPDFA(const QString &filename){
+bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
     static const QString docscanConformanceFakerPrefix(QStringLiteral("docscan-conformance-faker"));
     if (m_downgradeToPDFA1b && !filename.contains(docscanConformanceFakerPrefix)) {
         QFile pdfFile(filename);
@@ -710,6 +711,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// External programs should be both CPU and I/O 'nice'
     static const QStringList defaultArgumentsForNice = QStringList() << QStringLiteral("-n") << QStringLiteral("17") << QStringLiteral("ionice") << QStringLiteral("-c") << QStringLiteral("3");
 
+    QString logText, metaText;
+    metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
+    const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, metaText);
+
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
     bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
@@ -847,14 +852,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
 
     /// While external programs run, analyze PDF file using the Poppler library
-    QString logText, metaText;
-    metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
     const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
     /// If for the current filename an alias filename was given,
     /// use the alias filename to locate the Adobe Preflight report.
     const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
-
-    xmpAnalysis(filename, metaText);
 
     if (veraPDFStartedRun1) {
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))

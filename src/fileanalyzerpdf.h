@@ -111,10 +111,10 @@ private:
 
     static const QStringList blacklistedFileExtensions;
 
-    enum XMPPDFConformance {xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
+    enum XMPPDFConformance {xmpError = -1, xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
-    bool xmpAnalysis(const QString &filename, QString &metaText);
+    XMPPDFConformance xmpAnalysis(const QString &filename, QString &metaText);
     bool downgradingPDFA(const QString &filename);
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
     bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
