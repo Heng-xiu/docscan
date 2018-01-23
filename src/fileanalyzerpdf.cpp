@@ -716,7 +716,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, metaText);
 
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
-    bool veraPDFStartedRun1 = false, veraPDFStartedRun2 = false;
+    bool veraPDFStartedRun = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
     QByteArray veraPDFStandardOutputData, veraPDFStandardErrorData;
     QString veraPDFStandardOutput, veraPDFStandardError;
@@ -733,10 +733,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         veraPDFStandardErrorData.append(d);
     });
     if (!m_veraPDFcliTool.isEmpty()) {
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1b") << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        /// Chooses built-in Validation Profile flavour, e.g. '1b'
+        const QString flavour = xmpPDFConformance == xmpPDFA1b ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << flavour << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
-        veraPDFStartedRun1 = veraPDF.waitForStarted(twoMinutesInMillisec);
-        if (!veraPDFStartedRun1)
+        veraPDFStartedRun = veraPDF.waitForStarted(twoMinutesInMillisec);
+        if (!veraPDFStartedRun)
             qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
     }
 
@@ -857,7 +859,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// use the alias filename to locate the Adobe Preflight report.
     const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
 
-    if (veraPDFStartedRun1) {
+    if (veraPDFStartedRun) {
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
@@ -870,9 +872,18 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             const QString startOfOutput = veraPDFStandardOutput.left(8192);
             const int tagStart = startOfOutput.indexOf(QStringLiteral("<validationResult "));
             const int tagEnd = startOfOutput.indexOf(QStringLiteral(">"), tagStart + 10);
-            const int flavourPos = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_B\""), tagStart + 10);
-            const int isCompliantPos = startOfOutput.indexOf(QStringLiteral(" isCompliant=\""), tagStart + 10);
-            veraPDFIsPDFA1B = tagStart > 1 && tagEnd > tagStart && flavourPos > tagStart && flavourPos < tagEnd && isCompliantPos > tagStart && isCompliantPos < tagEnd && startOfOutput.mid(isCompliantPos + 14, 4) == QStringLiteral("true");
+            const int flavourPos1 = startOfOutput.indexOf(QStringLiteral(" flavour=\""), tagStart + 10);
+            const int isCompliantPos1 = startOfOutput.indexOf(QStringLiteral(" isCompliant=\""), tagStart + 10);
+            if (flavourPos1 > 0 && isCompliantPos1 > 0 && flavourPos1 < tagEnd && isCompliantPos1 < tagEnd) {
+                const int flavourPos2 = startOfOutput.indexOf(QStringLiteral("\""), flavourPos1 + 10);
+                const int isCompliantPos2 = startOfOutput.indexOf(QStringLiteral("\""), isCompliantPos1 + 14);
+                const bool complianceFlag = startOfOutput.mid(isCompliantPos1 + 14, isCompliantPos2 - isCompliantPos1 - 14) == QStringLiteral("true");
+                if (complianceFlag) {
+                    const QString flavor = startOfOutput.mid(flavourPos1 + 10, flavourPos2 - flavourPos1 - 10);
+                    if (flavor == QStringLiteral("PDFA_1_B")) veraPDFIsPDFA1B = true;
+                    else if (flavor == QStringLiteral("PDFA_1_A")) veraPDFIsPDFA1A = true;
+                }
+            }
             const int p4 = startOfOutput.indexOf(QStringLiteral("item size=\""));
             if (p4 > 1) {
                 const int p5 = startOfOutput.indexOf(QStringLiteral("\""), p4 + 11);
@@ -881,17 +892,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     veraPDFfilesize = startOfOutput.mid(p4 + 11, p5 - p4 - 11).toLong(&ok);
                     if (!ok) veraPDFfilesize = 0;
                 }
-            }
-
-            if (veraPDFIsPDFA1B) {
-                /// So, it is PDF-A/1b, then test for PDF-A/1a
-                veraPDFStandardOutputData.clear(); ///< reset before launching new veraPDF process
-                veraPDFStandardErrorData.clear(); ///< reset before launching new veraPDF process
-                const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-f") /** Chooses built-in Validation Profile flavour, e.g. '1b'. */ << QStringLiteral("1a") << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
-                veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
-                veraPDFStartedRun2 = veraPDF.waitForStarted(twoMinutesInMillisec);
-                if (!veraPDFStartedRun2)
-                    qWarning() << "Failed to start veraPDF for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
             }
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
@@ -983,31 +983,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
         else
             qWarning() << "Execution of pdfbox Validator failed for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << pdfboxValidatorStandardError;
-    }
-
-    if (veraPDFStartedRun2) {
-        if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
-        veraPDFExitCode = veraPDF.exitCode();
-        /// Some string magic to skip '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' from second output
-        const QString newStdOut = DocScan::removeBinaryGarbage(QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed());
-        const int p = newStdOut.indexOf(QStringLiteral("?>"));
-        /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
-        if ((newStdOut.contains(QStringLiteral("<rawResults>")) && newStdOut.contains(QStringLiteral("</rawResults>"))) || (newStdOut.contains(QStringLiteral("<ns2:cliReport")) && newStdOut.contains(QStringLiteral("</ns2:cliReport>"))))
-            veraPDFStandardOutput.append(QStringLiteral("\n") + (p > 1 ? newStdOut.mid(veraPDFStandardOutput.indexOf(QStringLiteral("<"), p)) : newStdOut));
-        else
-            veraPDFStandardOutput.append(QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlifyLines(newStdOut.left(512)) + QStringLiteral("</error>"));
-
-        veraPDFStandardError = veraPDFStandardError + QStringLiteral("\n") + QString::fromUtf8(veraPDFStandardErrorData.constData()).trimmed();
-        if (veraPDFExitCode == 0) {
-            const QString startOfOutput = newStdOut.left(8192);
-            const int tagStart = startOfOutput.indexOf(QStringLiteral("<validationResult "));
-            const int tagEnd = startOfOutput.indexOf(QStringLiteral(">"), tagStart + 10);
-            const int flavourPos = startOfOutput.indexOf(QStringLiteral(" flavour=\"PDFA_1_A\""), tagStart + 10);
-            const int isCompliantPos = startOfOutput.indexOf(QStringLiteral(" isCompliant=\""), tagStart + 10);
-            veraPDFIsPDFA1A = tagStart > 1 && tagEnd > tagStart && flavourPos > tagStart && flavourPos < tagEnd && isCompliantPos > tagStart && isCompliantPos < tagEnd && startOfOutput.mid(isCompliantPos + 14, 4) == QStringLiteral("true");
-        } else
-            qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
     }
 
     if (threeHeightsPDFValidatorStartedRun2) {
