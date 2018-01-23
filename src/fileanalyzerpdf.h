@@ -66,7 +66,6 @@ public:
 
 public slots:
     virtual void analyzeFile(const QString &filename);
-    void delayedToolcheck();
 
 private:
     struct ExtendedFontInfo {
@@ -120,6 +119,9 @@ private:
     bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);
+
+private slots:
+    void delayedToolcheck();
 };
 
 #endif // FILEANALYZERPDF_H
