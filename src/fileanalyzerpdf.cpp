@@ -234,7 +234,7 @@ void FileAnalyzerPDF::setDowngradePDFAConformance(const bool downgradeToPDFA1b) 
 }
 
 bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QString &metaText) {
-    if (!m_adobePreflightReportDirectory.isEmpty()) return false; ///< no report directory set
+    if (m_adobePreflightReportDirectory.isEmpty()) return false; ///< no report directory set
     const QDir startDirectory(m_adobePreflightReportDirectory);
     if (!startDirectory.exists()) return false; ///< report directory does not exist
     QVector<QDir> stack = QVector<QDir>() << startDirectory;
