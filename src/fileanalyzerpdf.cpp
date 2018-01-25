@@ -181,7 +181,7 @@ void FileAnalyzerPDF::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPre
                 qWarning() << "Failed to read version number from this string:" << errorText;
                 emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Failed to read version number</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
             } else
-                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"ok\"><directory>%1</directory><version>%2</version></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath()), DocScan::xmlify(versionString)));
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"ok\" version=\"%2\"><directory>%1</directory></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath()), DocScan::xmlify(versionString)));
         } else {
             qWarning() << "Failed to start Qoppa jPDFPreflight: " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
             emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"qoppajpdfpreflightdirectory\" status=\"error\"><directory>%1</directory><error>Failed to start Qoppa jPDFPreflight</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
@@ -209,7 +209,7 @@ void FileAnalyzerPDF::setupThreeHeightsValidatorShellCLI(const QString &threeHei
             if (firstLine.indexOf(QStringLiteral("3-Heights(TM) PDF Validator Shell. Version")) == 0) {
                 const int spacePos = firstLine.indexOf(QLatin1Char(' '), 44);
                 const QString versionString = firstLine.mid(43, spacePos - 43);
-                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"ok\"><path>%1</path><version>%2</version></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI), DocScan::xmlify(versionString)));
+                emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"ok\" version=\"%2\"><path>%1</path></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI), DocScan::xmlify(versionString)));
             } else {
                 qWarning() << "Could not find version string when executing 3-Heights PDF Validator Shell: " << threeHeightsProcess.program() << threeHeightsProcess.arguments().join(' ') << " in directory " << threeHeightsProcess.workingDirectory();
                 emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"threeheightsvalidatorshellcli\" status=\"error\"><path>%1</path><error>Could not find version string when executing 3-Heights PDF Validator Shell</error></toolcheck>")).arg(DocScan::xmlify(m_threeHeightsValidatorShellCLI)));
