@@ -609,10 +609,6 @@ bool FileAnalyzerPDF::pdfVersionMatchesXMPconformance(const FileAnalyzerPDF::PDF
 bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
     static const QString docscanConformanceFakerPrefix(QStringLiteral("docscan-conformance-faker"));
     if (m_downgradeToPDFA1b && !filename.contains(docscanConformanceFakerPrefix)) {
-        /// Valid PDF/A files of any part/conformance level are either PDF version 1.4 or 1.7
-        const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
-        if (pdfVersion != pdfVersion1dot4 && pdfVersion != pdfVersion1dot7) return false;
-
         QFile pdfFile(filename);
         if (pdfFile.open(QFile::ReadOnly)) {
             QByteArray pdfData = pdfFile.readAll();
@@ -765,8 +761,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         return;
     }
 
-    if (downgradingPDFA(filename)) return;
-
     m_isAlive = true;
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
@@ -777,6 +771,27 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
     const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
     const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, pdfVersion, metaText);
+
+    /// If configured to do so, downgrade a PDF/A file that follows a PDF/A standard
+    /// better than PDF/A-1b down to just PDF/A-1b by changing its metadata.
+    /// This may be done in order to invoke PDF/A-1b-only validators on this file.
+    /// The original file before the modification will not processed any further,
+    /// unless the downgrading itself fails (e.g. because the metadata could not be
+    /// changed).
+    if (m_downgradeToPDFA1b && xmpPDFConformance != xmpPDFA1b && pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance)) {
+        if (downgradingPDFA(filename)) {
+            if (!metaText.isEmpty()) {
+                metaText.squeeze();
+                logText.append(QStringLiteral("<meta>\n")).append(metaText).append(QStringLiteral("</meta>\n"));
+            }
+
+            logText.prepend(QString(QStringLiteral("<fileanalysis filename=\"%1\" status=\"ok\">\n")).arg(DocScan::xmlify(filename)));
+            logText.append(QStringLiteral("</fileanalysis>\n"));
+            emit analysisReport(objectName(), logText);
+
+            return;
+        }
+    }
 
     /// To save processing time, the user may choose to run validators on PDF files
     /// that look like valid PDF/A files on first sight. This 'first sight' is determined
