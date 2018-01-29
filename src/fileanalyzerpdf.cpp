@@ -511,7 +511,7 @@ inline QString FileAnalyzerPDF::pdfVersionToString(const FileAnalyzerPDF::PDFVer
     return QStringLiteral("invalid");
 }
 
-FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
+FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, const PDFVersion pdfVersion, QString &metaText) {
     QProcess exiftoolprocess(this);
     const QFileInfo fi(filename);
     exiftoolprocess.setWorkingDirectory(fi.absolutePath());
@@ -568,7 +568,7 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
 
     // TODO pdf:Producer xap:ModifyDate xap:CreateDate xap:CreatorTool xap:MetadataDate xapMM:DocumentID xapMM:InstanceID dc:title dc:creator
 
-    metaText.append(QString(QStringLiteral("<xmp><pdfconformance pdfa1b=\"%1\" pdfa1a=\"%2\" pdfa2b=\"%3\" pdfa2a=\"%4\" pdfa2u=\"%5\" pdfa3b=\"%6\" pdfa3a=\"%7\" pdfa3u=\"%8\">%9</pdfconformance></xmp>\n"))
+    metaText.append(QString(QStringLiteral("<xmp><pdfconformance pdfa1b=\"%1\" pdfa1a=\"%2\" pdfa2b=\"%3\" pdfa2a=\"%4\" pdfa2u=\"%5\" pdfa3b=\"%6\" pdfa3a=\"%7\" pdfa3u=\"%8\" pdfversionmatch=\"%10\">%9</pdfconformance></xmp>\n"))
                     .arg(xmpPDFConformance == xmpPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA2b ? QStringLiteral("yes") : QStringLiteral("no"))
@@ -577,7 +577,8 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
                     .arg(xmpPDFConformance == xmpPDFA3b ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA3a ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA3u ? QStringLiteral("yes") : QStringLiteral("no"))
-                    .arg(xmpPDFConformanceToString(xmpPDFConformance)));
+                    .arg(xmpPDFConformanceToString(xmpPDFConformance))
+                    .arg(pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance) ? QStringLiteral("yes") : QStringLiteral("no")));
 
     return xmpPDFConformance;
 }
@@ -774,14 +775,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     QString logText, metaText;
     metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
-    const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, metaText);
+    const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
+    const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, pdfVersion, metaText);
 
     /// To save processing time, the user may choose to run validators on PDF files
     /// that look like valid PDF/A files on first sight. This 'first sight' is determined
     /// by the PDF version number in the magic string (first few bytes in file) and
     /// XMP metadata regarding PDF/A conformance part and level.
     /// For example, a file claiming to be PDF/A-1a must have PDF version 1.4.
-    const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
     const bool doRunValidators = !m_validateOnlyPDFAfiles || pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance);
 
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));

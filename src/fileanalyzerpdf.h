@@ -115,7 +115,7 @@ private:
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     PDFVersion pdfVersionAnalysis(const QString &filename);
-    XMPPDFConformance xmpAnalysis(const QString &filename, QString &metaText);
+    XMPPDFConformance xmpAnalysis(const QString &filename, const PDFVersion pdfVersion, QString &metaText);
     bool downgradingPDFA(const QString &filename);
     inline QString pdfVersionToString(const PDFVersion pdfVersion) const;
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
