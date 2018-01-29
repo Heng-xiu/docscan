@@ -772,6 +772,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
     const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, pdfVersion, metaText);
 
+    /// While external programs run, analyze PDF file using the Poppler library
+    const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
+
     /// If configured to do so, downgrade a PDF/A file that follows a PDF/A standard
     /// better than PDF/A-1b down to just PDF/A-1b by changing its metadata.
     /// This may be done in order to invoke PDF/A-1b-only validators on this file.
@@ -937,9 +940,6 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start pdfbox Validator for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << QString::fromUtf8(pdfboxValidatorStandardErrorData.constData());
     }
 
-
-    /// While external programs run, analyze PDF file using the Poppler library
-    const bool popplerWrapperOk = popplerAnalysis(filename, logText, metaText);
     /// If for the current filename an alias filename was given,
     /// use the alias filename to locate the Adobe Preflight report.
     const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
