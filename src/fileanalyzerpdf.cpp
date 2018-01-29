@@ -229,7 +229,8 @@ void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QStri
     m_aliasFilename = aliasFilename;
 }
 
-void FileAnalyzerPDF::setDowngradePDFAConformance(const bool downgradeToPDFA1b) {
+void FileAnalyzerPDF::setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b) {
+    m_validateOnlyPDFAfiles = validateOnlyPDFAfiles;
     m_downgradeToPDFA1b = downgradeToPDFA1b;
 }
 
@@ -775,6 +776,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     metaText.reserve(16 * 1024 * 1024); ///< 16 MiB reserved
     const XMPPDFConformance xmpPDFConformance = xmpAnalysis(filename, metaText);
 
+    /// To save processing time, the user may choose to run validators on PDF files
+    /// that look like valid PDF/A files on first sight. This 'first sight' is determined
+    /// by the PDF version number in the magic string (first few bytes in file) and
+    /// XMP metadata regarding PDF/A conformance part and level.
+    /// For example, a file claiming to be PDF/A-1a must have PDF version 1.4.
+    const PDFVersion pdfVersion = pdfVersionAnalysis(filename);
+    const bool doRunValidators = !m_validateOnlyPDFAfiles || pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance);
+
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
     bool veraPDFStartedRun = false;
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
@@ -792,7 +801,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QByteArray d(veraPDF.readAllStandardError());
         veraPDFStandardErrorData.append(d);
     });
-    if (!m_veraPDFcliTool.isEmpty()) {
+    if (doRunValidators && !m_veraPDFcliTool.isEmpty()) {
         /// Chooses built-in Validation Profile flavour, e.g. '1b'
         const QString flavour = xmpPDFConformance == xmpPDFA1b ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
         const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << flavour << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
@@ -815,7 +824,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QByteArray d(threeHeightsPDFValidatorProcess.readAllStandardError());
         threeHeightsPDFValidatorStandardErrorData.append(d);
     });
-    if (!m_threeHeightsValidatorShellCLI.isEmpty() && !m_threeHeightsValidatorLicenseKey.isEmpty()) {
+    if (doRunValidators && !m_threeHeightsValidatorShellCLI.isEmpty() && !m_threeHeightsValidatorLicenseKey.isEmpty()) {
         const QString clValue = xmpPDFConformance == xmpPDFA1b ? QStringLiteral("pdfa-1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("pdfa-1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("pdfa-2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("pdfa-2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("pdfa-2u") : QStringLiteral("ccl")))));
         const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << clValue << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
         threeHeightsPDFValidatorProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
@@ -840,7 +849,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QByteArray d(callasPdfAPilot.readAllStandardError());
         callasPdfAPilotStandardErrorData.append(d);
     });
-    if (!m_callasPdfAPilotCLI.isEmpty()) {
+    if (doRunValidators && !m_callasPdfAPilotCLI.isEmpty()) {
         const QStringList arguments = QStringList() << defaultArgumentsForNice << m_callasPdfAPilotCLI << QStringLiteral("--quickpdfinfo") << filename;
         callasPdfAPilot.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         callasPdfAPilotStartedRun1 = callasPdfAPilot.waitForStarted(oneMinuteInMillisec);
@@ -862,7 +871,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QByteArray d(qoppaJPDFPreflightProcess.readAllStandardError());
         qoppaJPDFPreflightStandardErrorData.append(d);
     });
-    if (!m_qoppaJPDFPreflightDirectory.isEmpty()) {
+    if (doRunValidators && !m_qoppaJPDFPreflightDirectory.isEmpty()) {
         const QStringList arguments = QStringList() << defaultArgumentsForNice << m_qoppaJPDFPreflightDirectory + QStringLiteral("/ValidatePDFA1b.sh") << filename;
         qoppaJPDFPreflightProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         qoppaJPDFPreflightStarted = qoppaJPDFPreflightProcess.waitForStarted(oneMinuteInMillisec);
@@ -870,7 +879,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start Qoppa jPDFPreflight for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
     }
 
-    QProcess *jhoveProcess = launchJHove(this, JHovePDF, filename);
+    QProcess *jhoveProcess = doRunValidators ? launchJHove(this, JHovePDF, filename) : nullptr;
     QByteArray jhoveStandardOutputData, jhoveStandardErrorData;
     if (jhoveProcess != nullptr) {
         connect(jhoveProcess, &QProcess::readyReadStandardOutput, [jhoveProcess, &jhoveStandardOutputData]() {
@@ -900,7 +909,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const QByteArray d(pdfboxValidator.readAllStandardError());
         pdfboxValidatorStandardErrorData.append(d);
     });
-    if (!m_pdfboxValidatorJavaClass.isEmpty()) {
+    if (doRunValidators && !m_pdfboxValidatorJavaClass.isEmpty()) {
         static const QFileInfo fi(m_pdfboxValidatorJavaClass);
         static const QDir dir = fi.dir();
         static const QStringList jarFiles = dir.entryList(QStringList() << QStringLiteral("*.jar"), QDir::Files, QDir::Name);
@@ -919,7 +928,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// use the alias filename to locate the Adobe Preflight report.
     const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
 
-    if (veraPDFStartedRun) {
+    if (doRunValidators && veraPDFStartedRun) {
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
@@ -957,7 +966,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
     }
 
-    if (callasPdfAPilotStartedRun1) {
+    if (doRunValidators && callasPdfAPilotStartedRun1) {
         if (!callasPdfAPilot.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
         callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
@@ -989,7 +998,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int jhoveExitCode = INT_MIN;
     QString jhoveStandardOutput;
     QString jhoveStandardError;
-    if (jhoveStarted) {
+    if (doRunValidators && jhoveStarted) {
         if (!jhoveProcess->waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for jHove failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
         jhoveExitCode = jhoveProcess->exitCode();
@@ -1010,7 +1019,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of jHove failed for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory() << ": " << jhoveStandardError;
     }
 
-    if (pdfboxValidatorStarted) {
+    if (doRunValidators && pdfboxValidatorStarted) {
         if (!pdfboxValidator.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
         pdfboxValidatorExitCode = pdfboxValidator.exitCode();
@@ -1022,7 +1031,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of pdfbox Validator failed for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << pdfboxValidatorStandardError;
     }
 
-    if (threeHeightsPDFValidatorStartedRun) {
+    if (doRunValidators && threeHeightsPDFValidatorStartedRun) {
         if (!threeHeightsPDFValidatorProcess.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for 3-Heights PDF Validator Shell failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
         threeHeightsPDFValidatorExitCode = threeHeightsPDFValidatorProcess.exitCode();
@@ -1058,7 +1067,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotStandardError;
     }
 
-    if (qoppaJPDFPreflightStarted) {
+    if (doRunValidators && qoppaJPDFPreflightStarted) {
         if (!qoppaJPDFPreflightProcess.waitForFinished(twentyMinutesInMillisec))
             qWarning() << "Waiting for Qoppa jPDFPreflight failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
         qoppaJPDFPreflightExitCode = qoppaJPDFPreflightProcess.exitCode();
@@ -1071,7 +1080,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
 
-    if (qoppaJPDFPreflightExitCode > INT_MIN) {
+    if (doRunValidators && qoppaJPDFPreflightExitCode > INT_MIN) {
         const int p1 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("<qoppapdfpreflight"));
         const int p2 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("</qoppapdfpreflight>"), p1 + 1);
         if (p1 >= 0 && p2 > p1)
@@ -1083,7 +1092,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     } else
         metaText.append(QString(QStringLiteral("<qoppapdfpreflight filename=\"%1\"><info>Qoppa not configured to run</info></qoppapdfpreflight>\n")).arg(DocScan::xmlify(filename)));
 
-    if (jhoveExitCode > INT_MIN) {
+    if (doRunValidators && jhoveExitCode > INT_MIN) {
         /// insert data from jHove
         metaText.append(QString(QStringLiteral("<jhove exitcode=\"%1\" wellformed=\"%2\" valid=\"%3\" pdf=\"%4\"")).arg(QString::number(jhoveExitCode), jhovePDFWellformed ? QStringLiteral("yes") : QStringLiteral("no"), jhovePDFValid ? QStringLiteral("yes") : QStringLiteral("no"), jhoveIsPDF ? QStringLiteral("yes") : QStringLiteral("no")));
         if (jhovePDFversion.isEmpty() && jhovePDFprofile.isEmpty() && jhoveStandardOutput.isEmpty() && jhoveStandardError.isEmpty())
@@ -1103,12 +1112,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(jhoveStandardError)));
             metaText.append(QStringLiteral("</jhove>\n"));
         }
-    } else if (!jhoveShellscript.isEmpty())
+    } else if (doRunValidators && !jhoveShellscript.isEmpty())
         metaText.append(QStringLiteral("<jhove><error>jHove failed to start or was never started</error></jhove>\n"));
     else
         metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));
 
-    if (veraPDFExitCode > INT_MIN) {
+    if (doRunValidators && veraPDFExitCode > INT_MIN) {
         /// insert XML data from veraPDF
         metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!veraPDFStandardOutput.isEmpty()) {
@@ -1119,12 +1128,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!veraPDFStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(veraPDFStandardError)));
         metaText.append(QStringLiteral("</verapdf>\n"));
-    } else if (!m_veraPDFcliTool.isEmpty())
+    } else if (doRunValidators && !m_veraPDFcliTool.isEmpty())
         metaText.append(QStringLiteral("<verapdf><error>veraPDF failed to start or was never started</error></verapdf>\n"));
     else
         metaText.append(QStringLiteral("<verapdf><info>veraPDF not configured to run</info></verapdf>\n"));
 
-    if (threeHeightsPDFValidatorExitCode > INT_MIN) {
+    if (doRunValidators && threeHeightsPDFValidatorExitCode > INT_MIN) {
         QTextStream ts(&threeHeightsPDFValidatorStandardOutput);
         QString report;
         bool insideIssues = false;
@@ -1153,7 +1162,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     } else
         metaText.append(QStringLiteral("<threeheightspdfvalidator><info>3-Heights PDF Validator Shell not configured to run</info></threeheightspdfvalidator>\n"));
 
-    if (pdfboxValidatorExitCode > INT_MIN) {
+    if (doRunValidators && pdfboxValidatorExitCode > INT_MIN) {
         /// insert result from Apache's PDFBox
         metaText.append(QString(QStringLiteral("<pdfboxvalidator exitcode=\"%1\" pdfa1b=\"%2\">\n")).arg(QString::number(pdfboxValidatorExitCode), pdfboxValidatorValidPdf ? QStringLiteral("yes") : QStringLiteral("no")));
         if (!pdfboxValidatorStandardOutput.isEmpty()) {
@@ -1173,12 +1182,12 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!pdfboxValidatorStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
         metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
-    } else if (!m_pdfboxValidatorJavaClass.isEmpty())
+    } else if (doRunValidators && !m_pdfboxValidatorJavaClass.isEmpty())
         metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
     else
         metaText.append(QStringLiteral("<pdfboxvalidator><info>pdfbox Validator not configured to run</info></pdfboxvalidator>\n"));
 
-    if (callasPdfAPilotExitCode > INT_MIN) {
+    if (doRunValidators && callasPdfAPilotExitCode > INT_MIN) {
         const bool isPDFA1a = callasPdfAPilotPDFA1letter == 'a' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
         const bool isPDFA1b = callasPdfAPilotPDFA1letter == 'b' && callasPdfAPilotCountErrors == 0 && callasPdfAPilotCountWarnings == 0;
         metaText.append(QString(QStringLiteral("<callaspdfapilot exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">\n")).arg(QString::number(callasPdfAPilotExitCode), isPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"), isPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")));
@@ -1187,7 +1196,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!callasPdfAPilotStandardError.isEmpty())
             metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(callasPdfAPilotStandardError)));
         metaText.append(QStringLiteral("</callaspdfapilot>"));
-    } else if (!m_callasPdfAPilotCLI.isEmpty())
+    } else if (doRunValidators && !m_callasPdfAPilotCLI.isEmpty())
         metaText.append(QStringLiteral("<callaspdfapilot><error>callas PDF/A Pilot failed to start or was never started</error></callaspdfapilot>\n"));
     else
         metaText.append(QStringLiteral("<callaspdfapilot><info>callas PDF/A Pilot not configured to run</info></callaspdfapilot>\n"));

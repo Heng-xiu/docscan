@@ -62,7 +62,7 @@ public:
      */
     void setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename);
 
-    void setDowngradePDFAConformance(const bool downgradeToPDFA1b);
+    void setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -105,7 +105,7 @@ private:
     QString m_qoppaJPDFPreflightDirectory;
     QString m_threeHeightsValidatorShellCLI, m_threeHeightsValidatorLicenseKey;
     QString m_toAnalyzeFilename, m_aliasFilename;
-    bool m_downgradeToPDFA1b;
+    bool m_validateOnlyPDFAfiles, m_downgradeToPDFA1b;
     QTemporaryDir m_tempDirDowngradeToPDFA1b;
 
     static const QStringList blacklistedFileExtensions;
