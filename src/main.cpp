@@ -427,16 +427,16 @@ int main(int argc, char *argv[])
 
         if (!adobePreflightReportDirectory.isEmpty()) {
             if (fileAnalyzerPDF != nullptr)
-                fileAnalyzerPDF->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+                fileAnalyzerPDF->setupAdobePreflightReportDirectory(adobePreflightReportDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
-                fileAnalyzerMultiplexer->setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+                fileAnalyzerMultiplexer->setupAdobePreflightReportDirectory(adobePreflightReportDirectory);
         }
 
         if (!qoppaJPDFPreflightDirectory.isEmpty()) {
             if (fileAnalyzerPDF != nullptr)
-                fileAnalyzerPDF->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+                fileAnalyzerPDF->setupQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
             if (fileAnalyzerMultiplexer != nullptr)
-                fileAnalyzerMultiplexer->setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+                fileAnalyzerMultiplexer->setupQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
         }
 
         if (!threeHeightsValidatorShellCLI.isEmpty() && !threeHeightsValidatorLicenseKey.isEmpty()) {

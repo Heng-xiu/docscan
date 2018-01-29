@@ -131,12 +131,12 @@ void FileAnalyzerMultiplexer::setupDPFManager(const QString &dpfmangerJFXjar) {
     m_fileAnalyzerTIFF.setupDPFManager(dpfmangerJFXjar);
 }
 
-void FileAnalyzerMultiplexer::setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
-    m_fileAnalyzerPDF.setAdobePreflightReportDirectory(adobePreflightReportDirectory);
+void FileAnalyzerMultiplexer::setupAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
+    m_fileAnalyzerPDF.setupAdobePreflightReportDirectory(adobePreflightReportDirectory);
 }
 
-void FileAnalyzerMultiplexer::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
-    m_fileAnalyzerPDF.setQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
+void FileAnalyzerMultiplexer::setupQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
+    m_fileAnalyzerPDF.setupQoppaJPDFPreflightDirectory(qoppaJPDFPreflightDirectory);
 }
 
 void FileAnalyzerMultiplexer::setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey) {

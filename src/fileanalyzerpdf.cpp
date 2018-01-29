@@ -152,7 +152,7 @@ void FileAnalyzerPDF::setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI)
         qWarning() << "Program file for Callas PDF/A Pilot does not exist or not executable:" << callasPdfAPilotCLI;
 }
 
-void FileAnalyzerPDF::setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
+void FileAnalyzerPDF::setupAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory) {
     m_adobePreflightReportDirectory = adobePreflightReportDirectory;
     QFileInfo directory(m_adobePreflightReportDirectory);
     if (directory.exists() && directory.isReadable())
@@ -161,7 +161,7 @@ void FileAnalyzerPDF::setAdobePreflightReportDirectory(const QString &adobePrefl
         emit analysisReport(objectName(), QString(QStringLiteral("<toolcheck name=\"adobepreflightreportdirectory\" status=\"error\"><directory>%1</directory><error>Directory is inaccessible or does not exist</error></toolcheck>")).arg(DocScan::xmlify(directory.absoluteFilePath())));
 }
 
-void FileAnalyzerPDF::setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
+void FileAnalyzerPDF::setupQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory) {
     m_qoppaJPDFPreflightDirectory = qoppaJPDFPreflightDirectory;
     QFileInfo directory(m_qoppaJPDFPreflightDirectory);
     if (directory.exists() && directory.isReadable()) {

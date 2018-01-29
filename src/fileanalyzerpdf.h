@@ -48,8 +48,8 @@ public:
     void setupVeraPDF(const QString &cliTool);
     void setupPdfBoXValidator(const QString &pdfboxValidatorJavaClass);
     void setupCallasPdfAPilotCLI(const QString &callasPdfAPilotCLI);
-    void setAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
-    void setQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
+    void setupAdobePreflightReportDirectory(const QString &adobePreflightReportDirectory);
+    void setupQoppaJPDFPreflightDirectory(const QString &qoppaJPDFPreflightDirectory);
     void setupThreeHeightsValidatorShellCLI(const QString &threeHeightsValidatorShellCLI, const QString &threeHeightsValidatorLicenseKey);
 
     /**
