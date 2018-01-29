@@ -1087,10 +1087,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             metaText.append(qoppaJPDFPreflightStandardOutput.mid(p1, p2 - p1 + 20).replace(QStringLiteral("<qoppapdfpreflight "), QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" "))).arg(qoppaJPDFPreflightExitCode) + QStringLiteral("\n"));
         else {
             qWarning() << "Missing expected XML output from Qoppa jPDFPreflight for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory() << ": " << qoppaJPDFPreflightStandardError;
-            metaText.append(QString(QStringLiteral("<qoppapdfpreflight filename=\"%1\" exitcode=\"%2\" pdfa1b=\"no\"><error>Missing expected XML output</error><details>%3</details></qoppapdfpreflight>\n")).arg(DocScan::xmlify(filename)).arg(qoppaJPDFPreflightExitCode).arg(DocScan::xmlify(qoppaJPDFPreflightStandardError)));
+            metaText.append(QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" pdfa1b=\"no\"><error>Missing expected XML output</error><details>%2</details></qoppapdfpreflight>\n")).arg(qoppaJPDFPreflightExitCode).arg(DocScan::xmlify(qoppaJPDFPreflightStandardError)));
         }
     } else
-        metaText.append(QString(QStringLiteral("<qoppapdfpreflight filename=\"%1\"><info>Qoppa not configured to run</info></qoppapdfpreflight>\n")).arg(DocScan::xmlify(filename)));
+        metaText.append(QStringLiteral("<qoppapdfpreflight><info>Qoppa not configured to run</info></qoppapdfpreflight>\n"));
 
     if (doRunValidators && jhoveExitCode > INT_MIN) {
         /// insert data from jHove
