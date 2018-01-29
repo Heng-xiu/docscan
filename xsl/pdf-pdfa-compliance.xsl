@@ -26,15 +26,15 @@
 <xsl:output method="text" omit-xml-declaration="yes" indent="no" encoding="UTF-8"/>
 
 <!--
-  Track and count the 'votes' for PDF/A-1b compliance by four external tools:
-  veraPDF, PDFBox, Callas pdfaPilot, and jHove.
+  Track and count the 'votes' for PDF/A-1b compliance by external tools:
+  veraPDF, PDFBox, Callas pdfaPilot, Adobe Preflight, Qoppa PDFPreflight, PDF Tool's 3-Heights Validator and jHove.
   Print both summary and a per-file analysis
 -->
 
 <xsl:template match="log">
 
 <!-- column header  -->
-<xsl:text>filename	jhove-pdfa1b	verapdf-pdfa1b	pdfboxvalidator-pdfa1b	callaspdfapilot-pdfa1b	qoppa-pdfpreflight	pdftools-3heights	votes-pdfa1b</xsl:text>
+<xsl:text>filename	jhove-pdfa1b	verapdf-pdfa1b	pdfboxvalidator-pdfa1b	callaspdfapilot-pdfa1b	adobe-preflight	qoppa-pdfpreflight	pdftools-3heights	votes-pdfa1b</xsl:text>
 
 <xsl:text>
 total	</xsl:text>
@@ -46,11 +46,13 @@ total	</xsl:text>
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/callaspdfapilot[@pdfa1b='yes'])" />
 <xsl:text>	</xsl:text>
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/adobepreflight[@pdfa1b='yes'])" />
+<xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/qoppapdfpreflight[@pdfa1b='yes'])" />
 <xsl:text>	</xsl:text>
 <xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta/threeheightspdfvalidator[@pdfa1b='yes'])" />
 <xsl:text>	</xsl:text>
-<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta[jhove/profile/@pdfa1b='yes' or verapdf/@pdfa1b='yes' or pdfboxvalidator/@pdfa1b='yes' or callaspdfapilot/@pdfa1b='yes' or qoppapdfpreflight/@pdfa1b='yes' or threeheightspdfvalidator/@pdfa1b='yes'])" />
+<xsl:value-of select="count(/log/logitem/fileanalysis[@status='ok']/meta[jhove/profile/@pdfa1b='yes' or verapdf/@pdfa1b='yes' or pdfboxvalidator/@pdfa1b='yes' or callaspdfapilot/@pdfa1b='yes' or adobepreflight/@pdfa1b='yes' or qoppapdfpreflight/@pdfa1b='yes' or threeheightspdfvalidator/@pdfa1b='yes'])" />
 <xsl:text>
 </xsl:text>
 
@@ -101,6 +103,14 @@ total	</xsl:text>
   <xsl:value-of select="meta/callaspdfapilot/@pdfa1b" />
  </xsl:when>
  <!-- Callas pdfApilot is not always run -->
+ <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
+</xsl:choose>
+<xsl:text>	</xsl:text>
+<xsl:choose>
+ <xsl:when test="meta/adobepreflight/@pdfa1b">
+  <xsl:value-of select="meta/adobepreflight/@pdfa1b" />
+ </xsl:when>
+ <!-- Adobe Preflight is not always run -->
  <xsl:otherwise><xsl:text>no-data</xsl:text></xsl:otherwise>
 </xsl:choose>
 <xsl:text>	</xsl:text>
