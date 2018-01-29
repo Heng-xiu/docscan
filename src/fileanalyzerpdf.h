@@ -119,6 +119,17 @@ private:
     bool downgradingPDFA(const QString &filename);
     inline QString pdfVersionToString(const PDFVersion pdfVersion) const;
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
+
+    /**
+     * Check if PDF version matches the XMP PDF/A conformance level and part.
+     * For example, a file claiming to be PDF/A-1a must have PDF version 1.4.
+     *
+     * @param pdfVersion any valid value of PDFVersion
+     * @param xmpPDFConformance any valid value of XMPPDFConformance
+     * @return true if PDF version and XMP data match
+     */
+    inline bool pdfVersionMatchesXMPconformance(const FileAnalyzerPDF::PDFVersion pdfVersion, const FileAnalyzerPDF::XMPPDFConformance xmpPDFConformance);
+
     bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);

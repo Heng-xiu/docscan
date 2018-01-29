@@ -598,6 +598,12 @@ QString FileAnalyzerPDF::xmpPDFConformanceToString(const XMPPDFConformance xmpPD
     return QStringLiteral("invalid");
 }
 
+bool FileAnalyzerPDF::pdfVersionMatchesXMPconformance(const FileAnalyzerPDF::PDFVersion pdfVersion, const FileAnalyzerPDF::XMPPDFConformance xmpPDFConformance) {
+    return (pdfVersion == pdfVersion1dot4 && xmpPDFConformance >= xmpPDFA1b && xmpPDFConformance <= xmpPDFA1a)
+           || (pdfVersion == pdfVersion1dot7 && xmpPDFConformance >= xmpPDFA2b && xmpPDFConformance <= xmpPDFA3u)
+           || (pdfVersion == pdfVersion2dot0 && xmpPDFConformance == xmpPDFA4);
+}
+
 bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
     static const QString docscanConformanceFakerPrefix(QStringLiteral("docscan-conformance-faker"));
     if (m_downgradeToPDFA1b && !filename.contains(docscanConformanceFakerPrefix)) {
