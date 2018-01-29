@@ -23,7 +23,7 @@
 ## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ## SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-export version=${version:-2.0.7}
+export version=${version:-2.0.8}
 
 cd "$(dirname "${0}")"
 
@@ -32,7 +32,7 @@ for stem in fontbox pdfbox preflight xmpbox ; do
 	test -s "${fn}" && continue
 	wget "https://archive.apache.org/dist/pdfbox/${version}/${fn}" || exit 1
 done
-for tool in commons-logging-1.2 commons-io-2.5 ; do
+for tool in commons-logging-1.2 commons-io-2.6 ; do
 	fn="${tool}.jar"
 	test -s "${fn}" && continue
 	stem=$(echo "${tool}" | sed -e 's!^commons-!!g;s!-[1-9][0-9]*[.][0-9]*$!!g')

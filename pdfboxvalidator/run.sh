@@ -23,7 +23,7 @@
 ## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ## SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-export version=${version:-2.0.7}
+export version=${version:-2.0.8}
 
 cd "$(dirname "${0}")"
 ./build.sh
