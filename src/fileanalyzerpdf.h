@@ -115,9 +115,8 @@ private:
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     PDFVersion pdfVersionAnalysis(const QString &filename);
-    XMPPDFConformance xmpAnalysis(const QString &filename, const PDFVersion pdfVersion, QString &metaText);
-    bool downgradingPDFA(const QString &filename);
     inline QString pdfVersionToString(const PDFVersion pdfVersion) const;
+    XMPPDFConformance xmpAnalysis(const QString &filename, const PDFVersion pdfVersion, QString &metaText);
     inline QString xmpPDFConformanceToString(const XMPPDFConformance xmpPDFConformance) const;
 
     /**
@@ -130,6 +129,7 @@ private:
      */
     inline bool pdfVersionMatchesXMPconformance(const FileAnalyzerPDF::PDFVersion pdfVersion, const FileAnalyzerPDF::XMPPDFConformance xmpPDFConformance);
 
+    bool downgradingPDFA(const QString &filename);
     bool adobePreflightReportAnalysis(const QString &filename, QString &metaText);
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);

@@ -127,7 +127,7 @@ bool evaluateConfigfile(const QString &filename)
                     qDebug() << "pdfboxvalidator = " << pdfboxValidatorJavaClass;
                     const QFileInfo javaClass(pdfboxValidatorJavaClass);
                     if (pdfboxValidatorJavaClass.isEmpty() || !javaClass.exists() || javaClass.isExecutable())
-                        qCritical() << "Value for pdfboxValidatorJavaClass does not refer to an non-existing xor executable file: " << pdfboxValidatorJavaClass;
+                        qCritical() << "Value for pdfboxValidatorJavaClass does refer to an non-existing xor executable file: " << pdfboxValidatorJavaClass;
                 } else if (key == QStringLiteral("callaspdfapilot")) {
                     callasPdfAPilotCLI = value;
                     qDebug() << "callaspdfapilot = " << callasPdfAPilotCLI;

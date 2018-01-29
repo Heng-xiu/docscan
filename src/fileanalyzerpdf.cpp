@@ -526,7 +526,8 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
         return xmpError;
 
     const QString output = QString::fromLocal8Bit(exiftoolStandardOutput);
-    if (output.isEmpty()) return xmpError;
+    if (output.isEmpty())
+        return xmpError;
 
     static const QString pdfPartTag(QStringLiteral("<pdfaid:part>"));
     const int pPdfPartTag = output.indexOf(pdfPartTag);
