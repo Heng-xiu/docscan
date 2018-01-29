@@ -478,12 +478,36 @@ FileAnalyzerPDF::PDFVersion FileAnalyzerPDF::pdfVersionAnalysis(const QString &f
             case '5': return pdfVersion1dot5;
             case '6': return pdfVersion1dot6;
             case '7': return pdfVersion1dot7;
-            default: return pdfVersionUnknown;
+            default: return pdfVersionError;
+            }
+        } else if (header[5] == '2' && header[6] == '.') {
+            switch (header[7]) {
+            case '0': return pdfVersion2dot0;
+            case '1': return pdfVersion2dot1;
+            case '2': return pdfVersion2dot2;
+            default: return pdfVersionError;
             }
         } else
-            return pdfVersionUnknown;
+            return pdfVersionError;
     } else
         return pdfVersionError;
+}
+
+inline QString FileAnalyzerPDF::pdfVersionToString(const FileAnalyzerPDF::PDFVersion pdfVersion) const {
+    switch (pdfVersion) {
+    case pdfVersionError: return QStringLiteral("invalid/error");
+    case pdfVersion1dot1: return QStringLiteral("PDF 1.1");
+    case pdfVersion1dot2: return QStringLiteral("PDF 1.2");
+    case pdfVersion1dot3: return QStringLiteral("PDF 1.3");
+    case pdfVersion1dot4: return QStringLiteral("PDF 1.4");
+    case pdfVersion1dot5: return QStringLiteral("PDF 1.5");
+    case pdfVersion1dot6: return QStringLiteral("PDF 1.6");
+    case pdfVersion1dot7: return QStringLiteral("PDF 1.7");
+    case pdfVersion2dot0: return QStringLiteral("PDF 2.0");
+    case pdfVersion2dot1: return QStringLiteral("PDF 2.1");
+    case pdfVersion2dot2: return QStringLiteral("PDF 2.2");
+    }
+    return QStringLiteral("invalid");
 }
 
 FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, QString &metaText) {
