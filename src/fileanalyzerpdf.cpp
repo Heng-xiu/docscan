@@ -242,7 +242,7 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     const QStringList pattern = QStringList() << QFileInfo(filename).fileName().replace(QStringLiteral(".pdf"), QStringLiteral("_report.xml")).remove(QStringLiteral(".xz")).append("*");
     QString reportXMLfile;
 
-    while (!stack.isEmpty()) {
+    while (!stack.isEmpty() && reportXMLfile.isEmpty()) {
         const QDir curDir = stack.front();
         stack.removeFirst();
         const QFileInfoList list = curDir.entryInfoList(pattern, QDir::AllDirs | QDir::Files | QDir::NoDotDot | QDir::NoDot, QDir::Name | QDir::DirsLast);
@@ -258,6 +258,7 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
             }
         }
     }
+    if (reportXMLfile.isEmpty()) return false;
 
     QString xmlCode;
     if (reportXMLfile.endsWith(QStringLiteral(".xml"))) {
@@ -279,15 +280,15 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
                 standardOutput.append(d);
             });
             unxzProcess.start(QStringLiteral("unxz"), QProcess::ReadWrite);
-            const bool a = unxzProcess.waitForStarted(oneMinuteInMillisec);
-            const bool b = a && unxzProcess.write(compressedData) > 0;
-            const bool c = b && unxzProcess.waitForBytesWritten(oneMinuteInMillisec);
-            unxzProcess.closeWriteChannel();
-            const bool d = c && unxzProcess.waitForFinished(tenMinutesInMillisec);
-            const bool e = d && unxzProcess.exitCode() == 0;
-            const bool f = e && unxzProcess.exitStatus() == QProcess::NormalExit;
-            if (f)
-                xmlCode = QString::fromUtf8(standardOutput);
+            if (unxzProcess.waitForStarted(oneMinuteInMillisec)
+                    && unxzProcess.write(compressedData) > 0
+                    && unxzProcess.waitForBytesWritten(oneMinuteInMillisec)) {
+                unxzProcess.closeWriteChannel();
+                if (unxzProcess.waitForFinished(tenMinutesInMillisec)
+                        && unxzProcess.exitCode() == 0
+                        && unxzProcess.exitStatus() == QProcess::NormalExit)
+                    xmlCode = QString::fromUtf8(standardOutput);
+            }
         }
     }
 
@@ -941,9 +942,15 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             qWarning() << "Failed to start pdfbox Validator for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << QString::fromUtf8(pdfboxValidatorStandardErrorData.constData());
     }
 
-    /// If for the current filename an alias filename was given,
-    /// use the alias filename to locate the Adobe Preflight report.
-    const bool adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
+    bool adobePreflightReportAnalysisOk = false;
+    if (doRunValidators) {
+        /// If for the current filename an alias filename was given,
+        /// use the alias filename to locate the Adobe Preflight report.
+        adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
+        if (!adobePreflightReportAnalysisOk)
+            metaText.append(QStringLiteral("<adobepreflight status=\"failed\"><error>Failed to find or evaluate Adobe Preflight XML report file</error></adobepreflight>\n"));
+    } else
+        metaText.append(QStringLiteral("<adobepreflight><info>Adobe Preflight not configured to run</info></adobepreflight>\n"));
 
     if (doRunValidators && veraPDFStartedRun) {
         if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
