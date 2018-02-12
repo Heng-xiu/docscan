@@ -1192,7 +1192,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 /// Treat like plain text.
                 metaText.append(DocScan::xmlifyLines(buffer));
             } else
-                metaText.append(buffer);
+                metaText.append(buffer.replace(QStringLiteral("><error"), QStringLiteral(">\n<error"))); ///< keep output as it is, but insert line breaks before beginning of 'error' tag
             if (!ts.atEnd())
                 metaText.append(QStringLiteral("\n<!--  PDFBox Validator output too long  -->"));
         }
