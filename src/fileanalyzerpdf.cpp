@@ -523,12 +523,16 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
         exiftoolStandardOutput.append(d);
     });
     exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
-    if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec))
+    if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec)) {
+        metaText.append(QString(QStringLiteral("<xmp><error>Failed to run 'exiftool'</error></xmp>\n")));
         return xmpError;
+    }
 
     const QString output = QString::fromLocal8Bit(exiftoolStandardOutput);
-    if (output.isEmpty())
+    if (output.isEmpty()) {
+        metaText.append(QString(QStringLiteral("<xmp><warning>Empty output from 'exiftool'</warning></xmp>\n")));
         return xmpError;
+    }
 
     static const QString pdfPartTag(QStringLiteral("<pdfaid:part>"));
     const int pPdfPartTag = output.indexOf(pdfPartTag);
