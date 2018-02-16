@@ -47,7 +47,7 @@ static const int tenMinutesInMillisec = oneMinuteInMillisec * 10;
 static const int twentyMinutesInMillisec = oneMinuteInMillisec * 20;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
+    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_validateOnlyPDFAfiles(false), m_downgradeToPDFA1b(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
 {
     FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
 
