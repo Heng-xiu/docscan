@@ -40,6 +40,8 @@ class FileAnalyzerPDF : public FileAnalyzerAbstract, public JHoveWrapper
 {
     Q_OBJECT
 public:
+    enum XMPPDFConformance {xmpError = -1, xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
+
     explicit FileAnalyzerPDF(QObject *parent = nullptr);
 
     virtual bool isAlive();
@@ -62,7 +64,7 @@ public:
      */
     void setAliasName(const QString &toAnalyzeFilename, const QString &aliasFilename);
 
-    void setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b);
+    void setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b, const XMPPDFConformance enforcedValidationLevel);
 
 public slots:
     virtual void analyzeFile(const QString &filename);
@@ -106,12 +108,12 @@ private:
     QString m_threeHeightsValidatorShellCLI, m_threeHeightsValidatorLicenseKey;
     QString m_toAnalyzeFilename, m_aliasFilename;
     bool m_validateOnlyPDFAfiles, m_downgradeToPDFA1b;
+    XMPPDFConformance m_enforcedValidationLevel;
     QTemporaryDir m_tempDirDowngradeToPDFA1b;
 
     static const QStringList blacklistedFileExtensions;
 
     enum PDFVersion { pdfVersionError = -1, pdfVersion1dot1 = 11, pdfVersion1dot2 = 12, pdfVersion1dot3 = 13, pdfVersion1dot4 = 14, pdfVersion1dot5 = 15, pdfVersion1dot6 = 16, pdfVersion1dot7 = 17, pdfVersion2dot0 = 20, pdfVersion2dot1 = 21, pdfVersion2dot2 = 22};
-    enum XMPPDFConformance {xmpError = -1, xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
 
     bool popplerAnalysis(const QString &filename, QString &logText, QString &metaText);
     PDFVersion pdfVersionAnalysis(const QString &filename);

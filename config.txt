@@ -67,6 +67,16 @@ validateonlypdfafiles=true
 # in the metadata of a temporary copy of said PDF file.
 downgradetopdfa1b=true
 
+# If validating PDF files for PDF/A conformance, which
+# PDF/A part and level should be checked for?
+# Possible values include
+#  auto          Let each validator choose itself, e.g.
+#                based on each PDF file's metadata
+#  pdfa1b        Enforce PDF/A-1b where possible
+# Other PDF/A parts and levels may get supported in the
+# future.
+pdfapartlevel=pdfa1b
+
 # Filter for files matching a certain pattern.
 # Multiple patterns are separated by pipe symbols
 # ('|'). File patterns are not regular expressions,

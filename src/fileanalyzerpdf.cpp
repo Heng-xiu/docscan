@@ -47,7 +47,7 @@ static const int tenMinutesInMillisec = oneMinuteInMillisec * 10;
 static const int twentyMinutesInMillisec = oneMinuteInMillisec * 20;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
-    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
+    : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
 {
     FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
 
@@ -229,9 +229,10 @@ void FileAnalyzerPDF::setAliasName(const QString &toAnalyzeFilename, const QStri
     m_aliasFilename = aliasFilename;
 }
 
-void FileAnalyzerPDF::setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b) {
+void FileAnalyzerPDF::setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b, const XMPPDFConformance enforcedValidationLevel) {
     m_validateOnlyPDFAfiles = validateOnlyPDFAfiles;
     m_downgradeToPDFA1b = downgradeToPDFA1b;
+    m_enforcedValidationLevel = enforcedValidationLevel;
 }
 
 bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QString &metaText) {
@@ -837,7 +838,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     });
     if (doRunValidators && !m_veraPDFcliTool.isEmpty()) {
         /// Chooses built-in Validation Profile flavour, e.g. '1b'
-        const QString flavour = xmpPDFConformance == xmpPDFA1b ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
+        const QString flavour = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
         const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << flavour << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         veraPDFStartedRun = veraPDF.waitForStarted(twoMinutesInMillisec);
@@ -859,7 +860,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         threeHeightsPDFValidatorStandardErrorData.append(d);
     });
     if (doRunValidators && !m_threeHeightsValidatorShellCLI.isEmpty() && !m_threeHeightsValidatorLicenseKey.isEmpty()) {
-        const QString clValue = xmpPDFConformance == xmpPDFA1b ? QStringLiteral("pdfa-1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("pdfa-1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("pdfa-2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("pdfa-2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("pdfa-2u") : QStringLiteral("ccl")))));
+        const QString clValue = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("pdfa-1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("pdfa-1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("pdfa-2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("pdfa-2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("pdfa-2u") : QStringLiteral("ccl")))));
         const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << clValue << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
         threeHeightsPDFValidatorProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         threeHeightsPDFValidatorStartedRun = threeHeightsPDFValidatorProcess.waitForStarted(oneMinuteInMillisec);
@@ -906,7 +907,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         qoppaJPDFPreflightStandardErrorData.append(d);
     });
     if (doRunValidators && !m_qoppaJPDFPreflightDirectory.isEmpty()) {
-        const QStringList arguments = QStringList() << defaultArgumentsForNice << m_qoppaJPDFPreflightDirectory + QStringLiteral("/ValidatePDFA1b.sh") << filename;
+        const QString flavor = (xmpPDFConformance == xmpPDFA1a && m_enforcedValidationLevel == xmpNone) ?  QStringLiteral("PDFA1a") : QStringLiteral("PDFA1b");
+        const QStringList arguments = QStringList() << defaultArgumentsForNice << (m_qoppaJPDFPreflightDirectory + QStringLiteral("/Validate") + flavor + QStringLiteral(".sh")) << filename;
         qoppaJPDFPreflightProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         qoppaJPDFPreflightStarted = qoppaJPDFPreflightProcess.waitForStarted(oneMinuteInMillisec);
         if (!qoppaJPDFPreflightStarted)

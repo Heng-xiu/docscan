@@ -60,6 +60,7 @@ QString adobePreflightReportDirectory;
 QString qoppaJPDFPreflightDirectory;
 QString threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey;
 bool validateOnlyPDFAfiles, downgradeToPDFA1b;
+FileAnalyzerPDF::XMPPDFConformance enforcedValidationLevel;
 FileAnalyzerAbstract::TextExtraction textExtraction;
 bool enableEmbeddedFilesAnalysis;
 
@@ -101,6 +102,15 @@ bool evaluateConfigfile(const QString &filename)
                     validateOnlyPDFAfiles = value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || value.compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0;
                 } else if (key == QStringLiteral("downgradetopdfa1b")) {
                     downgradeToPDFA1b = value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0 || value.compare(QStringLiteral("yes"), Qt::CaseInsensitive) == 0;
+                } else if (key == QStringLiteral("pdfapartlevel")) {
+                    if (value.compare(QStringLiteral("auto"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpNone;
+                    else if (value.compare(QStringLiteral("pdfa1b"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA1b;
+                    else {
+                        qCritical() << "Value for pdfapartlevel is neither 'auto' nor 'pdfa1b': " << value;
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpError;
+                    }
                 } else if (key == QStringLiteral("requiredcontent")) {
                     requiredContent = QRegExp(value);
                     qDebug() << "requiredContent =" << requiredContent.pattern();
@@ -327,6 +337,7 @@ int main(int argc, char *argv[])
     enableEmbeddedFilesAnalysis = false;
     validateOnlyPDFAfiles = true;
     downgradeToPDFA1b = false;
+    enforcedValidationLevel = FileAnalyzerPDF::xmpNone;
 
     if (argc != 2) {
         fprintf(stderr, "Require single configuration file as parameter\n");
@@ -450,9 +461,9 @@ int main(int argc, char *argv[])
         }
 
         if (fileAnalyzerPDF != nullptr)
-            fileAnalyzerPDF->setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b);
+            fileAnalyzerPDF->setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b, enforcedValidationLevel);
         if (fileAnalyzerMultiplexer != nullptr)
-            fileAnalyzerMultiplexer->setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b);
+            fileAnalyzerMultiplexer->setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b, enforcedValidationLevel);
 
         if (finder != nullptr) finder->startSearch(numHits);
 

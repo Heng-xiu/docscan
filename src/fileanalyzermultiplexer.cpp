@@ -143,8 +143,8 @@ void FileAnalyzerMultiplexer::setupThreeHeightsValidatorShellCLI(const QString &
     m_fileAnalyzerPDF.setupThreeHeightsValidatorShellCLI(threeHeightsValidatorShellCLI, threeHeightsValidatorLicenseKey);
 }
 
-void FileAnalyzerMultiplexer::setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b) {
-    m_fileAnalyzerPDF.setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b);
+void FileAnalyzerMultiplexer::setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b, const FileAnalyzerPDF::XMPPDFConformance enforcedValidationLevel) {
+    m_fileAnalyzerPDF.setPDFAValidationOptions(validateOnlyPDFAfiles, downgradeToPDFA1b, enforcedValidationLevel);
 }
 
 void FileAnalyzerMultiplexer::uncompressAnalyzefile(const QString &filename, const QString &extensionWithDot, const QString &uncompressTool)
