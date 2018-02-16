@@ -546,6 +546,15 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
     if (pPdfConformanceTag > 0 && output[pPdfConformanceTag + 20] != QLatin1Char('<') && output[pPdfConformanceTag + 21] == QLatin1Char('<'))
         conformance = output[pPdfConformanceTag + 20].toLower();
 
+    if (part.isNull() && conformance.isNull()) {
+        static const QString pdfPartAttribute(QStringLiteral(" pdfaid:part=")), pdfConformanceAttribute(QStringLiteral(" pdfaid:conformance="));
+        const int pPdfPartAttribute = output.indexOf(pdfPartAttribute), pPdfConformanceAttribute = output.indexOf(pdfConformanceAttribute);
+        if (pPdfPartAttribute > 0 && output[pPdfPartAttribute + 14] != QLatin1Char('"') && output[pPdfPartAttribute + 14] != QLatin1Char('\'') && (output[pPdfPartAttribute + 15] == QLatin1Char('"') || output[pPdfPartAttribute + 15] == QLatin1Char('\'')))
+            part = output[pPdfPartAttribute + 14];
+        if (pPdfConformanceAttribute > 0 && output[pPdfConformanceAttribute + 21] != QLatin1Char('"') && output[pPdfConformanceAttribute + 21] != QLatin1Char('\'') && (output[pPdfConformanceAttribute + 22] == QLatin1Char('"') || output[pPdfConformanceAttribute + 22] == QLatin1Char('\'')))
+            conformance = output[pPdfConformanceAttribute + 21].toLower();
+    }
+
     XMPPDFConformance xmpPDFConformance = xmpNone;
 
     if (part.isNull() || conformance.isNull())
