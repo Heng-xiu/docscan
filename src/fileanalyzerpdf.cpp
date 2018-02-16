@@ -824,6 +824,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     bool veraPDFIsPDFA1B = false, veraPDFIsPDFA1A = false;
     QByteArray veraPDFStandardOutputData, veraPDFStandardErrorData;
     QString veraPDFStandardOutput, veraPDFStandardError;
+    QString veraPDFvalidationFlavor;
     long veraPDFfilesize = 0;
     int veraPDFExitCode = INT_MIN;
     QProcess veraPDF(this);
@@ -838,8 +839,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     });
     if (doRunValidators && !m_veraPDFcliTool.isEmpty()) {
         /// Chooses built-in Validation Profile flavour, e.g. '1b'
-        const QString flavour = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
-        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << flavour << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
+        veraPDFvalidationFlavor = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("2u") : QStringLiteral("1b") /** PDF/A-1b is fallback */))));
+        const QStringList arguments = QStringList(defaultArgumentsForNice) << m_veraPDFcliTool << QStringLiteral("-x") << QStringLiteral("-f") << veraPDFvalidationFlavor << QStringLiteral("--maxfailures") << QStringLiteral("2048") << QStringLiteral("--verbose") << QStringLiteral("--format") << QStringLiteral("xml") << filename;
         veraPDF.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         veraPDFStartedRun = veraPDF.waitForStarted(twoMinutesInMillisec);
         if (!veraPDFStartedRun)
@@ -848,6 +849,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     bool threeHeightsPDFValidatorStartedRun = false;
     int  threeHeightsPDFValidatorExitCode = INT_MIN;
+    QString threeHeightsPDFValidatorCLValue;
     QByteArray threeHeightsPDFValidatorStandardOutputData, threeHeightsPDFValidatorStandardErrorData;
     QString threeHeightsPDFValidatorStandardOutput, threeHeightsPDFValidatorStandardError;
     QProcess threeHeightsPDFValidatorProcess(this);
@@ -860,8 +862,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         threeHeightsPDFValidatorStandardErrorData.append(d);
     });
     if (doRunValidators && !m_threeHeightsValidatorShellCLI.isEmpty() && !m_threeHeightsValidatorLicenseKey.isEmpty()) {
-        const QString clValue = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("pdfa-1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("pdfa-1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("pdfa-2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("pdfa-2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("pdfa-2u") : QStringLiteral("ccl")))));
-        const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << clValue << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
+        threeHeightsPDFValidatorCLValue = (xmpPDFConformance == xmpPDFA1b || m_enforcedValidationLevel == xmpPDFA1b) ? QStringLiteral("pdfa-1b") : (xmpPDFConformance == xmpPDFA1a ? QStringLiteral("pdfa-1a") : (xmpPDFConformance == xmpPDFA2a ? QStringLiteral("pdfa-2a") : (xmpPDFConformance == xmpPDFA2b ? QStringLiteral("pdfa-2b") : (xmpPDFConformance == xmpPDFA2u ? QStringLiteral("pdfa-2u") : QStringLiteral("ccl")))));
+        const QStringList arguments = QStringList() << defaultArgumentsForNice << m_threeHeightsValidatorShellCLI << QStringLiteral("-lk") << m_threeHeightsValidatorLicenseKey << QStringLiteral("-cl") << threeHeightsPDFValidatorCLValue << QStringLiteral("-rd") << QStringLiteral("-rl") << QStringLiteral("3") << QStringLiteral("-v") << filename;
         threeHeightsPDFValidatorProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         threeHeightsPDFValidatorStartedRun = threeHeightsPDFValidatorProcess.waitForStarted(oneMinuteInMillisec);
         if (!threeHeightsPDFValidatorStartedRun)
@@ -896,6 +898,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     int  qoppaJPDFPreflightExitCode = INT_MIN;
     QByteArray qoppaJPDFPreflightStandardOutputData, qoppaJPDFPreflightStandardErrorData;
     QString qoppaJPDFPreflightStandardOutput, qoppaJPDFPreflightStandardError;
+    QString qoppaJPDFPreflightFlavor;
     QProcess qoppaJPDFPreflightProcess(this);
     qoppaJPDFPreflightProcess.setWorkingDirectory(m_qoppaJPDFPreflightDirectory);
     connect(&qoppaJPDFPreflightProcess, &QProcess::readyReadStandardOutput, [&qoppaJPDFPreflightProcess, &qoppaJPDFPreflightStandardOutputData]() {
@@ -907,8 +910,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         qoppaJPDFPreflightStandardErrorData.append(d);
     });
     if (doRunValidators && !m_qoppaJPDFPreflightDirectory.isEmpty()) {
-        const QString flavor = (xmpPDFConformance == xmpPDFA1a && m_enforcedValidationLevel == xmpNone) ?  QStringLiteral("PDFA1a") : QStringLiteral("PDFA1b");
-        const QStringList arguments = QStringList() << defaultArgumentsForNice << (m_qoppaJPDFPreflightDirectory + QStringLiteral("/Validate") + flavor + QStringLiteral(".sh")) << filename;
+        qoppaJPDFPreflightFlavor = (xmpPDFConformance == xmpPDFA1a && m_enforcedValidationLevel == xmpNone) ?  QStringLiteral("PDFA1a") : QStringLiteral("PDFA1b");
+        const QStringList arguments = QStringList() << defaultArgumentsForNice << (m_qoppaJPDFPreflightDirectory + QStringLiteral("/Validate") + qoppaJPDFPreflightFlavor + QStringLiteral(".sh")) << filename;
         qoppaJPDFPreflightProcess.start(QStringLiteral("/usr/bin/nice"), arguments, QIODevice::ReadOnly);
         qoppaJPDFPreflightStarted = qoppaJPDFPreflightProcess.waitForStarted(oneMinuteInMillisec);
         if (!qoppaJPDFPreflightStarted)
@@ -1123,10 +1126,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         const int p1 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("<qoppapdfpreflight"));
         const int p2 = qoppaJPDFPreflightStandardOutput.indexOf(QStringLiteral("</qoppapdfpreflight>"), p1 + 1);
         if (p1 >= 0 && p2 > p1)
-            metaText.append(qoppaJPDFPreflightStandardOutput.mid(p1, p2 - p1 + 20).replace(QStringLiteral("<qoppapdfpreflight "), QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" "))).arg(qoppaJPDFPreflightExitCode) + QStringLiteral("\n"));
+            metaText.append(qoppaJPDFPreflightStandardOutput.mid(p1, p2 - p1 + 20).replace(QStringLiteral("<qoppapdfpreflight "), QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" flavor=\"%2\" ")).arg(qoppaJPDFPreflightExitCode).arg(qoppaJPDFPreflightFlavor)) + QStringLiteral("\n"));
         else {
             qWarning() << "Missing expected XML output from Qoppa jPDFPreflight for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory() << ": " << qoppaJPDFPreflightStandardError;
-            metaText.append(QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" pdfa1b=\"no\"><error>Missing expected XML output</error><details>%2</details></qoppapdfpreflight>\n")).arg(qoppaJPDFPreflightExitCode).arg(DocScan::xmlify(qoppaJPDFPreflightStandardError)));
+            metaText.append(QString(QStringLiteral("<qoppapdfpreflight exitcode=\"%1\" pdfa1b=\"no\" flavor=\"%3\"><error>Missing expected XML output</error><details>%2</details></qoppapdfpreflight>\n")).arg(qoppaJPDFPreflightExitCode).arg(DocScan::xmlify(qoppaJPDFPreflightStandardError), qoppaJPDFPreflightFlavor));
         }
     } else
         metaText.append(QStringLiteral("<qoppapdfpreflight><info>Qoppa not configured to run</info></qoppapdfpreflight>\n"));
@@ -1158,7 +1161,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     if (doRunValidators && veraPDFExitCode > INT_MIN) {
         /// insert XML data from veraPDF
-        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no")));
+        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" flavor=\"%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFvalidationFlavor));
         if (!veraPDFStandardOutput.isEmpty()) {
             /// Check for and omit XML header if it exists
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
@@ -1183,7 +1186,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             if (line.startsWith(QStringLiteral("\"/"))) {
                 /// A line reporting an issue
                 if (!insideIssues) {
-                    report += QString(QStringLiteral("\n<issues standard=\"%1\">\n")).arg(xmpPDFConformanceToString(xmpPDFConformance));
+                    report += QString(QStringLiteral("\n<issues clvalue=\"%1\">\n")).arg(threeHeightsPDFValidatorCLValue);
                     insideIssues = true;
                 }
                 report += QStringLiteral("<issue>") + DocScan::xmlify(QString(line).trimmed().remove(toBeRemoved)) + QStringLiteral("</issue>\n");
