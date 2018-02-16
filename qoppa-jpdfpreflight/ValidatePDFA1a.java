@@ -1,5 +1,5 @@
 /*
- * Copyright (2017) Thomas Fischer <thomas.fischer@his.se>, senior
+ * Copyright (2018) Thomas Fischer <thomas.fischer@his.se>, senior
  * lecturer at University of Skövde, as part of the LIM-IT project.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,12 +35,12 @@ import org.apache.commons.text.StringEscapeUtils;
 import com.qoppa.pdf.PDFException;
 import com.qoppa.pdf.DocumentInfo;
 import com.qoppa.pdfPreflight.PDFPreflight;
-import com.qoppa.pdfPreflight.profiles.PDFA_1_B_Verification;
+import com.qoppa.pdfPreflight.profiles.PDFA_1_A_Verification;
 import com.qoppa.pdfPreflight.results.PreflightInfo;
 import com.qoppa.pdfPreflight.results.PreflightResults;
 import com.qoppa.pdfPreflight.results.ResultRecord;
 
-public class ValidatePDFA1b {
+public class ValidatePDFA1a {
 
     private static void printInformation(String xmlTag, String value) {
         if (value == null) return;
@@ -74,12 +74,12 @@ public class ValidatePDFA1b {
             PDFPreflight.setKey(pdfpreflightkey);
             PDFPreflight pdfPreflight = new PDFPreflight(filename, null);
 
-            PreflightResults results = pdfPreflight.verifyDocument(new PDFA_1_B_Verification(), null);
+            PreflightResults results = pdfPreflight.verifyDocument(new PDFA_1_A_Verification(), null);
             if (results == null) {
                 System.err.println("Failed to verify document '" + filename + "'");
                 System.exit(1);
             }
-            System.out.println("<qoppapdfpreflight pdfa1b=\"" + (results.isSuccessful() ? "yes" : "no") + "\">");
+            System.out.println("<qoppapdfpreflight pdfa1a=\"" + (results.isSuccessful() ? "yes" : "no") + "\">");
 
             final PreflightInfo pi = results.getPFInfo();
             if (pi != null) {
