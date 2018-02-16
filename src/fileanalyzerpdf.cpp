@@ -540,11 +540,11 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
     if (pdfPartTag > 0 && output[pPdfPartTag + 13] != QLatin1Char('<') && output[pPdfPartTag + 14] == QLatin1Char('<'))
         part = output[pPdfPartTag + 13];
 
-    static const QString pdfPartConformance(QStringLiteral("<pdfaid:conformance>"));
-    const int pPdfPartConformance = output.indexOf(pdfPartConformance);
+    static const QString pdfConformanceTag(QStringLiteral("<pdfaid:conformance>"));
+    const int pPdfConformanceTag = output.indexOf(pdfConformanceTag);
     QChar conformance;
-    if (pPdfPartConformance > 0 && output[pPdfPartConformance + 20] != QLatin1Char('<') && output[pPdfPartConformance + 21] == QLatin1Char('<'))
-        conformance = output[pPdfPartConformance + 20].toLower();
+    if (pPdfConformanceTag > 0 && output[pPdfConformanceTag + 20] != QLatin1Char('<') && output[pPdfConformanceTag + 21] == QLatin1Char('<'))
+        conformance = output[pPdfConformanceTag + 20].toLower();
 
     XMPPDFConformance xmpPDFConformance = xmpNone;
 
