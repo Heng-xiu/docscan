@@ -39,6 +39,7 @@
 #include "fileanalyzermultiplexer.h"
 #include "watchdog.h"
 #include "webcrawler.h"
+#include "general.h"
 #include "logcollector.h"
 #include "fromlogfile.h"
 #include "filefinderlist.h"
@@ -468,6 +469,45 @@ int main(int argc, char *argv[])
         if (finder != nullptr) finder->startSearch(numHits);
 
         qDebug() << "activeThreadCount" << QThreadPool::globalInstance()->activeThreadCount() << "   maxThreadCount" << QThreadPool::globalInstance()->maxThreadCount();
+
+        QString configurationXML(QStringLiteral("<configuration>\n"));
+        const QString keyValueXMLtemplate(QStringLiteral("<option key=\"%1\">%2</option>\n"));
+#define intToString(a) (QString::number((int)(a)))
+#define boolToString(a) ((a)?QStringLiteral("true"):QStringLiteral("false"))
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("filter"), DocScan::xmlify(filter.join(QStringLiteral("|")))));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("numHits"), intToString(numHits)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("webcrawlermaxvisitedpages"), intToString(webcrawlermaxvisitedpages)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("jhoveShellscript"), DocScan::xmlify(jhoveShellscript)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("dpfmangerJFXjar"), DocScan::xmlify(dpfmangerJFXjar)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("veraPDFcliTool"), DocScan::xmlify(veraPDFcliTool)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("pdfboxValidatorJavaClass"), DocScan::xmlify(pdfboxValidatorJavaClass)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("callasPdfAPilotCLI"), DocScan::xmlify(callasPdfAPilotCLI)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("adobePreflightReportDirectory"), DocScan::xmlify(adobePreflightReportDirectory)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("qoppaJPDFPreflightDirectory"), DocScan::xmlify(qoppaJPDFPreflightDirectory)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("threeHeightsValidatorShellCLI"), DocScan::xmlify(threeHeightsValidatorShellCLI)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("validateOnlyPDFAfiles"), boolToString(validateOnlyPDFAfiles)));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("downgradeToPDFA1b"), boolToString(downgradeToPDFA1b)));
+        QString enforcedValidationLevelString;
+        switch (enforcedValidationLevel) {
+        ///  enum XMPPDFConformance {xmpError = -1, xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
+        case FileAnalyzerPDF::xmpNone: enforcedValidationLevelString = QStringLiteral("auto"); break;
+        case FileAnalyzerPDF::xmpPDFA1b: enforcedValidationLevelString = QStringLiteral("PDF/A-1b"); break;
+        default: break; ///< empty string
+        }
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("enforcedValidationLevel"), enforcedValidationLevelString));
+        QString textExtractionString;
+        switch (textExtraction) {
+        ///  enum TextExtraction {teNone = 0, teLength = 5, teFullText = 10, teAspell = 15};
+        case FileAnalyzerAbstract::teNone: textExtractionString = QStringLiteral("none"); break;
+        case FileAnalyzerAbstract::teLength: textExtractionString = QStringLiteral("length"); break;
+        case FileAnalyzerAbstract::teFullText: textExtractionString = QStringLiteral("fulltext"); break;
+        case FileAnalyzerAbstract::teAspell: textExtractionString = QStringLiteral("aspell"); break;
+        default: break; ///< empty string
+        }
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("textExtraction"), textExtractionString));
+        configurationXML.append(QString(keyValueXMLtemplate).arg(QStringLiteral("enableEmbeddedFilesAnalysis"), boolToString(enableEmbeddedFilesAnalysis)));
+        configurationXML.append(QStringLiteral("</configuration>"));
+        logCollector->receiveLog(QStringLiteral("main"), configurationXML);
 
         return a.exec();
     }
