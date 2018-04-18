@@ -59,13 +59,13 @@ FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
 
 void FileAnalyzerPDF::delayedToolcheck() {
     QProcess exiftoolprocess(this);
-    const QStringList arguments = QStringList() << QStringLiteral("-ver");
+    const QStringList exiftoolarguments = QStringList() << QStringLiteral("-ver");
     QByteArray exiftoolStandardOutput;
     connect(&exiftoolprocess, &QProcess::readyReadStandardOutput, [&exiftoolprocess, &exiftoolStandardOutput]() {
         const QByteArray d(exiftoolprocess.readAllStandardOutput());
         exiftoolStandardOutput.append(d);
     });
-    exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
+    exiftoolprocess.start(QStringLiteral("exiftool"), exiftoolarguments, QIODevice::ReadOnly);
     if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec)) {
         const QString report = QString(QStringLiteral("<toolcheck name=\"exiftool\" status=\"error\" exitcode=\"%1\" />\n")).arg(exiftoolprocess.exitCode());
         emit analysisReport(objectName(), report);
@@ -73,6 +73,31 @@ void FileAnalyzerPDF::delayedToolcheck() {
         const QString stdout = QString::fromLocal8Bit(exiftoolStandardOutput).trimmed();
         const QString report = QString(QStringLiteral("<toolcheck name=\"exiftool\" status=\"ok\" exitcode=\"%1\" version=\"%2\" />\n")).arg(exiftoolprocess.exitCode()).arg(stdout);
         emit analysisReport(objectName(), report);
+    }
+
+    QProcess pdfinfoprocess(this);
+    const QStringList pdfinfoarguments = QStringList() << QStringLiteral("-v");
+    QByteArray pdfinfoStandardError;
+    connect(&pdfinfoprocess, &QProcess::readyReadStandardError, [&pdfinfoprocess, &pdfinfoStandardError]() {
+        const QByteArray d(pdfinfoprocess.readAllStandardError());
+        pdfinfoStandardError.append(d);
+    });
+    pdfinfoprocess.start(QStringLiteral("pdfinfo"), pdfinfoarguments, QIODevice::ReadOnly);
+    if (!pdfinfoprocess.waitForStarted(oneMinuteInMillisec) || !pdfinfoprocess.waitForFinished(twoMinutesInMillisec)) {
+        const QString report = QString(QStringLiteral("<toolcheck name=\"pdfinfo\" status=\"error\" exitcode=\"%1\" />\n")).arg(pdfinfoprocess.exitCode());
+        emit analysisReport(objectName(), report);
+    } else {
+        const QString stderr = QString::fromLocal8Bit(pdfinfoStandardError).trimmed();
+        const int p1 = stderr.indexOf(QStringLiteral(" version "));
+        const int p2 = p1 > 5 ? stderr.indexOf(QLatin1Char('\n'), p1 + 9) : -1;
+        if (p1 > 5 && p2 > p1) {
+            const QString versionNumber = stderr.mid(p1 + 9, p2 - p1 - 9);
+            const QString report = QString(QStringLiteral("<toolcheck name=\"pdfinfo\" status=\"ok\" exitcode=\"%1\" version=\"%2\" />\n")).arg(pdfinfoprocess.exitCode()).arg(versionNumber);
+            emit analysisReport(objectName(), report);
+        } else {
+            const QString report = QString(QStringLiteral("<toolcheck name=\"pdfinfo\" status=\"error\" exitcode=\"%1\"><error>Could not determine version number</error></toolcheck>\n")).arg(pdfinfoprocess.exitCode());
+            emit analysisReport(objectName(), report);
+        }
     }
 }
 
@@ -516,24 +541,40 @@ inline QString FileAnalyzerPDF::pdfVersionToString(const FileAnalyzerPDF::PDFVer
 }
 
 FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &filename, const PDFVersion pdfVersion, QString &metaText) {
-    QProcess exiftoolprocess(this);
+    metaText.append(QStringLiteral("<xmp>"));
+
+    QByteArray metadataToolOutput;
     const QFileInfo fi(filename);
-    exiftoolprocess.setWorkingDirectory(fi.absolutePath());
-    const QStringList arguments = QStringList() << QStringLiteral("-xmp")  << QStringLiteral("-b") << filename;
-    QByteArray exiftoolStandardOutput;
-    connect(&exiftoolprocess, &QProcess::readyReadStandardOutput, [&exiftoolprocess, &exiftoolStandardOutput]() {
-        const QByteArray d(exiftoolprocess.readAllStandardOutput());
-        exiftoolStandardOutput.append(d);
+    /// Preferred tool to retrieve XMP Metadata is 'pdfinfo' from poppler
+    QProcess pdfinfoprocess(this);
+    pdfinfoprocess.setWorkingDirectory(fi.absolutePath());
+    const QStringList pdfinfoarguments = QStringList() << QStringLiteral("-meta")  << filename;
+    connect(&pdfinfoprocess, &QProcess::readyReadStandardOutput, [&pdfinfoprocess, &metadataToolOutput]() {
+        const QByteArray d(pdfinfoprocess.readAllStandardOutput());
+        metadataToolOutput.append(d);
     });
-    exiftoolprocess.start(QStringLiteral("exiftool"), arguments, QIODevice::ReadOnly);
-    if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec)) {
-        metaText.append(QString(QStringLiteral("<xmp><error>Failed to run 'exiftool'</error></xmp>\n")));
-        return xmpError;
+    pdfinfoprocess.start(QStringLiteral("pdfinfo"), pdfinfoarguments, QIODevice::ReadOnly);
+    if (!pdfinfoprocess.waitForStarted(oneMinuteInMillisec) || !pdfinfoprocess.waitForFinished(twoMinutesInMillisec)) {
+        metaText.append(QString(QStringLiteral("<warning>Failed to run 'pdfinfo', using 'exiftool' as fallback</warning>\n")));
+        /// In case 'pdfinfo' fails or is not available, use 'exiftool' instead
+        metadataToolOutput.clear();
+        QProcess exiftoolprocess(this);
+        exiftoolprocess.setWorkingDirectory(fi.absolutePath());
+        const QStringList exiftoolarguments = QStringList() << QStringLiteral("-xmp")  << QStringLiteral("-b") << filename;
+        connect(&exiftoolprocess, &QProcess::readyReadStandardOutput, [&exiftoolprocess, &metadataToolOutput]() {
+            const QByteArray d(exiftoolprocess.readAllStandardOutput());
+            metadataToolOutput.append(d);
+        });
+        exiftoolprocess.start(QStringLiteral("exiftool"), exiftoolarguments, QIODevice::ReadOnly);
+        if (!exiftoolprocess.waitForStarted(oneMinuteInMillisec) || !exiftoolprocess.waitForFinished(twoMinutesInMillisec)) {
+            metaText.append(QString(QStringLiteral("<error>Failed to run 'exiftool'</error></xmp>\n")));
+            return xmpError;
+        }
     }
 
-    const QString output = QString::fromLocal8Bit(exiftoolStandardOutput);
+    const QString output = QString::fromLocal8Bit(metadataToolOutput).trimmed();
     if (output.isEmpty()) {
-        metaText.append(QString(QStringLiteral("<xmp><warning>Empty output from 'exiftool'</warning></xmp>\n")));
+        metaText.append(QString(QStringLiteral("<warning>Empty output from 'pdfinfo' or 'exiftool'</warning></xmp>\n")));
         return xmpError;
     }
 
@@ -586,7 +627,7 @@ FileAnalyzerPDF::XMPPDFConformance FileAnalyzerPDF::xmpAnalysis(const QString &f
 
     // TODO pdf:Producer xap:ModifyDate xap:CreateDate xap:CreatorTool xap:MetadataDate xapMM:DocumentID xapMM:InstanceID dc:title dc:creator
 
-    metaText.append(QString(QStringLiteral("<xmp><pdfconformance pdfa1b=\"%1\" pdfa1a=\"%2\" pdfa2b=\"%3\" pdfa2a=\"%4\" pdfa2u=\"%5\" pdfa3b=\"%6\" pdfa3a=\"%7\" pdfa3u=\"%8\" pdfversionmatch=\"%10\">%9</pdfconformance></xmp>\n"))
+    metaText.append(QString(QStringLiteral("<pdfconformance pdfa1b=\"%1\" pdfa1a=\"%2\" pdfa2b=\"%3\" pdfa2a=\"%4\" pdfa2u=\"%5\" pdfa3b=\"%6\" pdfa3a=\"%7\" pdfa3u=\"%8\" pdfversionmatch=\"%10\">%9</pdfconformance></xmp>\n"))
                     .arg(xmpPDFConformance == xmpPDFA1b ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA1a ? QStringLiteral("yes") : QStringLiteral("no"))
                     .arg(xmpPDFConformance == xmpPDFA2b ? QStringLiteral("yes") : QStringLiteral("no"))
