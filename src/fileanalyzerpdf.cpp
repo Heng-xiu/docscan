@@ -45,6 +45,8 @@ static const int fourMinutesInMillisec = oneMinuteInMillisec * 4;
 static const int sixMinutesInMillisec = oneMinuteInMillisec * 6;
 static const int tenMinutesInMillisec = oneMinuteInMillisec * 10;
 static const int twentyMinutesInMillisec = oneMinuteInMillisec * 20;
+static const int thirtyMinutesInMillisec = oneMinuteInMillisec * 30;
+static const int sixtyMinutesInMillisec = oneMinuteInMillisec * 60;
 
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_validateOnlyPDFAfiles(false), m_downgradeToPDFA1b(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
@@ -971,15 +973,17 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QStringLiteral("<adobepreflight><info>Adobe Preflight not configured to run</info></adobepreflight>\n"));
 
     if (doRunValidators && veraPDFStartedRun) {
-        if (!veraPDF.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
+        static const int veraPDFtimeLimit = sixtyMinutesInMillisec;
+        const bool veraPDFtimeExceeded = !veraPDF.waitForFinished(veraPDFtimeLimit);
+        if (veraPDFtimeExceeded)
+            qWarning() << "Waiting for veraPDF failed or exceeded time limit (" << (veraPDFtimeLimit / 1000) << "s) for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory();
         veraPDFExitCode = veraPDF.exitCode();
         veraPDFStandardOutput = DocScan::removeBinaryGarbage(QString::fromUtf8(veraPDFStandardOutputData.constData()).trimmed());
         /// Sometimes veraPDF does not return complete and valid XML code. veraPDF's bug or DocScan's bug?
         if ((!veraPDFStandardOutput.contains(QStringLiteral("<rawResults>")) || !veraPDFStandardOutput.contains(QStringLiteral("</rawResults>"))) && (!veraPDFStandardOutput.contains(QStringLiteral("<ns2:cliReport")) || !veraPDFStandardOutput.contains(QStringLiteral("</ns2:cliReport>"))))
-            veraPDFStandardOutput = QStringLiteral("<error>No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n") + DocScan::xmlifyLines(veraPDFStandardOutput) + QStringLiteral("</error>");
+            veraPDFStandardOutput = QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\">No matching opening and closing 'rawResults' or 'ns2:cliReport' tags found in output:\n")).arg(veraPDFExitCode).arg(veraPDFtimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(veraPDFtimeLimit / 1000) + DocScan::xmlifyLines(veraPDFStandardOutput) + QStringLiteral("</error>");
         veraPDFStandardError = QString::fromUtf8(veraPDFStandardErrorData.constData()).trimmed();
-        if (veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
+        if (!veraPDFtimeExceeded && veraPDFExitCode == 0 && !veraPDFStandardOutput.isEmpty()) {
             const QString startOfOutput = veraPDFStandardOutput.left(8192);
             const int tagStart = startOfOutput.indexOf(QStringLiteral("<validationResult "));
             const int tagEnd = startOfOutput.indexOf(QStringLiteral(">"), tagStart + 10);
@@ -1006,16 +1010,21 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             }
         } else
             qWarning() << "Execution of veraPDF failed for file " << filename << " and " << veraPDF.program() << veraPDF.arguments().join(' ') << " in directory " << veraPDF.workingDirectory() << ": " << veraPDFStandardError;
+
+        if (veraPDFtimeExceeded)
+            veraPDF.kill();
     }
 
     if (doRunValidators && callasPdfAPilotStartedRun1) {
-        if (!callasPdfAPilot.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
+        static const int callasPdfAPilotTimeLimit = twentyMinutesInMillisec;
+        const bool callasPdfAPilotTimeExceeded = !callasPdfAPilot.waitForFinished(callasPdfAPilotTimeLimit);
+        if (callasPdfAPilotTimeExceeded)
+            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (callasPdfAPilotTimeLimit / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
         callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
         callasPdfAPilotStandardOutput = QString::fromUtf8(callasPdfAPilotStandardOutputData.constData()).trimmed();
         callasPdfAPilotStandardError = QString::fromUtf8(callasPdfAPilotStandardErrorData.constData()).trimmed();
 
-        if (callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty()) {
+        if (!callasPdfAPilotTimeExceeded && callasPdfAPilotExitCode == 0 && !callasPdfAPilotStandardOutput.isEmpty()) {
             static const QRegularExpression rePDFA(QStringLiteral("\\bInfo\\s+PDFA\\s+PDF/A-1([ab])"));
             const QRegularExpressionMatch match = rePDFA.match(callasPdfAPilotStandardOutput.right(512));
             callasPdfAPilotPDFA1letter = match.hasMatch() ? match.captured(1).at(0).toLatin1() : '\0';
@@ -1029,8 +1038,13 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 if (!callasPdfAPilotStartedRun2)
                     qWarning() << "Failed to start callas PDF/A Pilot for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
             }
-        } else
+        } else {
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotStandardError;
+            callasPdfAPilotStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(callasPdfAPilotExitCode).arg(callasPdfAPilotTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(callasPdfAPilotTimeLimit / 1000));
+        }
+
+        if (callasPdfAPilotTimeExceeded)
+            callasPdfAPilot.kill();
     }
 
     bool jhoveIsPDF = false;
@@ -1041,12 +1055,14 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     QString jhoveStandardOutput;
     QString jhoveStandardError;
     if (doRunValidators && jhoveStarted) {
-        if (!jhoveProcess->waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for jHove failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
+        static const int jhoveTimeLimit = sixtyMinutesInMillisec;
+        const bool jhoveTimeExceeded = !jhoveProcess->waitForFinished(jhoveTimeLimit);
+        if (jhoveTimeExceeded)
+            qWarning() << "Waiting for jHove failed or exceeded time limit (" << (jhoveTimeLimit / 1000) << "s) for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory();
         jhoveExitCode = jhoveProcess->exitCode();
         jhoveStandardOutput = QString::fromUtf8(jhoveStandardOutputData.constData());
         jhoveStandardError = QString::fromUtf8(jhoveStandardErrorData.constData());
-        if (jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
+        if (!jhoveTimeExceeded && jhoveExitCode == 0 && !jhoveStandardOutput.isEmpty()) {
             jhoveIsPDF = jhoveStandardOutput.contains(QStringLiteral("Format: PDF")) && !jhoveStandardOutput.contains(QStringLiteral("ErrorMessage:"));
             static const QRegExp pdfStatusRegExp(QStringLiteral("\\bStatus: ([-.0-9a-zA-Z ]+)"));
             if (pdfStatusRegExp.indexIn(jhoveStandardOutput) >= 0) {
@@ -1057,40 +1073,61 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
             jhovePDFversion = pdfVersionRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfVersionRegExp.cap(1) : QString();
             static const QRegExp pdfProfileRegExp(QStringLiteral("\\bProfile: ([-.,/0-9a-zA-Z ]+)"));
             jhovePDFprofile = pdfProfileRegExp.indexIn(jhoveStandardOutput) >= 0 ? pdfProfileRegExp.cap(1) : QString();
-        } else
+        } else {
             qWarning() << "Execution of jHove failed for file " << filename << " and " << jhoveProcess->program() << jhoveProcess->arguments().join(' ') << " in directory " << jhoveProcess->workingDirectory() << ": " << jhoveStandardError;
+            jhoveStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(jhoveExitCode).arg(jhoveTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(jhoveTimeLimit / 1000));
+        }
+
+        if (jhoveTimeExceeded)
+            jhoveProcess->kill();
     }
 
     if (doRunValidators && pdfboxValidatorStarted) {
-        if (!pdfboxValidator.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
-        pdfboxValidatorExitCode = pdfboxValidator.exitCode();
+        static const int pdfboxValidatorTimeLimit = sixtyMinutesInMillisec;
+        const bool pdfboxValidatorTimeExceeded = !pdfboxValidator.waitForFinished(pdfboxValidatorTimeLimit);
+        if (pdfboxValidatorTimeExceeded)
+            qWarning() << "Waiting for pdfbox Validator failed or exceeded time limit (" << (pdfboxValidatorTimeLimit / 1000) << "s) for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory();
+        pdfboxValidatorExitCode =   pdfboxValidator.exitCode();
         pdfboxValidatorStandardOutput = QString::fromUtf8(DocScan::removeBinaryGarbage(pdfboxValidatorStandardOutputData).constData()).trimmed();
         pdfboxValidatorStandardError = QString::fromUtf8(DocScan::removeBinaryGarbage(pdfboxValidatorStandardErrorData).constData()).trimmed();
-        if (pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
+        if (!pdfboxValidatorTimeExceeded && pdfboxValidatorExitCode == 0 && !pdfboxValidatorStandardOutput.isEmpty())
             pdfboxValidatorValidPdf = pdfboxValidatorStandardOutput.contains(QStringLiteral("is a valid PDF/A-1b file"));
-        else
+        else {
             qWarning() << "Execution of pdfbox Validator failed for file " << filename << " and " << pdfboxValidator.program() << pdfboxValidator.arguments().join(' ') << " in directory " << pdfboxValidator.workingDirectory() << ": " << pdfboxValidatorStandardError;
+            pdfboxValidatorStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(pdfboxValidatorExitCode).arg(pdfboxValidatorTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(pdfboxValidatorTimeLimit / 1000));
+        }
+
+        if (pdfboxValidatorTimeExceeded)
+            pdfboxValidator.kill();
     }
 
     if (doRunValidators && threeHeightsPDFValidatorStartedRun) {
-        if (!threeHeightsPDFValidatorProcess.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for 3-Heights PDF Validator Shell failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
+        static const int threeHeightsPDFValidatorTimeLimit = twentyMinutesInMillisec;
+        const bool threeHeightsPDFValidatorTimeExceeded = !threeHeightsPDFValidatorProcess.waitForFinished(threeHeightsPDFValidatorTimeLimit);
+        if (threeHeightsPDFValidatorTimeExceeded)
+            qWarning() << "Waiting for 3-Heights PDF Validator Shell failed or exceeded time limit (" << (threeHeightsPDFValidatorTimeLimit / 1000) << "s) for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory();
         threeHeightsPDFValidatorExitCode = threeHeightsPDFValidatorProcess.exitCode();
         threeHeightsPDFValidatorStandardOutput = QString::fromUtf8(threeHeightsPDFValidatorStandardOutputData.constData()).trimmed();
         threeHeightsPDFValidatorStandardError = QString::fromUtf8(threeHeightsPDFValidatorStandardErrorData.constData()).trimmed();
 
-        if ((threeHeightsPDFValidatorExitCode != 0 && threeHeightsPDFValidatorExitCode != 4) || threeHeightsPDFValidatorStandardOutput.isEmpty())
+        if (threeHeightsPDFValidatorTimeExceeded || (threeHeightsPDFValidatorExitCode != 0 && threeHeightsPDFValidatorExitCode != 4) || threeHeightsPDFValidatorStandardOutput.isEmpty()) {
             qWarning() << "Execution of 3-Heights PDF Validator Shell failed for file " << filename << " and " << threeHeightsPDFValidatorProcess.program() << threeHeightsPDFValidatorProcess.arguments().join(' ') << " in directory " << threeHeightsPDFValidatorProcess.workingDirectory() << ": " << threeHeightsPDFValidatorStandardError;
+            threeHeightsPDFValidatorStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(threeHeightsPDFValidatorExitCode).arg(threeHeightsPDFValidatorTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(threeHeightsPDFValidatorTimeLimit / 1000));
+        }
+
+        if (threeHeightsPDFValidatorTimeExceeded)
+            threeHeightsPDFValidatorProcess.kill();
     }
 
     if (callasPdfAPilotStartedRun2) {
-        if (!callasPdfAPilot.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
+        static const int callasPdfAPilotTimeLimit = twentyMinutesInMillisec;
+        const bool callasPdfAPilotTimeExceeded = !callasPdfAPilot.waitForFinished(callasPdfAPilotTimeLimit);
+        if (callasPdfAPilotTimeExceeded)
+            qWarning() << "Waiting for callas PDF/A Pilot failed or exceeded time limit (" << (callasPdfAPilotTimeLimit / 1000) << "s) for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory();
         callasPdfAPilotExitCode = callasPdfAPilot.exitCode();
         callasPdfAPilotStandardOutput = callasPdfAPilotStandardOutput + QStringLiteral("\n") + QString::fromUtf8(callasPdfAPilotStandardOutputData.constData()).trimmed();
         callasPdfAPilotStandardError = callasPdfAPilotStandardError + QStringLiteral("\n") + QString::fromUtf8(callasPdfAPilotStandardErrorData.constData()).trimmed();
-        if (callasPdfAPilotExitCode == 0) {
+        if (!callasPdfAPilotTimeExceeded && callasPdfAPilotExitCode == 0) {
             static const QRegularExpression reSummary(QStringLiteral("\\bSummary\\t(Errors|Warnings)\\t(0|[1-9][0-9]*)\\b"));
             QRegularExpressionMatchIterator reIter = reSummary.globalMatch(callasPdfAPilotStandardOutput.right(512));
             while (reIter.hasNext()) {
@@ -1105,19 +1142,31 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     if (!ok) callasPdfAPilotCountWarnings = -1;
                 }
             }
-        } else
+        } else {
             qWarning() << "Execution of callas PDF/A Pilot failed for file " << filename << " and " << callasPdfAPilot.program() << callasPdfAPilot.arguments().join(' ') << " in directory " << callasPdfAPilot.workingDirectory() << ": " << callasPdfAPilotStandardError;
+            callasPdfAPilotStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(callasPdfAPilotExitCode).arg(callasPdfAPilotTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(callasPdfAPilotTimeLimit / 1000));
+        }
+
+        if (callasPdfAPilotTimeExceeded)
+            callasPdfAPilot.kill();
     }
 
     if (doRunValidators && qoppaJPDFPreflightStarted) {
-        if (!qoppaJPDFPreflightProcess.waitForFinished(twentyMinutesInMillisec))
-            qWarning() << "Waiting for Qoppa jPDFPreflight failed or exceeded time limit (" << (twentyMinutesInMillisec / 1000) << "s) for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
+        static const int qoppaJPDFPreflightTimeLimit = sixtyMinutesInMillisec;
+        const bool qoppaJPDFPreflightTimeExceeded = !qoppaJPDFPreflightProcess.waitForFinished(qoppaJPDFPreflightTimeLimit);
+        if (qoppaJPDFPreflightTimeExceeded)
+            qWarning() << "Waiting for Qoppa jPDFPreflight failed or exceeded time limit (" << (qoppaJPDFPreflightTimeLimit / 1000) << "s) for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory();
         qoppaJPDFPreflightExitCode = qoppaJPDFPreflightProcess.exitCode();
         qoppaJPDFPreflightStandardOutput = QString::fromUtf8(qoppaJPDFPreflightStandardOutputData.constData()).trimmed();
         qoppaJPDFPreflightStandardError = QString::fromUtf8(qoppaJPDFPreflightStandardErrorData.constData()).trimmed();
 
-        if (qoppaJPDFPreflightExitCode != 0 || qoppaJPDFPreflightStandardOutput.isEmpty())
+        if (qoppaJPDFPreflightTimeExceeded || qoppaJPDFPreflightExitCode != 0 || qoppaJPDFPreflightStandardOutput.isEmpty()) {
             qWarning() << "Execution of Qoppa jPDFPreflight failed for file " << filename << " and " << qoppaJPDFPreflightProcess.program() << qoppaJPDFPreflightProcess.arguments().join(' ') << " in directory " << qoppaJPDFPreflightProcess.workingDirectory() << ": " << qoppaJPDFPreflightStandardError;
+            qoppaJPDFPreflightStandardOutput.prepend(QString(QStringLiteral("<error exitcode=\"%1\" exceededtimelimit=\"%2\" timelimitsec=\"%3\" />\n")).arg(qoppaJPDFPreflightExitCode).arg(qoppaJPDFPreflightTimeExceeded ? QStringLiteral("yes") : QStringLiteral("no")).arg(qoppaJPDFPreflightTimeLimit / 1000));
+        }
+
+        if (qoppaJPDFPreflightTimeExceeded)
+            qoppaJPDFPreflightProcess.kill();
     }
 
     const qint64 externalProgramsEndTime = QDateTime::currentMSecsSinceEpoch();
