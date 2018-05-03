@@ -673,6 +673,7 @@ bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
             QByteArray pdfData = pdfFile.readAll();
             pdfFile.close();
             bool doWrite = false;
+            QString errorText;
             XMPPDFConformance originConformance = xmpNone;
             const int pPart1 = pdfData.indexOf("<pdfaid:part>1</pdfaid:part>");
             if (pPart1 > 0) {
@@ -723,6 +724,9 @@ bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
                             pdfData[pCombinedA + 39] = 'B';
                             originConformance = xmpPDFA2u;
                             doWrite = true;
+                        } else {
+                            errorText = QStringLiteral("Failed to identify XMP PDFaid data structure: either non-existent or compressed/encoded by Filters");
+                            qWarning() << errorText;
                         }
                     }
                 }
@@ -751,6 +755,9 @@ bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
                     pdfFile.remove();
                     return true;
                 }
+            } else if (!errorText.isEmpty()) {
+                const QString logText = QString(QStringLiteral("<downgradepdfa><error>%1</error></downgradepdfa>")).arg(DocScan::xmlify(errorText));
+                emit analysisReport(objectName(), logText);
             }
         }
     }
