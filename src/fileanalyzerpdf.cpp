@@ -696,7 +696,7 @@ bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
                     doWrite = true;
                 }
             } else {
-                const int pCombined = pdfData.indexOf(" pdfaid:part=\"1\" pdfaid:conformance=\"A\">");
+                const int pCombined = qMax(pdfData.indexOf(" pdfaid:part=\"1\" pdfaid:conformance=\"A\">"), pdfData.indexOf(" pdfaid:part='1' pdfaid:conformance='A'>"));
                 if (pCombined > 0) {
                     pdfData[pCombined + 39] = 'B';
                     originConformance = xmpPDFA1a;
@@ -719,9 +719,9 @@ bool FileAnalyzerPDF::downgradingPDFA(const QString &filename) {
                             originConformance = xmpPDFA2u;
                         }
                     } else {
-                        const int pCombinedA = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"A\">");
-                        const int pCombinedB = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"B\">");
-                        const int pCombinedU = pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"U\">");
+                        const int pCombinedA = qMax(pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"A\">"), pdfData.indexOf(" pdfaid:part='2' pdfaid:conformance='A'>"));
+                        const int pCombinedB = qMax(pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"B\">"), pdfData.indexOf(" pdfaid:part='2' pdfaid:conformance='B'>"));
+                        const int pCombinedU = qMax(pdfData.indexOf(" pdfaid:part=\"2\" pdfaid:conformance=\"U\">"), pdfData.indexOf(" pdfaid:part='2' pdfaid:conformance='U'>"));
                         if (pCombinedA > 0) {
                             pdfData[pCombinedA + 14] = '1';
                             pdfData[pCombinedA + 39] = 'B';
