@@ -62,9 +62,11 @@ embeddedfilesanalysis=false
 # e.g. '1.7' and XMP PDF/A metadata looks reasonable
 validateonlypdfafiles=true
 
-# Control if PDF files claiming to be PDF/A-1a should
-# be 'downgraded' to PDF/A-1b by changing a single byte
-# in the metadata of a temporary copy of said PDF file.
+# Control if PDF files claiming to be PDF/A-1a or 'better'
+# should be 'downgraded' to PDF/A-1b by changing at most
+# two bytes in the metadata of a temporary copy of said PDF
+# file. Requires that the metadata is not compressed
+# (that is a requirement for PDF/A in any case).
 downgradetopdfa1b=true
 
 # If validating PDF files for PDF/A conformance, which
