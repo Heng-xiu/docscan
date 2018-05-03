@@ -266,30 +266,33 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     if (m_adobePreflightReportDirectory.isEmpty()) return false; ///< no report directory set
     const QDir startDirectory(m_adobePreflightReportDirectory);
     if (!startDirectory.exists()) return false; ///< report directory does not exist
-    QVector<QDir> stack = QVector<QDir>() << startDirectory;
+
+    /// Perform a iterative approach to recursively scan the given report directory
+    /// for a XML file (plain or compressed) matching the PDF filename (.pdf -> _report.xml)
+    QVector<QDir> directoryQueue = QVector<QDir>() << startDirectory;
     const QStringList pattern = QStringList() << QFileInfo(filename).fileName().replace(QStringLiteral(".pdf"), QStringLiteral("_report.xml")).remove(QStringLiteral(".xz")).append("*");
     QString reportXMLfile;
-
-    while (!stack.isEmpty() && reportXMLfile.isEmpty()) {
-        const QDir curDir = stack.front();
-        stack.removeFirst();
+    while (!directoryQueue.isEmpty() && reportXMLfile.isEmpty()) {
+        const QDir curDir = directoryQueue.front();
+        directoryQueue.removeFirst();
         const QFileInfoList list = curDir.entryInfoList(pattern, QDir::AllDirs | QDir::Files | QDir::NoDotDot | QDir::NoDot, QDir::Name | QDir::DirsLast);
         if (list.isEmpty()) continue;
 
         for (const QFileInfo &fi : list) {
             if (fi.isDir()) {
                 const QDir d = QDir(fi.absoluteFilePath());
-                stack.append(d);
+                directoryQueue.append(d);
             } else if (fi.isFile() && fi.isReadable()) {
                 reportXMLfile = fi.absoluteFilePath();
                 break;
             }
         }
     }
-    if (reportXMLfile.isEmpty()) return false;
+    if (reportXMLfile.isEmpty()) return false; ///< no report file found matching the PDF file
 
     QString xmlCode;
     if (reportXMLfile.endsWith(QStringLiteral(".xml"))) {
+        /// Read uncompressed XML code into string xmlCode
         QFile f(reportXMLfile);
         if (f.open(QFile::ReadOnly)) {
             xmlCode = QString::fromUtf8(f.readAll());
@@ -298,15 +301,18 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     } else if (reportXMLfile.endsWith(QStringLiteral(".xml.xz"))) {
         QFile f(reportXMLfile);
         if (f.open(QFile::ReadOnly)) {
+            /// Read compressed XML code
             const QByteArray compressedData = f.readAll();
             f.close();
 
             QProcess unxzProcess(this);
             QByteArray standardOutput;
             connect(&unxzProcess, &QProcess::readyReadStandardOutput, [&unxzProcess, &standardOutput]() {
+                /// store uncompressed XML data in standardOutput
                 const QByteArray d(unxzProcess.readAllStandardOutput());
                 standardOutput.append(d);
             });
+            /// Start unxz, feed compressed data, wait for data to be processed
             unxzProcess.start(QStringLiteral("unxz"), QProcess::ReadWrite);
             if (unxzProcess.waitForStarted(oneMinuteInMillisec)
                     && unxzProcess.write(compressedData) > 0
@@ -315,33 +321,39 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
                 if (unxzProcess.waitForFinished(tenMinutesInMillisec)
                         && unxzProcess.exitCode() == 0
                         && unxzProcess.exitStatus() == QProcess::NormalExit)
+                    /// Assuming everything went fine, take standard output as recorded in above lambda function
+                    /// and put it into string xmlCode
                     xmlCode = QString::fromUtf8(standardOutput);
             }
         }
     }
 
-    if (xmlCode.isEmpty()) return false;
+    if (xmlCode.isEmpty()) return false; ///< empty XML code means error
 
-    int pq = xmlCode.indexOf(QStringLiteral("?>"));
+    /// Remove <? ... ?> header
+    const int pq = xmlCode.indexOf(QStringLiteral("?>"));
     if (pq > 0) xmlCode = xmlCode.mid(pq + 2).trimmed();
+
     if (!xmlCode.startsWith(QStringLiteral("<report>")) || !xmlCode.endsWith(QStringLiteral("</report>")))
+        /// Basic check on expected content failed
         return false;
 
     QXmlQuery query;
     query.setFocus(xmlCode);
+    /// Query to count warning or error messages (count must be 0 to be a valid PDF/A-1b file)
     query.setQuery(QStringLiteral("count(//report/results/hits[@severity=\"Warning\" or @severity=\"Error\"])"));
     if (!query.isValid())
         return false;
 
     QString result;
-    query.evaluateTo(&result);
+    query.evaluateTo(&result); ///< apply query on XML object
     bool ok = false;
     int countWarningsErrors = result.toInt(&ok);
-    if (!ok) return false;
+    if (!ok) return false; ///< result from query was not a number
 
     metaText.append(QString(QStringLiteral("<adobepreflight status=\"ok\" pdfa1b=\"%1\" errorwarningscount=\"%2\" />\n")).arg(countWarningsErrors == 0 ? QStringLiteral("yes") : QStringLiteral("no")).arg(countWarningsErrors));
 
-    return true;
+    return true; ///< no issues? exit with success
 }
 
 bool FileAnalyzerPDF::popplerAnalysis(const QString &filename, QString &logText, QString &metaText) {
