@@ -859,7 +859,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// The original file before the modification will not processed any further,
     /// unless the downgrading itself fails (e.g. because the metadata could not be
     /// changed).
-    if (m_downgradeToPDFA1b && xmpPDFConformance != xmpPDFA1b && pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance)) {
+    if (m_downgradeToPDFA1b && xmpPDFConformance > xmpPDFA1b) {
         if (downgradingPDFA(filename)) {
             if (!metaText.isEmpty()) {
                 metaText.squeeze();
