@@ -32,7 +32,7 @@
 FileAnalyzerZIP::FileAnalyzerZIP(QObject *parent)
     : FileAnalyzerAbstract(parent), m_isAlive(false)
 {
-    FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerzip"));
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 }
 
 bool FileAnalyzerZIP::isAlive()

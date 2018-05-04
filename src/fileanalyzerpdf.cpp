@@ -51,7 +51,7 @@ static const int sixtyMinutesInMillisec = oneMinuteInMillisec * 60;
 FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_validateOnlyPDFAfiles(false), m_downgradeToPDFA1b(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
 {
-    FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
+    setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
 
     QTimer::singleShot(50, this, &FileAnalyzerPDF::delayedToolcheck);
 }
