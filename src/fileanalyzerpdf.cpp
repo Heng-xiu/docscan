@@ -351,7 +351,12 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     int countWarningsErrors = result.toInt(&ok);
     if (!ok) return false; ///< result from query was not a number
 
-    metaText.append(QString(QStringLiteral("<adobepreflight status=\"ok\" pdfa1b=\"%1\" errorwarningscount=\"%2\" />\n")).arg(countWarningsErrors == 0 ? QStringLiteral("yes") : QStringLiteral("no")).arg(countWarningsErrors));
+    const int flavorPos = xmlCode.indexOf(QStringLiteral(" compliant with PDF/A-"));
+    const QString flavorIdentifier = flavorPos > 100 ? xmlCode.mid(flavorPos + 22, 2).toLower() : QString();
+    if (flavorIdentifier.length() != 2 || (flavorIdentifier[0] != QLatin1Char('1') && flavorIdentifier[0] != QLatin1Char('2') && flavorIdentifier[0] != QLatin1Char('3')) || (flavorIdentifier[1] != QLatin1Char('a') && flavorIdentifier[1] != QLatin1Char('b') && flavorIdentifier[1] != QLatin1Char('u')))
+        metaText = metaText.append(QString(QStringLiteral("<adobepreflight status=\"error\" errorwarningscount=\"%1\"><reportfile>%2</reportfile>\n<error>Could not determine which PDF/A compliance level was checked for.</error></adobepreflight>\n")).arg(countWarningsErrors)).arg(DocScan::xmlify(reportXMLfile));
+    else
+        metaText = metaText.append(QString(QStringLiteral("<adobepreflight status=\"ok\" flavor=\"PDFA%1\" pdfa%1=\"%2\" errorwarningscount=\"%3\"><reportfile>%4</reportfile></adobepreflight>\n")).arg(flavorIdentifier).arg(countWarningsErrors == 0 ? QStringLiteral("yes") : QStringLiteral("no")).arg(countWarningsErrors)).arg(DocScan::xmlify(reportXMLfile));
 
     return true; ///< no issues? exit with success
 }
