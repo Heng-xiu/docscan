@@ -53,11 +53,12 @@ FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
 {
     FileAnalyzerAbstract::setObjectName(QStringLiteral("fileanalyzerpdf"));
 
-
     QTimer::singleShot(50, this, &FileAnalyzerPDF::delayedToolcheck);
 }
 
 void FileAnalyzerPDF::delayedToolcheck() {
+    FileAnalyzerAbstract::delayedToolcheck();
+
     QProcess exiftoolprocess(this);
     const QStringList exiftoolarguments = QStringList() << QStringLiteral("-ver");
     QByteArray exiftoolStandardOutput;

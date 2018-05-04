@@ -136,8 +136,8 @@ private:
     void extractImages(QString &metaText, const QString &filename);
     void extractEmbeddedFiles(QString &metaText, Poppler::Document *popplerDocument);
 
-private slots:
-    void delayedToolcheck();
+protected slots:
+    void delayedToolcheck() override;
 };
 
 #endif // FILEANALYZERPDF_H

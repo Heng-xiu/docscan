@@ -100,6 +100,34 @@ QString FileAnalyzerAbstract::guessLanguage(const QString &text) const
     return best;
 }
 
+void FileAnalyzerAbstract::delayedToolcheck() {
+    QProcess javaprocess(this);
+    const QStringList javaarguments = QStringList() << QStringLiteral("-version");
+    QByteArray javaStandardError;
+    connect(&javaprocess, &QProcess::readyReadStandardError, [&javaprocess, &javaStandardError]() {
+        const QByteArray d(javaprocess.readAllStandardError());
+        javaStandardError.append(d);
+    });
+    javaprocess.start(QStringLiteral("java"), javaarguments, QIODevice::ReadOnly);
+    if (!javaprocess.waitForStarted(10000) || !javaprocess.waitForFinished(10000)) {
+        const QString stderr = QString::fromLocal8Bit(javaStandardError).trimmed();
+        const QString report = QString(QStringLiteral("<toolcheck name=\"java\" status=\"error\" exitcode=\"%1\"><error>%2</error></toolcheck>\n")).arg(javaprocess.exitCode()).arg(DocScan::xmlify(stderr));
+        emit analysisReport(objectName(), report);
+    } else {
+        const QString stderr = QString::fromLocal8Bit(javaStandardError).trimmed();
+        const int p1 = stderr.indexOf(QStringLiteral("Environment (build"));
+        const int p2 = p1 > 5 ? stderr.indexOf(QLatin1Char(')'), p1 + 20) : -1;
+        if (p1 > 5 && p2 > p1) {
+            const QString versionNumber = stderr.mid(p1 + 19, p2 - p1 - 19);
+            const QString report = QString(QStringLiteral("<toolcheck name=\"java\" status=\"ok\" exitcode=\"%1\" version=\"%2\"><output>%3</output></toolcheck>\n")).arg(javaprocess.exitCode()).arg(versionNumber).arg(DocScan::xmlify(stderr));
+            emit analysisReport(objectName(), report);
+        } else {
+            const QString report = QString(QStringLiteral("<toolcheck name=\"java\" status=\"error\" exitcode=\"%1\"><error>Could not determine version number</error></toolcheck>\n")).arg(javaprocess.exitCode());
+            emit analysisReport(objectName(), report);
+        }
+    }
+}
+
 QSet<QString> FileAnalyzerAbstract::getAspellLanguages() const
 {
     if (aspellLanguages.isEmpty()) {

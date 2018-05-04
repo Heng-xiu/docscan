@@ -81,6 +81,9 @@ protected:
     QString evaluatePaperSize(int mmw, int mmh) const;
     QString dataToTemporaryFile(const QByteArray &data, const QString &mimetype);
 
+protected slots:
+    virtual void delayedToolcheck();
+
 private:
     static QSet<QString> aspellLanguages;
 
