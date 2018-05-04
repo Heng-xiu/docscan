@@ -1275,7 +1275,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     if (doRunValidators && veraPDFExitCode > INT_MIN) {
         /// insert XML data from veraPDF
-        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" flavor=\"%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFvalidationFlavor));
+        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" flavor=\"PDFA%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFvalidationFlavor));
         if (!veraPDFStandardOutput.isEmpty()) {
             /// Check for and omit XML header if it exists
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
