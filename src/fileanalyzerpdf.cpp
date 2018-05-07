@@ -269,7 +269,7 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     /// Perform a iterative approach to recursively scan the given report directory
     /// for a XML file (plain or compressed) matching the PDF filename (.pdf -> _report.xml)
     QVector<QDir> directoryQueue = QVector<QDir>() << startDirectory;
-    const QStringList pattern = QStringList() << QFileInfo(filename).fileName().replace(QStringLiteral(".pdf"), QStringLiteral("_report.xml")).remove(QStringLiteral(".xz")).append("*");
+    const QStringList pattern = QStringList() << QFileInfo(filename).fileName().replace(QStringLiteral(".pdf"), QStringLiteral("_report.xml")).remove(QStringLiteral(".xz")).append(QStringLiteral("*"));
     QString reportXMLfile;
     while (!directoryQueue.isEmpty() && reportXMLfile.isEmpty()) {
         const QDir curDir = directoryQueue.front();
@@ -343,11 +343,10 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     query.setQuery(QStringLiteral("count(//report/results/hits[@severity=\"Warning\" or @severity=\"Error\"])"));
     if (!query.isValid())
         return false;
-
     QString result;
     query.evaluateTo(&result); ///< apply query on XML object
     bool ok = false;
-    int countWarningsErrors = result.toInt(&ok);
+    const int countWarningsErrors = result.toInt(&ok);
     if (!ok) return false; ///< result from query was not a number
 
     /// Query for details on the evaluation
