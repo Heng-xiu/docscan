@@ -889,10 +889,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
 
     /// To save processing time, the user may choose to run validators on PDF files
     /// that look like valid PDF/A files on first sight. This 'first sight' is determined
-    /// by the PDF version number in the magic string (first few bytes in file) and
-    /// XMP metadata regarding PDF/A conformance part and level.
-    /// For example, a file claiming to be PDF/A-1a must have PDF version 1.4.
-    const bool doRunValidators = !m_validateOnlyPDFAfiles;
+    /// by XMP metadata regarding PDF/A conformance part and level.
+    const bool doRunValidators = !m_validateOnlyPDFAfiles || xmpPDFConformance > xmpNone;
 
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
     bool veraPDFStartedRun = false;

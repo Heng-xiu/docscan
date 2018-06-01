@@ -58,8 +58,8 @@ textExtraction=none
 # Note: ZIP files' content will always be analyzed.
 embeddedfilesanalysis=false
 
-# Apply PDF validator only to a file if both PDF version
-# e.g. '1.7' and XMP PDF/A metadata looks reasonable
+# Apply PDF validator only to a file if its XMP PDF/A
+# metadata looks reasonable
 validateonlypdfafiles=true
 
 # Control if PDF files claiming to be PDF/A-1a or 'better'
