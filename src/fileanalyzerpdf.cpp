@@ -892,7 +892,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     /// by the PDF version number in the magic string (first few bytes in file) and
     /// XMP metadata regarding PDF/A conformance part and level.
     /// For example, a file claiming to be PDF/A-1a must have PDF version 1.4.
-    const bool doRunValidators = !m_validateOnlyPDFAfiles || pdfVersionMatchesXMPconformance(pdfVersion, xmpPDFConformance);
+    const bool doRunValidators = !m_validateOnlyPDFAfiles;
 
     QTemporaryDir veraPDFTemporaryDirectory(QDir::tempPath() + QStringLiteral("/.docscan-verapdf-"));
     bool veraPDFStartedRun = false;
