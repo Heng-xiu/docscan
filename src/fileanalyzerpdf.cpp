@@ -1344,7 +1344,7 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                 metaText.append(QStringLiteral("\n<!--  PDFBox Validator output too long  -->"));
         }
         if (!pdfboxValidatorStandardError.isEmpty())
-            metaText.append(QString(QStringLiteral("<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
+            metaText.append(QString(QStringLiteral("\n<error>%1</error>\n")).arg(DocScan::xmlifyLines(pdfboxValidatorStandardError)));
         metaText.append(QStringLiteral("</pdfboxvalidator>\n"));
     } else if (doRunValidators && !m_pdfboxValidatorJavaClass.isEmpty())
         metaText.append(QStringLiteral("<pdfboxvalidator><error>pdfbox Validator failed to start or was never started</error></pdfboxvalidator>\n"));
