@@ -1332,8 +1332,8 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         if (!pdfboxValidatorStandardOutput.isEmpty()) {
             QTextStream ts(&pdfboxValidatorStandardOutput);
             QString buffer;
-            while (!ts.atEnd() && buffer.length() < 16384)
-                buffer.append(ts.readLine(1024));
+            while (!ts.atEnd() && buffer.length() < (8 * 1 << 20)) ///< read max 8MB
+                buffer.append(ts.readLine(8192));
             if (!buffer.startsWith(QChar('<')) || !buffer.endsWith(QChar('>'))) {
                 /// Output does not look like XML output or is capped.
                 /// Treat like plain text.
