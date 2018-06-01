@@ -41,10 +41,10 @@ class FileAnalyzerOpenXML : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerOpenXML(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     typedef struct {

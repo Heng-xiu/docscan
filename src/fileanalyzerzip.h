@@ -36,10 +36,10 @@ class FileAnalyzerZIP : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerZIP(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     bool m_isAlive;

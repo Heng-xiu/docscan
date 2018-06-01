@@ -39,12 +39,12 @@ class FileAnalyzerJPEG : public FileAnalyzerAbstract, public JHoveWrapper
 public:
     explicit FileAnalyzerJPEG(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
     void setupJhove(const QString &shellscript);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 };
 
 #endif // FILEANALYZERJPEG_H

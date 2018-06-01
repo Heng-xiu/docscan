@@ -39,12 +39,13 @@
 class FileAnalyzerPDF : public FileAnalyzerAbstract, public JHoveWrapper
 {
     Q_OBJECT
+
 public:
     enum XMPPDFConformance {xmpError = -1, xmpNone = 0, xmpPDFA1b = 10, xmpPDFA1a = 11, xmpPDFA2b = 20, xmpPDFA2a = 21, xmpPDFA2u = 22, xmpPDFA3b = 30, xmpPDFA3a = 31, xmpPDFA3u = 32, xmpPDFA4 = 40};
 
     explicit FileAnalyzerPDF(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
     void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);
@@ -67,7 +68,7 @@ public:
     void setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b, const XMPPDFConformance enforcedValidationLevel);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     struct ExtendedFontInfo {

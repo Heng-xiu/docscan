@@ -41,7 +41,7 @@ class FileAnalyzerCompoundBinary : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerCompoundBinary(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
     /**
      * Test if the supplied file is an RTF file.
@@ -56,7 +56,7 @@ public:
     static QString langCodeToISOCode(int lid);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     typedef struct {

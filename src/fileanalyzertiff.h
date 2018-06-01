@@ -39,13 +39,13 @@ class FileAnalyzerTIFF : public FileAnalyzerAbstract, public JHoveWrapper
 public:
     explicit FileAnalyzerTIFF(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
     void setupJhove(const QString &shellscript);
     void setupDPFManager(const QString &dpfmangerJFXjar);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     QString dpfmangerJFXjar;

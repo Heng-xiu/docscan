@@ -51,9 +51,9 @@ public:
 
     explicit FileAnalyzerMultiplexer(const QStringList &filters, QObject *parent = nullptr);
 
-    virtual bool isAlive();
-    virtual void setTextExtraction(TextExtraction textExtraction);
-    virtual void setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis);
+    virtual bool isAlive() override;
+    virtual void setTextExtraction(TextExtraction textExtraction) override;
+    virtual void setAnalyzeEmbeddedFiles(bool enableEmbeddedFilesAnalysis) override;
 
     void setupJhove(const QString &shellscript);
     void setupVeraPDF(const QString &cliTool);
@@ -67,7 +67,7 @@ public:
     void setPDFAValidationOptions(const bool validateOnlyPDFAfiles, const bool downgradeToPDFA1b, const FileAnalyzerPDF::XMPPDFConformance enforcedValidationLevel);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
     /**
      * Schedule a temporary file for analysis. Being a temporary file,

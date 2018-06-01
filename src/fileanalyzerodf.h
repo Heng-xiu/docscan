@@ -41,10 +41,10 @@ class FileAnalyzerODF : public FileAnalyzerAbstract
 public:
     explicit FileAnalyzerODF(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 
 private:
     enum PageCountOrigin {pcoDocument = 1, pcoOwnCount = 2};

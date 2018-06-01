@@ -39,12 +39,12 @@ class FileAnalyzerJP2 : public FileAnalyzerAbstract, public JHoveWrapper
 public:
     explicit FileAnalyzerJP2(QObject *parent = nullptr);
 
-    virtual bool isAlive();
+    virtual bool isAlive() override;
 
     void setupJhove(const QString &shellscript);
 
 public slots:
-    virtual void analyzeFile(const QString &filename);
+    virtual void analyzeFile(const QString &filename) override;
 };
 
 #endif // FILEANALYZERJP2_H
