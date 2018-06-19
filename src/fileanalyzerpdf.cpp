@@ -1037,7 +1037,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
     if (doRunValidators) {
         /// If for the current filename an alias filename was given,
         /// use the alias filename to locate the Adobe Preflight report.
-        adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty() ? m_aliasFilename : m_toAnalyzeFilename, metaText);
+        QString relevantPDFfilename = m_toAnalyzeFilename.isEmpty() ? filename : m_toAnalyzeFilename;
+        if (filename == m_toAnalyzeFilename && !m_aliasFilename.isEmpty()) relevantPDFfilename = m_aliasFilename;
+
+        adobePreflightReportAnalysisOk = adobePreflightReportAnalysis(relevantPDFfilename, metaText);
         if (!adobePreflightReportAnalysisOk)
             metaText.append(QStringLiteral("<adobepreflight status=\"failed\"><error>Failed to find or evaluate Adobe Preflight XML report file</error></adobepreflight>\n"));
     } else
