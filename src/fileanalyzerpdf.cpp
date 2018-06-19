@@ -357,11 +357,12 @@ bool FileAnalyzerPDF::adobePreflightReportAnalysis(const QString &filename, QStr
     query.evaluateTo(&detailedReport); ///< apply query on XML object
     detailedReport = detailedReport.trimmed();
     if (!detailedReport.isEmpty() && (!detailedReport.startsWith(QStringLiteral("<results>")) || !detailedReport.endsWith(QStringLiteral("</results>"))))
+        /// A detailed report just being '<results/>' will be cleared as well here
         detailedReport.clear();
 
     const int flavorPos = xmlCode.indexOf(QStringLiteral(" compliant with PDF/A-"));
     const QString flavorIdentifier = flavorPos > 100 ? xmlCode.mid(flavorPos + 22, 2).toLower() : QString();
-    if (flavorIdentifier.length() != 2 || (flavorIdentifier[0] != QLatin1Char('1') && flavorIdentifier[0] != QLatin1Char('2') && flavorIdentifier[0] != QLatin1Char('3')) || (flavorIdentifier[1] != QLatin1Char('a') && flavorIdentifier[1] != QLatin1Char('b') && flavorIdentifier[1] != QLatin1Char('u')))
+    if (flavorIdentifier.length() != 2 || (flavorIdentifier[0] != QLatin1Char('1') && flavorIdentifier[0] != QLatin1Char('2') && flavorIdentifier[0] != QLatin1Char('3') && flavorIdentifier[0] != QLatin1Char('4')) || (flavorIdentifier[1] != QLatin1Char('a') && flavorIdentifier[1] != QLatin1Char('b') && flavorIdentifier[1] != QLatin1Char('u')))
         metaText = metaText.append(QString(QStringLiteral("<adobepreflight status=\"error\" errorwarningscount=\"%1\"><reportfile>%2</reportfile>\n<error>Could not determine which PDF/A compliance level was checked for.</error>%3</adobepreflight>\n")).arg(countWarningsErrors)).arg(DocScan::xmlify(reportXMLfile)).arg(detailedReport);
     else
         metaText = metaText.append(QString(QStringLiteral("<adobepreflight status=\"ok\" flavor=\"PDFA%1\" pdfa%1=\"%2\" errorwarningscount=\"%3\"><reportfile>%4</reportfile>%5</adobepreflight>\n")).arg(flavorIdentifier).arg(countWarningsErrors == 0 ? QStringLiteral("yes") : QStringLiteral("no")).arg(countWarningsErrors)).arg(DocScan::xmlify(reportXMLfile)).arg(detailedReport);
