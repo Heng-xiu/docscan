@@ -1,6 +1,6 @@
 # Full path and filename to XML file were log data
 # will be written to
-logcollector=/tmp/pdf-fonts.xml
+logcollector=/tmp/docscan-log.xml
 
 # Full path and filename of jHove's executable script
 # (command line version, not GUI)
