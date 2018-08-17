@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (2017) Thomas Fischer <thomas.fischer@his.se>, senior
+# Copyright (2017-2018) Thomas Fischer <thomas.fischer@his.se>, senior
 # lecturer at University of Skövde, as part of the LIM-IT project.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -49,6 +49,9 @@ memlimitPages=$(( ${memlimitB} / $(getconf PAGE_SIZE) ))
 renice -n 10 $$
 ionice -c 3 -p $$
 
+slimxmlawkfile="$(dirname "$0")"/slim-xml.awk
+test -s "${slimxmlawkfile}" || { echo "Could not locate file 'slim-xml.awk'" >&2 ; exit 1 ; }
+
 for xmlfile in "${@}" ; do
 	stem="${xmlfile/.xml.xz/}"
 	stem="${stem/.xml/}"
@@ -71,8 +74,8 @@ for xmlfile in "${@}" ; do
 	## instead of 'remcoch' you may use:   sed -r 's![\d1\d6\d3\d11\d12\d14\d15\d16\d17\d19\d20\d21\d22\d23\d25\d27\d28\d29]!_!g'
 	## Not used as it takes too much time (?):    sed -r 's!<error([ ][^>]*)?>[^<]*</error>!!g'
 	## 'remerror' and "sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d'" remove error messages that may not be relevant here and only slow down XSL transformations; can be safely removed if not available
-	if [[ "${xmlfile}" =~ '.xml.xz' ]] ; then echo -n "unxz <\"${xmlfile}\" | remcoch | remerror | grep -v '&lt;xmpGImg:image&gt' | grep -vE '(CompressionScheme|ImageWidth|ImageHeight|ColorSpace|BitsPerSample|BitsPerSampleUnit|Interpolate|NisoImageMetadata): ' | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' >\"${thisxml}\" || exit 1"
-	elif [[ "${xmlfile}" =~ '.xml' ]] ; then echo -n "cat \"${xmlfile}\" | remcoch | remerror | grep -v '&lt;xmpGImg:image&gt' | grep -vE '(CompressionScheme|ImageWidth|ImageHeight|ColorSpace|BitsPerSample|BitsPerSampleUnit|Interpolate|NisoImageMetadata): ' | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' >\"${thisxml}\" || exit 1"
+	if [[ "${xmlfile}" =~ '.xml.xz' ]] ; then echo -n "unxz <\"${xmlfile}\" | remcoch | remerror | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' | awk -f \"${slimxmlawkfile}\" >\"${thisxml}\" || exit 1"
+	elif [[ "${xmlfile}" =~ '.xml' ]] ; then echo -n "cat \"${xmlfile}\" | remcoch | remerror | sed -e 's!<error>ERROR MESSAGE REMOVED</error>!!g;/^$/d' | awk -f \"${slimxmlawkfile}\" >\"${thisxml}\" || exit 1"
 	else echo -n "rm -f \"${thisxml}\" ; exit 1" ; fi >>${tempdir}/q.txt
 	echo -n " ; test -s \"${thisxml}\" || exit 1 ; " >>${tempdir}/q.txt
 
