@@ -32,7 +32,7 @@
 
 <xsl:template match="log">
 
-<xsl:for-each select="/log/logitem/fileanalysis[@status='ok' and meta/jhove/profile/@pdfa1b='yes' and meta/verapdf/@pdfa1b='yes' and meta/pdfboxvalidator/@pdfa1b='yes' and meta/callaspdfapilot/@pdfa1b='yes' and meta/qoppapdfpreflight/@pdfa1b='yes' and meta/threeheightspdfvalidator/@pdfa1b='yes']">
+<xsl:for-each select="/log/logitem/fileanalysis[@status='ok' and meta/jhove/profile/@pdfa1b='yes' and meta/verapdf/@pdfa1b='yes' and meta/pdfboxvalidator/@pdfa1b='yes' and meta/callaspdfapilot/@pdfa1b='yes' and adobepreflight/@pdfa1b='yes' and meta/qoppapdfpreflight/@pdfa1b='yes' and meta/threeheightspdfvalidator/@pdfa1b='yes']">
 <!-- either use file's name or, if decompressed, its original filename -->
 <xsl:variable name="filename" select="@filename" />
 <xsl:choose>
