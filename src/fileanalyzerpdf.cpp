@@ -1284,8 +1284,9 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         metaText.append(QStringLiteral("<jhove><info>jHove not configured to run</info></jhove>\n"));
 
     if (doRunValidators && veraPDFExitCode > INT_MIN) {
+        const QString flavor = !veraPDFvalidationFlavor.isEmpty() && veraPDFvalidationFlavor != QStringLiteral("0") ? QString(QStringLiteral(" flavor=\"PDFA%1\"")).arg(veraPDFvalidationFlavor) : QString();
         /// insert XML data from veraPDF
-        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\" flavor=\"PDFA%5\">\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFvalidationFlavor));
+        metaText.append(QString(QStringLiteral("<verapdf exitcode=\"%1\" filesize=\"%2\" pdfa1b=\"%3\" pdfa1a=\"%4\"%5>\n")).arg(QString::number(veraPDFExitCode), QString::number(veraPDFfilesize), veraPDFIsPDFA1B ? QStringLiteral("yes") : QStringLiteral("no"), veraPDFIsPDFA1A ? QStringLiteral("yes") : QStringLiteral("no"), flavor));
         if (!veraPDFStandardOutput.isEmpty()) {
             /// Check for and omit XML header if it exists
             const int p = veraPDFStandardOutput.indexOf(QStringLiteral("?>"));
@@ -1332,7 +1333,13 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         }
         if (insideIssues) report += QStringLiteral("</issues>\n");
 
-        metaText.append(QString(QStringLiteral("<threeheightspdfvalidator exitcode=\"%1\" pdfa1b=\"%2\" pdfa1a=\"%3\">")).arg(threeHeightsPDFValidatorExitCode).arg(threeHeightsPDFValidatorPDFA1b ? QStringLiteral("yes") : QStringLiteral("no")).arg(threeHeightsPDFValidatorPDFA1a ? QStringLiteral("yes") : QStringLiteral("no")) + report + QStringLiteral("</threeheightspdfvalidator>\n"));
+        QString complianceString;
+        for (QMap<QString, bool>::ConstIterator it = standardCompliances.constBegin(); it != standardCompliances.constEnd(); ++it)
+            complianceString += QStringLiteral(" pdfa") + it.key() + QStringLiteral("=\"") + (it.value() ? QStringLiteral("yes") : QStringLiteral("no")) + QStringLiteral("\"");
+        for (QMap<QString, bool>::ConstIterator it = pdfGenericCompliances.constBegin(); it != pdfGenericCompliances.constEnd(); ++it)
+            complianceString += QStringLiteral(" pdf") + QString(it.key()).remove(QLatin1Char('.')) + QStringLiteral("=\"") + (it.value() ? QStringLiteral("yes") : QStringLiteral("no")) + QStringLiteral("\"");
+
+        metaText.append(QString(QStringLiteral("<threeheightspdfvalidator exitcode=\"%1\"%2>")).arg(threeHeightsPDFValidatorExitCode).arg(complianceString) + report + QStringLiteral("</threeheightspdfvalidator>\n"));
     } else
         metaText.append(QStringLiteral("<threeheightspdfvalidator><info>3-Heights PDF Validator Shell not configured to run</info></threeheightspdfvalidator>\n"));
 
