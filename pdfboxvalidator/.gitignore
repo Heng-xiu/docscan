@@ -1,0 +1,7 @@
+# Ignore Apache's JAR files you can get from there
+commons-io-*.jar
+commons-logging-*.jar
+fontbox-*.jar
+pdfbox-*.jar
+preflight-*.jar
+xmpbox-*.jar
