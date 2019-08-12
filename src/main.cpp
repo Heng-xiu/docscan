@@ -108,8 +108,22 @@ bool evaluateConfigfile(const QString &filename)
                         enforcedValidationLevel = FileAnalyzerPDF::xmpNone;
                     else if (value.compare(QStringLiteral("pdfa1b"), Qt::CaseInsensitive) == 0)
                         enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA1b;
+                    else if (value.compare(QStringLiteral("pdfa1a"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA1a;
+                    else if (value.compare(QStringLiteral("pdfa2b"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA2b;
+                    else if (value.compare(QStringLiteral("pdfa2a"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA2a;
+                    else if (value.compare(QStringLiteral("pdfa2u"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA2u;
+                    else if (value.compare(QStringLiteral("pdfa3b"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA3b;
+                    else if (value.compare(QStringLiteral("pdfa3a"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA3a;
+                    else if (value.compare(QStringLiteral("pdfa3u"), Qt::CaseInsensitive) == 0)
+                        enforcedValidationLevel = FileAnalyzerPDF::xmpPDFA3u;
                     else {
-                        qCritical() << "Value for pdfapartlevel is neither 'auto' nor 'pdfa1b': " << value;
+                        qCritical() << "Value for pdfapartlevel is unknown/unsupported: " << value;
                         enforcedValidationLevel = FileAnalyzerPDF::xmpError;
                     }
                 } else if (key == QStringLiteral("requiredcontent")) {
