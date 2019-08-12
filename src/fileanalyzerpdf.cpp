@@ -1303,7 +1303,10 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
         QTextStream ts(&threeHeightsPDFValidatorStandardOutput);
         QString report;
         bool insideIssues = false;
-        bool threeHeightsPDFValidatorPDFA1b = false, threeHeightsPDFValidatorPDFA1a = false;
+        static const QSet<QString> pdfAstandardLevels{QStringLiteral("1b"), QStringLiteral("1a"), QStringLiteral("2a"), QStringLiteral("2b"), QStringLiteral("2u"), QStringLiteral("3a"), QStringLiteral("3b"), QStringLiteral("3u")};
+        QMap<QString, bool> standardCompliances;
+        static const QSet<QString> pdfGenericLevels{QStringLiteral("1.7")};
+        QMap<QString, bool> pdfGenericCompliances;
         const QString toBeRemoved = QStringLiteral("\"") + filename + QStringLiteral("\", ");
         while (!ts.atEnd()) {
             const QString line = ts.readLine();
@@ -1314,12 +1317,17 @@ void FileAnalyzerPDF::analyzeFile(const QString &filename)
                     insideIssues = true;
                 }
                 report += QStringLiteral("<issue>") + DocScan::xmlify(QString(line).trimmed().remove(toBeRemoved)) + QStringLiteral("</issue>\n");
-            } else if (line.endsWith("conform to the PDF/A-1b standard.")) {
-                /// Final statement on compliance PDF/A-1b
-                threeHeightsPDFValidatorPDFA1b = !line.contains(QStringLiteral("does not conform"));
-            } else if (line.endsWith("conform to the PDF/A-1a standard.")) {
-                /// Final statement on compliance PDF/A-1a
-                threeHeightsPDFValidatorPDFA1a = !line.contains(QStringLiteral("does not conform"));
+            } else if (line.endsWith(" standard.")) {
+                for (const QString &pdfAstandardLevel : pdfAstandardLevels) {
+                    const QString pattern = QString(QStringLiteral("conform to the PDF/A-%1 standard.")).arg(pdfAstandardLevel);
+                    if (line.endsWith(pattern))
+                        standardCompliances.insert(pdfAstandardLevel, !line.contains(QStringLiteral("does not conform")));
+                }
+                for (const QString &pdfGenericLevel : pdfGenericLevels) {
+                    const QString pattern = QString(QStringLiteral("conform to the PDF %1 standard.")).arg(pdfGenericLevel);
+                    if (line.endsWith(pattern))
+                        pdfGenericCompliances.insert(pdfGenericLevel, !line.contains(QStringLiteral("does not conform")));
+                }
             }
         }
         if (insideIssues) report += QStringLiteral("</issues>\n");
