@@ -25,21 +25,21 @@
 
 CODEDIR="$(dirname "$0")"
 
-if [[ ! -s ${CODEDIR}/ValidatePDFA1b.class || ${CODEDIR}/ValidatePDFA1b.java -nt ${CODEDIR}/ValidatePDFA1b.class ]] ; then
+if [[ ! -s ${CODEDIR}/ValidatePDFA_XXXX_.class || ${CODEDIR}/ValidatePDFA_XXXX_.java -nt ${CODEDIR}/ValidatePDFA_XXXX_.class ]] ; then
 	echo "Rebuilding Java source code" >&2
-	( cd "${CODEDIR}" && javac -Xlint:deprecation -cp commons-text-1.1.jar:jPDFPreflight.jar ValidatePDFA1b.java ) || exit 1
+	( cd "${CODEDIR}" && javac -Xlint:deprecation -cp commons-text-1.6.jar:jPDFPreflight.jar ValidatePDFA_XXXX_.java ) || exit 1
 fi
-[ -s "${CODEDIR}/ValidatePDFA1b.class" ] || { echo "No ValidatePDFA1b.class found" >&2 ; exit 1 ; }
+[ -s "${CODEDIR}/ValidatePDFA_XXXX_.class" ] || { echo "No ValidatePDFA_XXXX_.class found" >&2 ; exit 1 ; }
 
 [ -s "${CODEDIR}/jPDFPreflight.key" ] || { echo "No jPDFPreflight.key found" >&2 ; exit 1 ; }
 key="$(cat "${CODEDIR}/jPDFPreflight.key")"
 [ -n "${key}" ] || { echo "jPDFPreflight key is empty" >&2 ; exit 1 ; }
 
 if [ $# -eq 0 ] ; then
-	java -cp "${CODEDIR}/commons-text-1.1.jar:${CODEDIR}/commons-lang3-3.7.jar:${CODEDIR}/jPDFPreflight.jar:${CODEDIR}" ValidatePDFA1b "${key}"
+	java -cp "${CODEDIR}/commons-text-1.6.jar:${CODEDIR}/commons-lang3-3.8.1.jar:${CODEDIR}/jPDFPreflight.jar:${CODEDIR}" ValidatePDFA_XXXX_ "${key}"
 	exit 0
 fi
 
 for pdffile in "${@}" ; do
-	java -cp "${CODEDIR}/commons-text-1.1.jar:${CODEDIR}/commons-lang3-3.7.jar:${CODEDIR}/jPDFPreflight.jar:${CODEDIR}" ValidatePDFA1b "${key}" "${pdffile}"
+	java -cp "${CODEDIR}/commons-text-1.6.jar:${CODEDIR}/commons-lang3-3.8.1.jar:${CODEDIR}/jPDFPreflight.jar:${CODEDIR}" ValidatePDFA_XXXX_ "${key}" "${pdffile}"
 done
