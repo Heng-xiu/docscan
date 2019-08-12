@@ -52,6 +52,7 @@ FileAnalyzerPDF::FileAnalyzerPDF(QObject *parent)
     : FileAnalyzerAbstract(parent), JHoveWrapper(), m_isAlive(false), m_validateOnlyPDFAfiles(false), m_downgradeToPDFA1b(false), m_enforcedValidationLevel(xmpNone), m_tempDirDowngradeToPDFA1b(QDir::tempPath() + QStringLiteral("/fileanalyzerPDF-downgradeToPDFA1b.d-XXXXXX"))
 {
     setObjectName(QString(QLatin1String(metaObject()->className())).toLower());
+    m_tempDirDowngradeToPDFA1b.setAutoRemove(true);
 
     QTimer::singleShot(50, this, &FileAnalyzerPDF::delayedToolcheck);
 }
